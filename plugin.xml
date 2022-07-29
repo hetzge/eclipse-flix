@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="problem"
+         name="Flix Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <super
+            type="org.eclipse.core.resources.textmarker">
+      </super>
+   </extension>
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            id="de.hetzge.eclipse.flix"
+            name="Flix"
+            file-extensions="flix"
+            base-type="org.eclipse.core.runtime.text"
+            priority="normal">
+      </content-type>
+   </extension>
+<!--   <extension-->
+<!--         point="org.eclipse.core.runtime.preferences">-->
+<!--      <initializer-->
+<!--            class="org.lxtk.lx4e.internal.examples.proto.ProtoPreferenceInitializer">-->
+<!--      </initializer>-->
+<!--   </extension>-->
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            id="de.hetzge.eclipse.flix.editor"
+            name="Flix Editor"
+            default="false"
+            class="de.hetzge.eclipse.flix.internal.editor.FlixEditor"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor">
+         <contentTypeBinding
+               contentTypeId="de.hetzge.eclipse.flix">
+         </contentTypeBinding>
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            id="de.hetzge.eclipse.flix.editor.scope"
+            parentId="org.eclipse.ui.textEditorScope"
+            name="Editing Flix Source"
+            description="Editing Flix Source Context">
+      </context>
+   </extension>
+   <extension
+         point="org.eclipse.tm4e.registry.grammars">
+      <grammar
+            scopeName="source.flix"
+            path="syntaxes/flix.tmLanguage.json" >
+      </grammar>
+      <scopeNameContentTypeBinding
+            contentTypeId="de.hetzge.eclipse.flix"
+            scopeName="source.flix">
+      </scopeNameContentTypeBinding>
+   </extension>
+   <extension
+         point="org.eclipse.tm4e.languageconfiguration.languageConfigurations">
+      <languageConfiguration
+            contentTypeId="de.hetzge.eclipse.flix"
+            path="language-configuration.json">
+      </languageConfiguration>
+   </extension>
+   <extension
+         point="org.eclipse.tm4e.ui.themes">
+      <themeAssociation
+            scopeName="source.flix"
+            themeId="org.eclipse.tm4e.ui.themes.Light">
+      </themeAssociation>
+   </extension>
+</plugin>
