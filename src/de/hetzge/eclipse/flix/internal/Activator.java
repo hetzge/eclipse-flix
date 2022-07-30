@@ -1,5 +1,6 @@
 package de.hetzge.eclipse.flix.internal;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -16,16 +17,17 @@ public class Activator extends AbstractUIPlugin {
 	// The shared instance
 	private static Activator plugin;
 
-	private FlixDocumentProvider documentProvider;
-
-	public FlixDocumentProvider getDocumentProvider() {
-		return this.documentProvider;
-	}
-
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+
+		// TODO
+		final FlixService flixService = new FlixService();
+		flixService.initialize();
+		final FlixLanguageClient flixLanguageClient = new FlixLanguageClient(ResourcesPlugin.getWorkspace().getRoot().getProjects()[0], flixService);
+		flixLanguageClient.connect();
+
 	}
 
 	@Override

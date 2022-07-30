@@ -75,4 +75,11 @@
             themeId="org.eclipse.tm4e.ui.themes.Light">
       </themeAssociation>
    </extension>
+   <extension
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+            class="de.hetzge.eclipse.flix.internal.FlixMarkerResolutionGenerator"
+            markerType="de.hetzge.eclipse.flix.problem">
+      </markerResolutionGenerator>
+   </extension>
 </plugin>

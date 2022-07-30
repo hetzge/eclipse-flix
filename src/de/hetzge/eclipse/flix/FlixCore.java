@@ -7,6 +7,7 @@ import org.lxtk.WorkspaceService;
 import org.lxtk.lx4e.EclipseDocumentService;
 import org.lxtk.lx4e.EclipseLanguageService;
 import org.lxtk.lx4e.EclipseWorkspaceService;
+import org.lxtk.lx4e.refactoring.WorkspaceEditChangeFactory;
 
 /**
  * Facade to Flix services.
@@ -31,6 +32,8 @@ public class FlixCore {
 	 * Flix workspace service.
 	 */
 	public static final WorkspaceService WORKSPACE_SERVICE = new EclipseWorkspaceService();
+
+	public static final WorkspaceEditChangeFactory CHANGE_FACTORY = new WorkspaceEditChangeFactory(DOCUMENT_SERVICE);
 
 	private FlixCore() {
 	}

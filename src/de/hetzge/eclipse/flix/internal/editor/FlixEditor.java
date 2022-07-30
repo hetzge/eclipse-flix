@@ -2,6 +2,7 @@ package de.hetzge.eclipse.flix.internal.editor;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.editors.text.EditorsUI;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 
@@ -16,7 +17,7 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 	protected void initializeEditor() {
 		final IPreferenceStore preferenceStore = new ChainedPreferenceStore(new IPreferenceStore[] { Activator.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
 		setPreferenceStore(preferenceStore);
-		setDocumentProvider(Activator.getDefault().getDocumentProvider());
+		setDocumentProvider(new TextFileDocumentProvider());
 		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(preferenceStore, this));
 		setEditorContextMenuId("#FlixEditorContext"); //$NON-NLS-1$
 		setRulerContextMenuId("#FlixRulerContext"); //$NON-NLS-1$
