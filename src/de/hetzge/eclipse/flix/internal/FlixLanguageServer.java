@@ -13,6 +13,7 @@ import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
 import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.ServerInfo;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.WorkspaceServerCapabilities;
@@ -63,6 +64,7 @@ public class FlixLanguageServer implements LanguageServer {
 			capabilities.setHoverProvider(true);
 			final InitializeResult initializeResult = new InitializeResult();
 			initializeResult.setCapabilities(capabilities);
+			initializeResult.setServerInfo(new ServerInfo("Flix Eclipse Language Server", "0.1"));
 			return initializeResult;
 		});
 	}

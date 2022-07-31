@@ -11,16 +11,18 @@ import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.lxtk.DocumentUri;
+import org.lxtk.WorkspaceService;
 import org.lxtk.client.AbstractLanguageClient;
 import org.lxtk.client.BufferingDiagnosticConsumer;
 import org.lxtk.client.CompletionFeature;
 import org.lxtk.client.Feature;
 import org.lxtk.client.FileOperationsFeature;
+import org.lxtk.client.TextDocumentSyncFeature;
 import org.lxtk.jsonrpc.AbstractJsonRpcConnectionFactory;
 import org.lxtk.jsonrpc.JsonRpcConnectionFactory;
 import org.lxtk.lx4e.EclipseLog;
+import org.lxtk.lx4e.EclipseTextDocumentChangeEventMergeStrategy;
 import org.lxtk.lx4e.diagnostics.DiagnosticMarkers;
-import org.lxtk.lx4e.refactoring.FileOperationParticipantSupport;
 import org.lxtk.lx4e.ui.EclipseLanguageClient;
 import org.lxtk.lx4e.ui.EclipseLanguageClientController;
 import org.lxtk.util.Log;
@@ -55,47 +57,20 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 	@Override
 	protected AbstractLanguageClient<LanguageServer> getLanguageClient() {
 
-//		final Collection<Feature<? super LanguageServer>> features = new ArrayList<>();
-//		final TextDocumentSyncFeature textDocumentSyncFeature = new TextDocumentSyncFeature(FlixCore.DOCUMENT_SERVICE);
-//		textDocumentSyncFeature.setChangeEventMergeStrategy(new EclipseTextDocumentChangeEventMergeStrategy());
-//		features.add(textDocumentSyncFeature);
-//		features.add(new CompletionFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new DocumentFormattingFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new DocumentRangeFormattingFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new DocumentSymbolFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new FoldingRangeFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new HoverFeature(FlixCore.LANGUAGE_SERVICE));
-
-
-
+		final TextDocumentSyncFeature textDocumentSyncFeature = new TextDocumentSyncFeature(FlixCore.DOCUMENT_SERVICE);
+		textDocumentSyncFeature.setChangeEventMergeStrategy(new EclipseTextDocumentChangeEventMergeStrategy());
 
 		final Collection<Feature<? super LanguageServer>> features = new ArrayList<>();
-//		final TextDocumentSyncFeature textDocumentSyncFeature = new TextDocumentSyncFeature(FlixCore.DOCUMENT_SERVICE);
-//		textDocumentSyncFeature.setChangeEventMergeStrategy(new EclipseTextDocumentChangeEventMergeStrategy());
-//		features.add(textDocumentSyncFeature);
-//		features.add(new DefinitionFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new DocumentFormattingFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new DocumentHighlightFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new DocumentRangeFormattingFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new DocumentSymbolFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new FoldingRangeFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new HoverFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new ImplementationFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new ReferencesFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new RenameFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new SignatureHelpFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new TypeDefinitionFeature(FlixCore.LANGUAGE_SERVICE));
-//		features.add(new WorkspaceSymbolFeature(FlixCore.LANGUAGE_SERVICE, this.project));
 		features.add(new CompletionFeature(FlixCore.LANGUAGE_SERVICE));
-		features.add(FileOperationsFeature.newInstance(new FileOperationParticipantSupport(FlixCore.CHANGE_FACTORY)));
+		features.add(FileOperationsFeature.newInstance(Activator.getDefault().getResourceMonitor()));
+		features.add(textDocumentSyncFeature);
 
+		return new EclipseLanguageClient<>(this.log, this.diagnosticConsumer, FlixCore.WORKSPACE_EDIT_CHANGE_FACTORY, features) {
+			@Override
+			public WorkspaceService getWorkspaceService() {
+				return FlixCore.WORKSPACE_SERVICE;
+			}
 
-
-//		final List<Feature<? super LanguageServer>> features = List.of( //
-//				FileOperationsFeature.newInstance(new FileOperationParticipantSupport(new WorkspaceEditChangeFactory(FlixCore.DOCUMENT_SERVICE))), //
-//				new TextDocumentSyncFeature(FlixCore.DOCUMENT_SERVICE) //
-//		);
-		return new EclipseLanguageClient<>(this.log, this.diagnosticConsumer, FlixCore.CHANGE_FACTORY, features) {
 			@Override
 			protected String getMessageTitle(MessageParams params) {
 				return "Flix Language Server";

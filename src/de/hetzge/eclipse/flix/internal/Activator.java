@@ -1,5 +1,6 @@
 package de.hetzge.eclipse.flix.internal;
 
+import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -17,6 +18,12 @@ public class Activator extends AbstractUIPlugin {
 	// The shared instance
 	private static Activator plugin;
 
+	private ResourceMonitor resourceMonitor;
+
+	public ResourceMonitor getResourceMonitor() {
+		return this.resourceMonitor;
+	}
+
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
@@ -28,6 +35,8 @@ public class Activator extends AbstractUIPlugin {
 		final FlixLanguageClient flixLanguageClient = new FlixLanguageClient(ResourcesPlugin.getWorkspace().getRoot().getProjects()[0], flixService);
 		flixLanguageClient.connect();
 
+		this.resourceMonitor = new ResourceMonitor();
+		ResourcesPlugin.getWorkspace().addResourceChangeListener(this.resourceMonitor, IResourceChangeEvent.POST_CHANGE);
 	}
 
 	@Override

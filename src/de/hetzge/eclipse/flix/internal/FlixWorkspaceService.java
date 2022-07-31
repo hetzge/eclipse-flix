@@ -2,6 +2,7 @@ package de.hetzge.eclipse.flix.internal;
 
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -12,6 +13,7 @@ import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams;
 import org.eclipse.lsp4j.FileCreate;
 import org.eclipse.lsp4j.RenameFilesParams;
+import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
 final class FlixWorkspaceService implements WorkspaceService {
@@ -20,6 +22,23 @@ final class FlixWorkspaceService implements WorkspaceService {
 
 	public FlixWorkspaceService(FlixService flixService) {
 		this.flixService = flixService;
+	}
+
+	@Override
+	public CompletableFuture<WorkspaceEdit> willDeleteFiles(DeleteFilesParams params) {
+		return CompletableFuture.completedFuture(null);
+	}
+
+	@Override
+	public CompletableFuture<WorkspaceEdit> willCreateFiles(CreateFilesParams params) {
+		// TODO Auto-generated method stub
+		return WorkspaceService.super.willCreateFiles(params);
+	}
+
+	@Override
+	public CompletableFuture<WorkspaceEdit> willRenameFiles(RenameFilesParams params) {
+		// TODO Auto-generated method stub
+		return WorkspaceService.super.willRenameFiles(params);
 	}
 
 	@Override

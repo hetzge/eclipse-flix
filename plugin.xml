@@ -82,4 +82,48 @@
             markerType="de.hetzge.eclipse.flix.problem">
       </markerResolutionGenerator>
    </extension>
+   <extension
+         point="org.eclipse.ltk.core.refactoring.createParticipants">
+      <createParticipant
+            class="de.hetzge.eclipse.flix.internal.refactoring.FlixResourceParticipant$Create"
+            id="de.hetzge.eclipse.flix.refactoring.create"
+            name="Flix create participant">
+         <enablement>
+            <adapt type="org.eclipse.core.resources.IResource"></adapt>
+         </enablement>
+      </createParticipant>
+   </extension>
+   <extension
+         point="org.eclipse.ltk.core.refactoring.deleteParticipants">
+      <deleteParticipant
+            class="de.hetzge.eclipse.flix.internal.refactoring.FlixResourceParticipant$Delete"
+            id="de.hetzge.eclipse.flix.refactoring.delete"
+            name="Flix delete participant">
+         <enablement>
+            <adapt type="org.eclipse.core.resources.IResource"></adapt>
+         </enablement>
+      </deleteParticipant>
+   </extension>
+   <extension
+         point="org.eclipse.ltk.core.refactoring.copyParticipants">
+      <copyParticipant
+            class="de.hetzge.eclipse.flix.internal.refactoring.FlixResourceParticipant$Copy"
+            id="de.hetzge.eclipse.flix.refactoring.copy"
+            name="Flix copy participant">
+         <enablement>
+            <adapt type="org.eclipse.core.resources.IResource"></adapt>
+         </enablement>
+      </copyParticipant>
+   </extension>
+   <extension
+         point="org.eclipse.ltk.core.refactoring.moveParticipants">
+      <moveParticipant
+            class="de.hetzge.eclipse.flix.internal.refactoring.FlixResourceParticipant$Move"
+            id="de.hetzge.eclipse.flix.refactoring.move"
+            name="Flix move participant">
+         <enablement>
+            <adapt type="org.eclipse.core.resources.IResource"></adapt>
+         </enablement>
+      </moveParticipant>
+   </extension>
 </plugin>

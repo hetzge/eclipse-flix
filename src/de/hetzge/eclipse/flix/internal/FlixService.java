@@ -1,5 +1,7 @@
 package de.hetzge.eclipse.flix.internal;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,34 +29,16 @@ public final class FlixService {
 
 	private FlixCompilerClient compilerClient;
 	private FlixCompilerProcess compilerProcess;
-	private PipedOutputStream clientToServerStream;
-	private PipedInputStream serverToClientStream;
+	private final FlixLanguageServer server;
+
+	public FlixService() {
+		this.server = new FlixLanguageServer(this);
+	}
 
 	public void initialize() {
-		try {
-			System.out.println("FlixService.initialize()");
-			this.compilerProcess = FlixCompilerProcess.start();
-			this.compilerClient = FlixCompilerClient.connect();
-
-			this.clientToServerStream = new PipedOutputStream();
-			this.serverToClientStream = new PipedInputStream();
-			final PipedInputStream clientToServerStreamReverse = new PipedInputStream(this.clientToServerStream);
-			final PipedOutputStream serverToClientStreamReverse = new PipedOutputStream(this.serverToClientStream);
-
-
-			new Builder<LanguageClient>()
-			.setLocalService(new FlixLanguageServer(this))
-			.setRemoteInterface(LanguageClient.class)
-			.setInput(clientToServerStreamReverse)
-			.setOutput(serverToClientStreamReverse)
-			.setExecutorService(Executors.newWorkStealingPool())
-			.traceMessages(new PrintWriter(System.out))
-			.create()
-			.startListening();
-
-		} catch (final IOException exception) {
-			throw new RuntimeException(exception);
-		}
+		System.out.println("FlixService.initialize()");
+		this.compilerProcess = FlixCompilerProcess.start();
+		this.compilerClient = FlixCompilerClient.connect();
 	}
 
 	public void addWorkspaceUris() {
@@ -88,35 +72,56 @@ public final class FlixService {
 	}
 
 	public StreamBasedConnection getConnection() {
-		System.out.println("FlixService.getConnection()");
-		final CompletableFuture<Object> disposeFuture = new CompletableFuture<>();
-		return new StreamBasedConnection() {
+		try {
+			System.out.println("FlixService.getConnection()");
 
-			@Override
-			public void dispose() {
-				System.out.println("FlixService.getConnection().new StreamBasedConnection() {...}.dispose()");
-				disposeFuture.complete(null);
-			}
 
-			@Override
-			public CompletionStage<?> onDispose() {
-				return disposeFuture;
-			}
 
-			@Override
-			public boolean isClosed() {
-				return disposeFuture.isDone();
-			}
+			final PipedOutputStream clientToServerStream = new PipedOutputStream();
+			final PipedInputStream serverToClientStream = new PipedInputStream();
+			final InputStream clientToServerStreamReverse = new BufferedInputStream(new PipedInputStream(clientToServerStream));
+			final OutputStream serverToClientStreamReverse = new BufferedOutputStream(new PipedOutputStream(serverToClientStream));
+			new Builder<LanguageClient>() //
+					.setLocalService(this.server) //
+					.setRemoteInterface(LanguageClient.class) //
+					.setInput(clientToServerStreamReverse) //
+					.setOutput(serverToClientStreamReverse) //
+					.setExecutorService(Executors.newSingleThreadExecutor()) //
+					.traceMessages(new PrintWriter(System.out)) //
+					.create() //
+					.startListening();
 
-			@Override
-			public OutputStream getOutputStream() {
-				return FlixService.this.clientToServerStream;
-			}
+			final CompletableFuture<Object> disposeFuture = new CompletableFuture<>();
+			return new StreamBasedConnection() {
 
-			@Override
-			public InputStream getInputStream() {
-				return FlixService.this.serverToClientStream;
-			}
-		};
+				@Override
+				public void dispose() {
+					System.out.println("FlixService.getConnection().new StreamBasedConnection() {...}.dispose()");
+					disposeFuture.complete(null);
+				}
+
+				@Override
+				public CompletionStage<?> onDispose() {
+					return disposeFuture;
+				}
+
+				@Override
+				public boolean isClosed() {
+					return onDispose().toCompletableFuture().isDone();
+				}
+
+				@Override
+				public OutputStream getOutputStream() {
+					return clientToServerStream;
+				}
+
+				@Override
+				public InputStream getInputStream() {
+					return serverToClientStream;
+				}
+			};
+		} catch (final IOException exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 }
