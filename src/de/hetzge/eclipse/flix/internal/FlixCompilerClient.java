@@ -7,21 +7,20 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import org.eclipse.lsp4j.CompletionParams;
+
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 public class FlixCompilerClient {
 
-	private WebSocket webSocket;
+	private final WebSocket webSocket;
+	private final Gson gson;
 
-	private void init() {
-		this.webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:8112"), new Listener()).join();
-	}
-
-	public static synchronized FlixCompilerClient connect() {
-		final FlixCompilerClient client = new FlixCompilerClient();
-		client.init();
-		return client;
+	public FlixCompilerClient(WebSocket webSocket) {
+		this.webSocket = webSocket;
+		this.gson = new GsonBuilder().create();
 	}
 
 	public CompletableFuture<Void> sendAddUri(URI uri, String src) {
@@ -30,20 +29,33 @@ public class FlixCompilerClient {
 		jsonObject.addProperty("id", UUID.randomUUID().toString());
 		jsonObject.addProperty("uri", uri.toString());
 		jsonObject.addProperty("src", src);
-		return send(jsonObject);
+		return send(this.gson.toJson(jsonObject));
 	}
 
-	private CompletableFuture<Void> send(final JsonObject jsonObject) {
-		final String jsonString = toJsonString(jsonObject);
+	public CompletableFuture<Void> sendRemoveUri(URI uri) {
+		final JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("request", "api/remUri");
+		jsonObject.addProperty("id", UUID.randomUUID().toString());
+		jsonObject.addProperty("uri", uri.toString());
+		return send(this.gson.toJson(jsonObject));
+	}
+
+	public CompletableFuture<Void> sendComplete(CompletionParams position) {
+		return send(this.gson.toJson(position));
+	}
+
+	private CompletableFuture<Void> send(final String jsonString) {
 		System.out.println("Send: " + jsonString);
-		return this.webSocket.sendText(jsonString, true).thenRun(() -> {});
+		return this.webSocket.sendText(jsonString, true).thenRun(() -> {
+		});
 	}
 
-	private String toJsonString(final JsonObject jsonObject) {
-		return new GsonBuilder().create().toJson(jsonObject);
+	public static synchronized FlixCompilerClient connect() {
+		final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:8112"), new Listener()).join();
+		return new FlixCompilerClient(webSocket);
 	}
 
-	private class Listener implements WebSocket.Listener {
+	private static class Listener implements WebSocket.Listener {
 
 		@Override
 		public void onOpen(WebSocket webSocket) {

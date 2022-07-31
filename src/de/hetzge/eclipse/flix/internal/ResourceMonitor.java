@@ -1,5 +1,6 @@
 package de.hetzge.eclipse.flix.internal;
 
+import java.net.URI;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -33,10 +34,12 @@ public class ResourceMonitor implements IResourceChangeListener, FileCreateEvent
 	private void handle(IResourceDelta delta) {
 		final IResource resource = delta.getResource();
 		if (resource instanceof final IFile file) {
-			if (delta.getKind() == IResourceDelta.ADDED) {
-				this.onDidCreateFiles.emit(new FileCreateEvent(List.of(new FileCreate(file.getLocationURI()))), Activator::logError);
-			} else if (delta.getKind() == IResourceDelta.REMOVED) {
-				this.onDidDeleteFiles.emit(new FileDeleteEvent(List.of(new FileDelete(file.getLocationURI()))), Activator::logError);
+			final int kind = delta.getKind();
+			final URI locationURI = file.getLocationURI();
+			if (kind == IResourceDelta.ADDED) {
+				this.onDidCreateFiles.emit(new FileCreateEvent(List.of(new FileCreate(locationURI))), Activator::logError);
+			} else if (kind == IResourceDelta.REMOVED) {
+				this.onDidDeleteFiles.emit(new FileDeleteEvent(List.of(new FileDelete(locationURI))), Activator::logError);
 			}
 		}
 		final IResourceDelta[] affectedChildren = delta.getAffectedChildren();

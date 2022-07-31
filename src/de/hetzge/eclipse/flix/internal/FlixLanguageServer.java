@@ -2,7 +2,6 @@ package de.hetzge.eclipse.flix.internal;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.FileOperationFilter;
@@ -12,9 +11,11 @@ import org.eclipse.lsp4j.FileOperationsServerCapabilities;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
+import org.eclipse.lsp4j.SaveOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.ServerInfo;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
+import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.WorkspaceServerCapabilities;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -34,9 +35,7 @@ public class FlixLanguageServer implements LanguageServer {
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
 		return CompletableFuture.supplyAsync(() -> {
-
-			System.out.println("---->");
-			System.out.println(params.getCapabilities().getWorkspace().getWorkspaceEdit().getResourceOperations().stream().collect(Collectors.joining(", ")));
+			System.out.println("FlixLanguageServer.initialize()");
 
 			this.flixService.addWorkspaceUris();
 
@@ -54,6 +53,11 @@ public class FlixLanguageServer implements LanguageServer {
 			final WorkspaceServerCapabilities workspaceServerCapabilities = new WorkspaceServerCapabilities();
 			workspaceServerCapabilities.setFileOperations(fileOperationsServerCapabilities);
 			workspaceServerCapabilities.setWorkspaceFolders(workspaceFolders);
+			final SaveOptions saveOptions = new SaveOptions();
+			saveOptions.setIncludeText(true);
+			final TextDocumentSyncOptions textDocumentSyncOptions = new TextDocumentSyncOptions();
+			textDocumentSyncOptions.setSave(true);
+			textDocumentSyncOptions.setSave(saveOptions);
 			final CompletionOptions completionProvider = new CompletionOptions();
 			final ServerCapabilities capabilities = new ServerCapabilities();
 			capabilities.setCodeLensProvider(null);
@@ -90,7 +94,7 @@ public class FlixLanguageServer implements LanguageServer {
 
 	@Override
 	public TextDocumentService getTextDocumentService() {
-		return new FlixTextDocumentService();
+		return new FlixTextDocumentService(this.flixService);
 	}
 
 	@Override

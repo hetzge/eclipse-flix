@@ -12,11 +12,12 @@ import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams;
 import org.eclipse.lsp4j.FileCreate;
+import org.eclipse.lsp4j.FileDelete;
 import org.eclipse.lsp4j.RenameFilesParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
-final class FlixWorkspaceService implements WorkspaceService {
+public final class FlixWorkspaceService implements WorkspaceService {
 
 	private final FlixService flixService;
 
@@ -31,14 +32,12 @@ final class FlixWorkspaceService implements WorkspaceService {
 
 	@Override
 	public CompletableFuture<WorkspaceEdit> willCreateFiles(CreateFilesParams params) {
-		// TODO Auto-generated method stub
-		return WorkspaceService.super.willCreateFiles(params);
+		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
 	public CompletableFuture<WorkspaceEdit> willRenameFiles(RenameFilesParams params) {
-		// TODO Auto-generated method stub
-		return WorkspaceService.super.willRenameFiles(params);
+		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
@@ -50,7 +49,12 @@ final class FlixWorkspaceService implements WorkspaceService {
 	@Override
 	public void didDeleteFiles(DeleteFilesParams params) {
 		System.out.println("FlixWorkspaceService.didDeleteFiles()");
-		// ignore
+		for (final FileDelete delete : params.getFiles()) {
+			final IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(URI.create(delete.getUri()));
+			for (final IFile file : files) {
+				this.flixService.removeUri(file);
+			}
+		}
 	}
 
 	@Override

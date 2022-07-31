@@ -1,12 +1,8 @@
 package de.hetzge.eclipse.flix.internal;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import org.eclipse.core.resources.IContainer;
@@ -14,8 +10,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.lsp4j.launch.LSPLauncher.Builder;
-import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.lsp4j.CompletionParams;
 
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
 
@@ -35,29 +30,7 @@ public final class FlixService {
 		System.out.println("FlixService.initialize()");
 		this.compilerProcess = FlixCompilerProcess.start();
 		this.compilerClient = FlixCompilerClient.connect();
-
-		final ExecutorService executorService = Executors.newSingleThreadExecutor();
-		new Thread("LSP Server Socket") {
-			@Override
-			public void run() {
-				while (true) {
-					try (ServerSocket serverSocket = new ServerSocket(10587)) {
-						final Socket socket = serverSocket.accept();
-						new Builder<LanguageClient>() //
-								.setLocalService(FlixService.this.server) //
-								.setRemoteInterface(LanguageClient.class) //
-								.setInput(socket.getInputStream()) //
-								.setOutput(socket.getOutputStream()) //
-								.setExecutorService(executorService) //
-								.traceMessages(new PrintWriter(System.out)) //
-								.create() //
-								.startListening();
-					} catch (final IOException exception) {
-						Activator.logError(exception);
-					}
-				}
-			};
-		}.start();
+		new FlixLanguageServerSocketThread(this.server).start();
 	}
 
 	public void addWorkspaceUris() {
@@ -70,10 +43,22 @@ public final class FlixService {
 
 	public void addUri(IFile file) {
 		try {
-			this.compilerClient.sendAddUri(file.getLocationURI(), new String(file.getContents().readAllBytes(), StandardCharsets.UTF_8));
+			this.addUri(file.getLocationURI(), new String(file.getContents().readAllBytes(), StandardCharsets.UTF_8));
 		} catch (IOException | CoreException exception) {
 			throw new RuntimeException(exception);
 		}
+	}
+
+	public void addUri(URI uri, String content) {
+		this.compilerClient.sendAddUri(uri, content);
+	}
+
+	public void removeUri(IFile file) {
+		this.compilerClient.sendRemoveUri(file.getLocationURI());
+	}
+
+	public void complete(CompletionParams position) {
+		this.compilerClient.sendComplete(position);
 	}
 
 	private void visitFiles(IContainer container, Consumer<IFile> fileConsumer) {
@@ -89,4 +74,5 @@ public final class FlixService {
 			throw new RuntimeException(exception);
 		}
 	}
+
 }

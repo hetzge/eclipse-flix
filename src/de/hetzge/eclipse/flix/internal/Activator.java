@@ -20,8 +20,14 @@ public class Activator extends AbstractUIPlugin {
 
 	private ResourceMonitor resourceMonitor;
 
+	private FlixDocumentProvider flixDocumentProvider;
+
 	public ResourceMonitor getResourceMonitor() {
 		return this.resourceMonitor;
+	}
+
+	public FlixDocumentProvider getFlixDocumentProvider() {
+		return this.flixDocumentProvider;
 	}
 
 	@Override
@@ -37,6 +43,7 @@ public class Activator extends AbstractUIPlugin {
 
 		this.resourceMonitor = new ResourceMonitor();
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this.resourceMonitor, IResourceChangeEvent.POST_CHANGE);
+		this.flixDocumentProvider = new FlixDocumentProvider();
 	}
 
 	@Override
