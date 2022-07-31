@@ -1,5 +1,7 @@
 package de.hetzge.eclipse.flix.internal;
 
+import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,6 +28,7 @@ import org.lxtk.lx4e.diagnostics.DiagnosticMarkers;
 import org.lxtk.lx4e.ui.EclipseLanguageClient;
 import org.lxtk.lx4e.ui.EclipseLanguageClientController;
 import org.lxtk.util.Log;
+import org.lxtk.util.connect.SocketConnection;
 import org.lxtk.util.connect.StreamBasedConnection;
 
 import de.hetzge.eclipse.flix.FlixCore;
@@ -91,7 +94,11 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 		return new AbstractJsonRpcConnectionFactory<>() {
 			@Override
 			protected StreamBasedConnection newStreamBasedConnection() {
-				return FlixLanguageClient.this.flixService.getConnection();
+				try {
+					return new SocketConnection(new Socket("localhost", 10587));
+				} catch (final IOException exception) {
+					throw new RuntimeException(exception);
+				}
 			}
 		};
 	}
