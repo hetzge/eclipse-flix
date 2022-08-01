@@ -31,11 +31,12 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            id="de.hetzge.eclipse.flix.editor"
-            name="Flix Editor"
-            default="false"
             class="de.hetzge.eclipse.flix.internal.editor.FlixEditor"
-            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor">
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            default="false"
+            icon="icon.png"
+            id="de.hetzge.eclipse.flix.editor"
+            name="Flix Editor">
          <contentTypeBinding
                contentTypeId="de.hetzge.eclipse.flix">
          </contentTypeBinding>
