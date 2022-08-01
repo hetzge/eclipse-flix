@@ -26,10 +26,9 @@ public final class FlixTextDocumentService implements TextDocumentService {
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position) {
 		System.out.println("FlixLanguageServer.getTextDocumentService().new TextDocumentService() {...}.completion()");
-
-		this.flixService.complete(position);
-
-		return TextDocumentService.super.completion(position);
+		return this.flixService.complete(position).thenApply(completionList -> {
+			return Either.forRight(completionList);
+		});
 	}
 
 	@Override

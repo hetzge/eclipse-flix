@@ -3,6 +3,7 @@ package de.hetzge.eclipse.flix.internal;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.eclipse.core.resources.IContainer;
@@ -10,6 +11,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
@@ -57,8 +59,10 @@ public final class FlixService {
 		this.compilerClient.sendRemoveUri(file.getLocationURI());
 	}
 
-	public void complete(CompletionParams position) {
-		this.compilerClient.sendComplete(position);
+	public CompletableFuture<CompletionList> complete(CompletionParams position) {
+		return this.compilerClient.sendComplete(position).thenApply(response -> {
+			return GsonUtils.getGson().fromJson(response, CompletionList.class);
+		});
 	}
 
 	private void visitFiles(IContainer container, Consumer<IFile> fileConsumer) {

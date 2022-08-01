@@ -15,15 +15,15 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 
 	@Override
 	protected void initializeEditor() {
-
-		System.out.println("FlixEditor.initializeEditor() !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
-		final IPreferenceStore preferenceStore = new ChainedPreferenceStore(new IPreferenceStore[] { Activator.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
-		setPreferenceStore(preferenceStore);
+		setPreferenceStore(getPreferenceStores());
 		setDocumentProvider(Activator.getDefault().getFlixDocumentProvider());
-		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(preferenceStore, this));
+		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(getPreferenceStores(), this));
 		setEditorContextMenuId("#FlixEditorContext"); //$NON-NLS-1$
 		setRulerContextMenuId("#FlixRulerContext"); //$NON-NLS-1$
+	}
+
+	private ChainedPreferenceStore getPreferenceStores() {
+		return new ChainedPreferenceStore(new IPreferenceStore[] { Activator.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
 	}
 
 	@Override
