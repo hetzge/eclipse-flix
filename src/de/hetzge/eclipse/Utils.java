@@ -1,5 +1,7 @@
 package de.hetzge.eclipse;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -24,4 +26,31 @@ public final class Utils {
 	public static String readFileContent(IFile file) throws IOException, CoreException {
 		return new String(file.getContents().readAllBytes(), StandardCharsets.UTF_8);
 	}
+
+	public static File getJreExecutable() throws FileNotFoundException {
+		final String jreDirectory = System.getProperty("java.home");
+		if (jreDirectory == null) {
+			throw new IllegalStateException("'java.home' not set");
+		}
+		File exe;
+		if (isWindows()) {
+			exe = new File(jreDirectory, "bin/java.exe");
+		} else {
+			exe = new File(jreDirectory, "bin/java");
+		}
+		if (!exe.isFile()) {
+			throw new IllegalStateException("Java not found under '" + exe.getAbsolutePath() + "'");
+		}
+		return exe;
+	}
+
+	private static boolean isWindows() {
+		String os = System.getProperty("os.name");
+		if (os == null) {
+			throw new IllegalStateException("os.name");
+		}
+		os = os.toLowerCase();
+		return os.startsWith("windows");
+	}
+
 }

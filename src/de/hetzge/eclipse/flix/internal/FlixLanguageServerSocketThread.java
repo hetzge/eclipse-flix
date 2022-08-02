@@ -10,20 +10,22 @@ import java.util.concurrent.Executors;
 import org.eclipse.lsp4j.launch.LSPLauncher.Builder;
 import org.eclipse.lsp4j.services.LanguageClient;
 
-public final class FlixLanguageServerSocketThread extends Thread {
+public final class FlixLanguageServerSocketThread extends Thread implements AutoCloseable {
 	private final FlixLanguageServer server;
 	private final ExecutorService executorService;
+	private boolean done;
 
 	public FlixLanguageServerSocketThread(FlixLanguageServer server) {
 		super("LSP Server Socket");
 		this.server = server;
 		this.executorService = Executors.newSingleThreadExecutor();
+		this.done = false;
 		setDaemon(true);
 	}
 
 	@Override
 	public void run() {
-		while (true) {
+		while (!this.done) {
 			try (ServerSocket serverSocket = new ServerSocket(10587)) {
 				final Socket socket = serverSocket.accept();
 				new Builder<LanguageClient>() //
@@ -39,5 +41,10 @@ public final class FlixLanguageServerSocketThread extends Thread {
 				Activator.logError(exception);
 			}
 		}
+	}
+
+	@Override
+	public void close() {
+		this.done = true;
 	}
 }

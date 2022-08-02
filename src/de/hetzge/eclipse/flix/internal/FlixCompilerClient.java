@@ -9,17 +9,26 @@ import java.util.concurrent.CompletionStage;
 
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
+import org.lxtk.util.SafeRun;
+import org.lxtk.util.SafeRun.Rollback;
 
 import com.google.gson.JsonObject;
 
-public class FlixCompilerClient {
+public class FlixCompilerClient implements AutoCloseable {
 
 	private final WebSocket webSocket;
 	private final FlixCompilerProcessSocketListener listener;
+	private final Rollback rollback;
 
-	public FlixCompilerClient(WebSocket webSocket, FlixCompilerProcessSocketListener listener) {
+	public FlixCompilerClient(WebSocket webSocket, FlixCompilerProcessSocketListener listener, Rollback rollback) {
 		this.webSocket = webSocket;
 		this.listener = listener;
+		this.rollback = rollback;
+	}
+
+	@Override
+	public void close() {
+		this.rollback.reset();
 	}
 
 	public CompletableFuture<Void> sendAddUri(URI uri, String src) {
@@ -102,8 +111,11 @@ public class FlixCompilerClient {
 	}
 
 	public static synchronized FlixCompilerClient connect() {
-		final FlixCompilerProcessSocketListener listener = new FlixCompilerProcessSocketListener();
-		final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:8112"), listener).join();
-		return new FlixCompilerClient(webSocket, listener);
+		return SafeRun.runWithResult(rollback -> {
+			final FlixCompilerProcessSocketListener listener = new FlixCompilerProcessSocketListener();
+			final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:8112"), listener).join();
+			rollback.add(webSocket::abort);
+			return new FlixCompilerClient(webSocket, listener, rollback);
+		});
 	}
 }

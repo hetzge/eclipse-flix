@@ -12,6 +12,8 @@ import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.Location;
+import org.lxtk.util.SafeRun;
+import org.lxtk.util.SafeRun.Rollback;
 
 import com.google.gson.reflect.TypeToken;
 
@@ -20,7 +22,7 @@ import de.hetzge.eclipse.Utils;
 
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
 
-public final class FlixService {
+public final class FlixService implements AutoCloseable {
 
 	private static final String FLIX_FILE_EXTENSION = "flix";
 	private static final String FLIX_PACKAGE_FILE_EXTENSION = "fpkg";
@@ -29,16 +31,31 @@ public final class FlixService {
 	private FlixCompilerClient compilerClient;
 	private FlixCompilerProcess compilerProcess;
 	private final FlixLanguageServer server;
+	private Rollback rollback;
 
 	public FlixService() {
 		this.server = new FlixLanguageServer(this);
 	}
 
 	public void initialize() {
-		System.out.println("FlixService.initialize()");
-		this.compilerProcess = FlixCompilerProcess.start();
-		this.compilerClient = FlixCompilerClient.connect();
-		new FlixLanguageServerSocketThread(this.server).start();
+		close();
+		SafeRun.run(rollback -> {
+			System.out.println("FlixService.initialize()");
+			this.compilerProcess = FlixCompilerProcess.start();
+			rollback.add(this.compilerProcess::close);
+			this.compilerClient = FlixCompilerClient.connect();
+			rollback.add(this.compilerClient::close);
+			new FlixLanguageServerSocketThread(this.server).start();
+			this.rollback = rollback;
+		});
+	}
+
+	@Override
+	public void close() {
+		if (this.rollback != null) {
+			this.rollback.reset();
+			this.rollback = null;
+		}
 	}
 
 	public void addWorkspaceUris() {

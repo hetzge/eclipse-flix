@@ -5,6 +5,8 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.lxtk.util.SafeRun;
+import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -22,6 +24,8 @@ public class Activator extends AbstractUIPlugin {
 
 	private FlixDocumentProvider flixDocumentProvider;
 
+	private Rollback rollback;
+
 	public ResourceMonitor getResourceMonitor() {
 		return this.resourceMonitor;
 	}
@@ -35,19 +39,27 @@ public class Activator extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 
-		// TODO
-		final FlixService flixService = new FlixService();
-		flixService.initialize();
-		final FlixLanguageClient flixLanguageClient = new FlixLanguageClient(ResourcesPlugin.getWorkspace().getRoot().getProjects()[0], flixService);
-		flixLanguageClient.connect();
+		SafeRun.run(rollback -> {
+			final FlixService flixService = new FlixService();
+			rollback.add(flixService::close);
+			flixService.initialize();
+			final FlixLanguageClient flixLanguageClient = new FlixLanguageClient(ResourcesPlugin.getWorkspace().getRoot().getProjects()[0], flixService);
+			flixLanguageClient.connect();
 
-		this.resourceMonitor = new ResourceMonitor();
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this.resourceMonitor, IResourceChangeEvent.POST_CHANGE);
-		this.flixDocumentProvider = new FlixDocumentProvider();
+			this.resourceMonitor = new ResourceMonitor();
+			ResourcesPlugin.getWorkspace().addResourceChangeListener(this.resourceMonitor, IResourceChangeEvent.POST_CHANGE);
+			rollback.add(() -> ResourcesPlugin.getWorkspace().removeResourceChangeListener(this.resourceMonitor));
+			this.flixDocumentProvider = new FlixDocumentProvider();
+			this.rollback = rollback;
+		});
 	}
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
+		if (this.rollback != null) {
+			this.rollback.reset();
+			this.rollback = null;
+		}
 		plugin = null;
 		super.stop(context);
 	}
