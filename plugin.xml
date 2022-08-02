@@ -83,4 +83,21 @@
             markerType="de.hetzge.eclipse.flix.problem">
       </markerResolutionGenerator>
    </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
+      <target
+            id="de.hetzge.eclipse.flix.editor"
+            name="Flix Hyperlink Target">
+      </target>
+   </extension>
+   <extension
+         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+      <hyperlinkDetector
+            activate="true"
+            class="org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector"
+            id="asdasdasdadas"
+            name="name"
+            targetId="de.hetzge.eclipse.flix.editor">
+      </hyperlinkDetector>
+   </extension>
 </plugin>

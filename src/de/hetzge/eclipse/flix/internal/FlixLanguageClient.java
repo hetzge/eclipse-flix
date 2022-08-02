@@ -17,8 +17,10 @@ import org.lxtk.WorkspaceService;
 import org.lxtk.client.AbstractLanguageClient;
 import org.lxtk.client.BufferingDiagnosticConsumer;
 import org.lxtk.client.CompletionFeature;
+import org.lxtk.client.DeclarationFeature;
 import org.lxtk.client.Feature;
 import org.lxtk.client.FileOperationsFeature;
+import org.lxtk.client.ReferencesFeature;
 import org.lxtk.client.TextDocumentSyncFeature;
 import org.lxtk.jsonrpc.AbstractJsonRpcConnectionFactory;
 import org.lxtk.jsonrpc.JsonRpcConnectionFactory;
@@ -67,6 +69,8 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 		features.add(new CompletionFeature(FlixCore.LANGUAGE_SERVICE));
 		features.add(FileOperationsFeature.newInstance(Activator.getDefault().getResourceMonitor()));
 		features.add(textDocumentSyncFeature);
+		features.add(new ReferencesFeature(FlixCore.LANGUAGE_SERVICE));
+		features.add(new DeclarationFeature(FlixCore.LANGUAGE_SERVICE));
 
 		return new EclipseLanguageClient<>(this.log, this.diagnosticConsumer, FlixCore.WORKSPACE_EDIT_CHANGE_FACTORY, features) {
 			@Override

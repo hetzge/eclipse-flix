@@ -7,10 +7,13 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
@@ -25,9 +28,17 @@ public final class FlixTextDocumentService implements TextDocumentService {
 
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position) {
-		System.out.println("FlixLanguageServer.getTextDocumentService().new TextDocumentService() {...}.completion()");
+		System.out.println("FlixTextDocumentService.completion()");
 		return this.flixService.complete(position).thenApply(completionList -> {
 			return Either.forRight(completionList);
+		});
+	}
+
+	@Override
+	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> declaration(DeclarationParams params) {
+		System.out.println("FlixTextDocumentService.declaration()");
+		return this.flixService.decleration(params).thenApply(completionList -> {
+			return Either.forLeft(completionList);
 		});
 	}
 

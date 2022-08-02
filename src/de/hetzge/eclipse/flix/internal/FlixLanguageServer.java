@@ -66,6 +66,8 @@ public class FlixLanguageServer implements LanguageServer {
 			capabilities.setDocumentFormattingProvider(true);
 			capabilities.setCompletionProvider(completionProvider);
 			capabilities.setHoverProvider(true);
+			capabilities.setReferencesProvider(true);
+			capabilities.setDeclarationProvider(true);
 			final InitializeResult initializeResult = new InitializeResult();
 			initializeResult.setCapabilities(capabilities);
 			initializeResult.setServerInfo(new ServerInfo("Flix Eclipse Language Server", "0.1"));

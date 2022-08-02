@@ -3,6 +3,7 @@ package de.hetzge.eclipse.flix.internal;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -13,6 +14,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DeclarationParams;
+import org.eclipse.lsp4j.Location;
+
+import com.google.gson.reflect.TypeToken;
 
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
 
@@ -59,9 +64,16 @@ public final class FlixService {
 		this.compilerClient.sendRemoveUri(file.getLocationURI());
 	}
 
-	public CompletableFuture<CompletionList> complete(CompletionParams position) {
-		return this.compilerClient.sendComplete(position).thenApply(response -> {
+	public CompletableFuture<CompletionList> complete(CompletionParams params) {
+		return this.compilerClient.sendComplete(params).thenApply(response -> {
 			return GsonUtils.getGson().fromJson(response, CompletionList.class);
+		});
+	}
+
+	public CompletableFuture<List<Location>> decleration(DeclarationParams params) {
+		return this.compilerClient.sendGoto(params).thenApply(response -> {
+			return GsonUtils.getGson().fromJson(response, new TypeToken<List<Location>>() {
+			}.getType());
 		});
 	}
 
@@ -78,5 +90,4 @@ public final class FlixService {
 			throw new RuntimeException(exception);
 		}
 	}
-
 }
