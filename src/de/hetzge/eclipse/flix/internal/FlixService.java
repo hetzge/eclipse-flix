@@ -2,14 +2,10 @@ package de.hetzge.eclipse.flix.internal;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.lsp4j.CompletionList;
@@ -19,11 +15,16 @@ import org.eclipse.lsp4j.Location;
 
 import com.google.gson.reflect.TypeToken;
 
+import de.hetzge.eclipse.EclipseUtils;
+import de.hetzge.eclipse.Utils;
+
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
 
 public final class FlixService {
 
 	private static final String FLIX_FILE_EXTENSION = "flix";
+	private static final String FLIX_PACKAGE_FILE_EXTENSION = "fpkg";
+	private static final String JAR_FILE_EXTENSION = "jar";
 
 	private FlixCompilerClient compilerClient;
 	private FlixCompilerProcess compilerProcess;
@@ -41,18 +42,38 @@ public final class FlixService {
 	}
 
 	public void addWorkspaceUris() {
-		visitFiles(ResourcesPlugin.getWorkspace().getRoot(), file -> {
-			if (FLIX_FILE_EXTENSION.equals(file.getFileExtension())) {
-				addUri(file);
-			}
-		});
+		EclipseUtils.visitFiles(ResourcesPlugin.getWorkspace().getRoot(), this::addFile);
 	}
 
-	public void addUri(IFile file) {
+	public void addFile(IFile file) {
 		try {
-			this.addUri(file.getLocationURI(), new String(file.getContents().readAllBytes(), StandardCharsets.UTF_8));
+			final String fileExtension = file.getFileExtension();
+			final URI uri = file.getLocationURI();
+			if (FLIX_FILE_EXTENSION.equals(fileExtension)) {
+				addUri(uri, Utils.readFileContent(file));
+			} else if (FLIX_PACKAGE_FILE_EXTENSION.equals(fileExtension)) {
+				addUri(uri, Utils.readFileContent(file));
+			} else if (JAR_FILE_EXTENSION.equals(fileExtension)) {
+				addUri(uri, Utils.readFileContent(file));
+			} else {
+				System.out.println("Ignore '" + uri + "'");
+			}
 		} catch (IOException | CoreException exception) {
 			throw new RuntimeException(exception);
+		}
+	}
+
+	public void removeFile(IFile file) {
+		final String fileExtension = file.getFileExtension();
+		final URI uri = file.getLocationURI();
+		if (FLIX_FILE_EXTENSION.equals(fileExtension)) {
+			removeUri(uri);
+		} else if (FLIX_PACKAGE_FILE_EXTENSION.equals(fileExtension)) {
+			removeFpkg(uri);
+		} else if (JAR_FILE_EXTENSION.equals(fileExtension)) {
+			removeJar(uri);
+		} else {
+			System.out.println("Ignore '" + uri + "'");
 		}
 	}
 
@@ -60,8 +81,24 @@ public final class FlixService {
 		this.compilerClient.sendAddUri(uri, content);
 	}
 
-	public void removeUri(IFile file) {
-		this.compilerClient.sendRemoveUri(file.getLocationURI());
+	public void removeUri(URI uri) {
+		this.compilerClient.sendRemoveUri(uri);
+	}
+
+	public void addFpkg(URI uri) {
+		this.compilerClient.sendFpkg(uri, Utils.readUriBase64Encoded(uri));
+	}
+
+	public void removeFpkg(URI uri) {
+		this.compilerClient.sendRemoveFpkg(uri);
+	}
+
+	public void addJar(URI uri) {
+		this.compilerClient.sendJar(uri, Utils.readUriBase64Encoded(uri));
+	}
+
+	public void removeJar(URI uri) {
+		this.compilerClient.sendRemoveJar(uri);
 	}
 
 	public CompletableFuture<CompletionList> complete(CompletionParams params) {
@@ -75,19 +112,5 @@ public final class FlixService {
 			return GsonUtils.getGson().fromJson(response, new TypeToken<List<Location>>() {
 			}.getType());
 		});
-	}
-
-	private void visitFiles(IContainer container, Consumer<IFile> fileConsumer) {
-		try {
-			for (final IResource member : container.members()) {
-				if (member instanceof IContainer) {
-					visitFiles((IContainer) member, fileConsumer);
-				} else if (member instanceof IFile) {
-					fileConsumer.accept((IFile) member);
-				}
-			}
-		} catch (final CoreException exception) {
-			throw new RuntimeException(exception);
-		}
 	}
 }

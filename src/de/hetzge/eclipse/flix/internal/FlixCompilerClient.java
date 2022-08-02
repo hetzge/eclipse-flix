@@ -39,6 +39,40 @@ public class FlixCompilerClient {
 		return send(jsonObject);
 	}
 
+	public CompletableFuture<Void> sendFpkg(URI uri, String base64String) {
+		final JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("request", "api/addPkg");
+		jsonObject.addProperty("id", UUID.randomUUID().toString());
+		jsonObject.addProperty("uri", uri.toString());
+		jsonObject.addProperty("base64", base64String);
+		return send(jsonObject);
+	}
+
+	public CompletableFuture<Void> sendRemoveFpkg(URI uri) {
+		final JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("request", "api/remPkg");
+		jsonObject.addProperty("id", UUID.randomUUID().toString());
+		jsonObject.addProperty("uri", uri.toString());
+		return send(jsonObject);
+	}
+
+	public CompletableFuture<Void> sendJar(URI uri, String base64String) {
+		final JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("request", "api/addJar");
+		jsonObject.addProperty("id", UUID.randomUUID().toString());
+		jsonObject.addProperty("uri", uri.toString());
+		jsonObject.addProperty("base64", base64String);
+		return send(jsonObject);
+	}
+
+	public CompletableFuture<Void> sendRemoveJar(URI uri) {
+		final JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("request", "api/remJar");
+		jsonObject.addProperty("id", UUID.randomUUID().toString());
+		jsonObject.addProperty("uri", uri.toString());
+		return send(jsonObject);
+	}
+
 	public CompletableFuture<JsonObject> sendComplete(CompletionParams position) {
 		final String id = UUID.randomUUID().toString();
 		final CompletionStage<JsonObject> responseFuture = this.listener.startRequestResponse(id).thenApply(jsonObject -> jsonObject.get("result").getAsJsonObject());
@@ -72,5 +106,4 @@ public class FlixCompilerClient {
 		final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:8112"), listener).join();
 		return new FlixCompilerClient(webSocket, listener);
 	}
-
 }

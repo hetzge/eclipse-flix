@@ -52,7 +52,7 @@ public final class FlixWorkspaceService implements WorkspaceService {
 		for (final FileDelete delete : params.getFiles()) {
 			final IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(URI.create(delete.getUri()));
 			for (final IFile file : files) {
-				this.flixService.removeUri(file);
+				this.flixService.removeFile(file);
 			}
 		}
 	}
@@ -70,7 +70,7 @@ public final class FlixWorkspaceService implements WorkspaceService {
 		for (final FileCreate fileCreate : fileCreates) {
 			final IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(URI.create(fileCreate.getUri()));
 			for (final IFile file : files) {
-				this.flixService.addUri(file);
+				this.flixService.addFile(file);
 			}
 		}
 	}
