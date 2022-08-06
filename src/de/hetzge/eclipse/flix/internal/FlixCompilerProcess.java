@@ -2,15 +2,14 @@ package de.hetzge.eclipse.flix.internal;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.ProcessBuilder.Redirect;
-import java.net.URI;
 
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
+import de.hetzge.eclipse.flix.FlixUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixCompilerProcess implements AutoCloseable {
@@ -30,13 +29,8 @@ public final class FlixCompilerProcess implements AutoCloseable {
 			try {
 				System.out.println("Start lsp");
 				final File jreExecutableFile = Utils.getJreExecutable();
-				final File flixJarFile = new File("flix.jar");
-				if (!flixJarFile.exists()) {
-					System.out.println("Download flix.jar");
-					try (FileOutputStream outputStream = new FileOutputStream("flix.jar")) {
-						URI.create("https://github.com/flix/flix/releases/download/v0.30.0/flix.jar").toURL().openStream().transferTo(outputStream);
-					}
-				}
+				final File flixJarFile = FlixUtils.loadFlixJarFile();
+
 				System.out.println("Use java from here: " + jreExecutableFile.getAbsolutePath());
 				System.out.println("Use flix from here: " + flixJarFile.getAbsolutePath());
 
@@ -69,7 +63,7 @@ public final class FlixCompilerProcess implements AutoCloseable {
 		this.rollback.reset();
 	}
 
-	public static class MonitorThread extends Thread implements AutoCloseable {
+	private static class MonitorThread extends Thread implements AutoCloseable {
 		private final Process process;
 		private boolean done;
 

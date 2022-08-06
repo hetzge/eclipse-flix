@@ -1,7 +1,6 @@
 package de.hetzge.eclipse.utils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -27,7 +26,7 @@ public final class Utils {
 		return new String(file.getContents().readAllBytes(), StandardCharsets.UTF_8);
 	}
 
-	public static File getJreExecutable() throws FileNotFoundException {
+	public static File getJreExecutable() {
 		final String jreDirectory = System.getProperty("java.home");
 		if (jreDirectory == null) {
 			throw new IllegalStateException("'java.home' not set");

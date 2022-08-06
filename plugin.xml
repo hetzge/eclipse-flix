@@ -109,6 +109,12 @@
     </launchConfigurationType>
    </extension>
    <extension
+		point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+		<launchConfigurationTypeImage
+			id="de.hetzge.eclipse.flix.launchConfigurationType.image" configTypeID="de.hetzge.eclipse.flix.launchConfigurationType"
+			icon="icon.png" />
+   </extension>
+   <extension
     point="org.eclipse.debug.ui.launchShortcuts">
     <shortcut
         class="de.hetzge.eclipse.flix.internal.launch.FlixLaunchShortcut"
