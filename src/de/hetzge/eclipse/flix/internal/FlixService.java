@@ -17,8 +17,8 @@ import org.lxtk.util.SafeRun.Rollback;
 
 import com.google.gson.reflect.TypeToken;
 
-import de.hetzge.eclipse.EclipseUtils;
-import de.hetzge.eclipse.Utils;
+import de.hetzge.eclipse.utils.EclipseUtils;
+import de.hetzge.eclipse.utils.Utils;
 
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
 

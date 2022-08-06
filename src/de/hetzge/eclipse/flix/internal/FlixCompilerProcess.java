@@ -11,7 +11,7 @@ import java.net.URI;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
-import de.hetzge.eclipse.Utils;
+import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixCompilerProcess implements AutoCloseable {
 

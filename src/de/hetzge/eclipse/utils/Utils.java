@@ -1,4 +1,4 @@
-package de.hetzge.eclipse;
+package de.hetzge.eclipse.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;

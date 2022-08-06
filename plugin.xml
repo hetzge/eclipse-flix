@@ -100,4 +100,32 @@
             targetId="de.hetzge.eclipse.flix.editor">
       </hyperlinkDetector>
    </extension>
+   <extension point="org.eclipse.debug.core.launchConfigurationTypes">
+    <launchConfigurationType
+        name="Flix launch"
+        delegate="de.hetzge.eclipse.flix.internal.launch.FlixLaunchConfigurationDelegate"
+        modes="run"
+        id="de.hetzge.eclipse.flix.launchConfigurationType">
+    </launchConfigurationType>
+   </extension>
+   <extension
+    point="org.eclipse.debug.ui.launchShortcuts">
+    <shortcut
+        class="de.hetzge.eclipse.flix.internal.launch.FlixLaunchShortcut"
+        icon="icon.png"
+        id="de.hetzge.eclipse.flix.launchShortcut"
+        label="Flix run"
+        modes="run">
+        <contextualLaunch>
+            <enablement>
+                <with
+                    variable="selection">
+                    <count
+                        value="+">
+                    </count>
+                </with>
+            </enablement>
+        </contextualLaunch>
+    </shortcut>
+</extension>
 </plugin>
