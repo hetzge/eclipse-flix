@@ -31,25 +31,23 @@ import org.lxtk.lx4e.diagnostics.DiagnosticMarkers;
 import org.lxtk.lx4e.ui.EclipseLanguageClient;
 import org.lxtk.lx4e.ui.EclipseLanguageClientController;
 import org.lxtk.util.Log;
+import org.lxtk.util.SafeRun;
 import org.lxtk.util.connect.SocketConnection;
 import org.lxtk.util.connect.StreamBasedConnection;
 
 import de.hetzge.eclipse.flix.Activator;
 import de.hetzge.eclipse.flix.FlixCore;
 import de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator;
-import de.hetzge.eclipse.flix.FlixService;
 
 public class FlixLanguageClient extends EclipseLanguageClientController<LanguageServer> {
 
 	private final IProject project;
-	private final FlixService flixService;
 	private final int port;
 	private final EclipseLog log;
 	private final BufferingDiagnosticConsumer diagnosticConsumer;
 
-	public FlixLanguageClient(IProject project, FlixService flixService, int port) {
+	public FlixLanguageClient(IProject project, int port) {
 		this.project = project;
-		this.flixService = flixService;
 		this.port = port;
 		this.log = new EclipseLog(Activator.getDefault().getBundle(), "flix-language-client:" + project.getName());
 		this.diagnosticConsumer = new BufferingDiagnosticConsumer(new DiagnosticMarkers(FlixMarkerResolutionGenerator.MARKER_TYPE));
@@ -118,5 +116,18 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 	@Override
 	protected Log log() {
 		return this.log;
+	}
+
+	public static FlixLanguageClient connect(IProject project, int port) {
+		System.out.println("FlixLanguageClient.connect()");
+		return SafeRun.runWithResult(rollback -> {
+			final FlixLanguageClient flixLanguageClient = new FlixLanguageClient(project, port);
+			rollback.add(flixLanguageClient::dispose);
+			flixLanguageClient.connect();
+
+			System.out.println("Connected language client on port " + port);
+
+			return flixLanguageClient;
+		});
 	}
 }

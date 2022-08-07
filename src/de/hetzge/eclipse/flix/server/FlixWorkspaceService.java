@@ -17,13 +17,11 @@ import org.eclipse.lsp4j.RenameFilesParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
-import de.hetzge.eclipse.flix.FlixService;
-
 public final class FlixWorkspaceService implements WorkspaceService {
 
-	private final FlixService flixService;
+	private final FlixServerService flixService;
 
-	public FlixWorkspaceService(FlixService flixService) {
+	public FlixWorkspaceService(FlixServerService flixService) {
 		this.flixService = flixService;
 	}
 

@@ -1,7 +1,5 @@
 package de.hetzge.eclipse.flix;
 
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,25 +12,23 @@ import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
 import de.hetzge.eclipse.flix.client.FlixLanguageClient;
+import de.hetzge.eclipse.flix.server.FlixLanguageServer;
+import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread;
 import de.hetzge.eclipse.utils.EclipseUtils;
+import de.hetzge.eclipse.utils.Utils;
 
 /**
  * The activator class controls the plug-in life cycle
  */
 public class Activator extends AbstractUIPlugin {
 
-	// The plug-in ID
 	public static final String PLUGIN_ID = "de.hetzge.eclipse.flix"; //$NON-NLS-1$
 
-	// The shared instance
 	private static Activator plugin;
 
 	private ResourceMonitor resourceMonitor;
-
 	private FlixDocumentProvider flixDocumentProvider;
-
 	private final Map<IProject, FlixProject> connectedProjects;
-
 	private Rollback rollback;
 
 	public Activator() {
@@ -47,29 +43,24 @@ public class Activator extends AbstractUIPlugin {
 		return this.flixDocumentProvider;
 	}
 
-	public synchronized FlixProject getFlixProject(IProject project) {
+	public synchronized FlixProject getOrInitializeFlixProject(IProject project) {
 		return this.connectedProjects.computeIfAbsent(project, key -> {
 			FlixLogger.logInfo("Initialize flix for project under " + project.getLocationURI());
 			return SafeRun.runWithResult(rollback -> {
-				final int compilerPort = queryPort();
-				final int lspPort = queryPort();
-				final FlixService flixService = new FlixService(project);
-				this.rollback.add(flixService::close);
-				flixService.initialize(compilerPort, lspPort);
-				final FlixLanguageClient flixLanguageClient = new FlixLanguageClient(project, flixService, lspPort);
-				rollback.add(flixLanguageClient::dispose);
-				flixLanguageClient.connect();
-				return new FlixProject(flixService, flixLanguageClient);
+
+				final FlixLanguageServer server = FlixLanguageServer.start(project);
+				rollback.add(server::close);
+
+				final int lspPort = Utils.queryPort();
+				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(server, lspPort);
+				rollback.add(socketThread::close);
+
+				final FlixLanguageClient client = FlixLanguageClient.connect(project, lspPort);
+				rollback.add(client::dispose);
+
+				return new FlixProject(rollback);
 			});
 		});
-	}
-
-	private Integer queryPort() {
-		try (ServerSocket socket = new ServerSocket(0);) {
-			return socket.getLocalPort();
-		} catch (final IOException exception) {
-			throw new RuntimeException(exception);
-		}
 	}
 
 	@Override
@@ -84,7 +75,7 @@ public class Activator extends AbstractUIPlugin {
 			 * already initialized and initialize if necessary.
 			 */
 			rollback.add(FlixCore.DOCUMENT_SERVICE.onDidAddTextDocument().subscribe(document -> {
-				EclipseUtils.getProject(document).ifPresent(this::getFlixProject);
+				EclipseUtils.getProject(document).ifPresent(this::getOrInitializeFlixProject);
 			})::dispose);
 
 			this.resourceMonitor = new ResourceMonitor();

@@ -20,13 +20,11 @@ import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
-import de.hetzge.eclipse.flix.FlixService;
-
 public final class FlixTextDocumentService implements TextDocumentService {
 
-	private final FlixService flixService;
+	private final FlixServerService flixService;
 
-	public FlixTextDocumentService(FlixService flixService) {
+	public FlixTextDocumentService(FlixServerService flixService) {
 		this.flixService = flixService;
 	}
 
@@ -74,5 +72,6 @@ public final class FlixTextDocumentService implements TextDocumentService {
 		for (final TextDocumentContentChangeEvent contentChangeEvent : contentChangesEvents) {
 			this.flixService.addUri(URI.create(params.getTextDocument().getUri()), contentChangeEvent.getText());
 		}
+		this.flixService.compile();
 	}
 }

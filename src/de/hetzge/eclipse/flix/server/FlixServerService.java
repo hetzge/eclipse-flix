@@ -1,70 +1,48 @@
-package de.hetzge.eclipse.flix;
+package de.hetzge.eclipse.flix.server;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
-import org.lxtk.util.SafeRun;
-import org.lxtk.util.SafeRun.Rollback;
 
 import com.google.gson.reflect.TypeToken;
 
+import de.hetzge.eclipse.flix.GsonUtils;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerProcess;
-import de.hetzge.eclipse.flix.server.FlixLanguageServer;
-import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
 
-public final class FlixService implements AutoCloseable {
+public final class FlixServerService implements AutoCloseable {
 
 	private static final String FLIX_FILE_EXTENSION = "flix";
 	private static final String FLIX_PACKAGE_FILE_EXTENSION = "fpkg";
 	private static final String JAR_FILE_EXTENSION = "jar";
 
 	private final IProject project;
-	private final FlixLanguageServer server;
-	private FlixCompilerClient compilerClient;
-	private FlixCompilerProcess compilerProcess;
-	private Rollback rollback;
+	private final FlixCompilerClient compilerClient;
+	private final FlixCompilerProcess compilerProcess;
 
-	public FlixService(IProject project) {
+	public FlixServerService(IProject project, FlixCompilerClient compilerClient, FlixCompilerProcess compilerProcess) {
 		this.project = project;
-		this.server = new FlixLanguageServer(this);
-	}
-
-	public void initialize(int compilerPort, int lspPort) {
-		close();
-		SafeRun.run(rollback -> {
-			System.out.println("FlixService.initialize()");
-			this.compilerProcess = FlixCompilerProcess.start(compilerPort);
-			rollback.add(this.compilerProcess::close);
-			this.compilerClient = FlixCompilerClient.connect(compilerPort);
-			rollback.add(this.compilerClient::close);
-			final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(this.server, lspPort);
-			rollback.add(socketThread::close);
-			this.rollback = rollback;
-		});
+		this.compilerClient = compilerClient;
+		this.compilerProcess = compilerProcess;
 	}
 
 	@Override
 	public void close() {
-		if (this.rollback != null) {
-			this.rollback.reset();
-			this.rollback = null;
-		}
+		this.compilerClient.close();
+		this.compilerProcess.close();
 	}
 
 	public void addWorkspaceUris() {
@@ -72,20 +50,16 @@ public final class FlixService implements AutoCloseable {
 	}
 
 	public void addFile(IFile file) {
-		try {
-			final String fileExtension = file.getFileExtension();
-			final URI uri = file.getLocationURI();
-			if (FLIX_FILE_EXTENSION.equals(fileExtension)) {
-				addUri(uri, Utils.readFileContent(file));
-			} else if (FLIX_PACKAGE_FILE_EXTENSION.equals(fileExtension)) {
-				addUri(uri, Utils.readFileContent(file));
-			} else if (JAR_FILE_EXTENSION.equals(fileExtension)) {
-				addUri(uri, Utils.readFileContent(file));
-			} else {
-				System.out.println("Ignore '" + uri + "'");
-			}
-		} catch (IOException | CoreException exception) {
-			throw new RuntimeException(exception);
+		final String fileExtension = file.getFileExtension();
+		final URI uri = file.getLocationURI();
+		if (FLIX_FILE_EXTENSION.equals(fileExtension)) {
+			addUri(uri, Utils.readFileContent(file));
+		} else if (FLIX_PACKAGE_FILE_EXTENSION.equals(fileExtension)) {
+			addFpkg(file.getLocationURI());
+		} else if (JAR_FILE_EXTENSION.equals(fileExtension)) {
+			addJar(file.getLocationURI());
+		} else {
+			System.out.println("Ignore '" + uri + "'");
 		}
 	}
 
@@ -129,21 +103,37 @@ public final class FlixService implements AutoCloseable {
 
 	public CompletableFuture<CompletionList> complete(CompletionParams params) {
 		return this.compilerClient.sendComplete(params).thenApply(response -> {
-			return GsonUtils.getGson().fromJson(response, CompletionList.class);
+			if (response.isLeft()) {
+				return GsonUtils.getGson().fromJson(response.getLeft(), CompletionList.class);
+			} else {
+				throw new RuntimeException();
+			}
 		});
 	}
 
 	public CompletableFuture<List<Location>> decleration(DeclarationParams params) {
 		return this.compilerClient.sendGoto(params).thenApply(response -> {
-			return GsonUtils.getGson().fromJson(response, new TypeToken<List<Location>>() {
-			}.getType());
+			if (response.isLeft()) {
+				return GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<Location>>() {
+				}.getType());
+			} else {
+				throw new RuntimeException();
+			}
 		});
 	}
 
 	public CompletableFuture<Hover> hover(HoverParams params) {
+		System.out.println("IS ALIVE: " + this.compilerProcess.isAlive());
 		return this.compilerClient.sendHover(params).thenApply(response -> {
-			System.out.println("HOVER: " + response);
-			return null;
+			if (response.isLeft()) {
+				return GsonUtils.getGson().fromJson(response.getLeft(), Hover.class);
+			} else {
+				throw new RuntimeException();
+			}
 		});
+	}
+
+	public CompletableFuture<Void> compile() {
+		return this.compilerClient.sendCheck().thenApply(ignore -> null);
 	}
 }

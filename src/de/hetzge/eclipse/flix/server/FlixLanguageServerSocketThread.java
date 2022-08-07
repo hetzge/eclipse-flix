@@ -1,7 +1,6 @@
 package de.hetzge.eclipse.flix.server;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 								.setInput(socket.getInputStream()) //
 								.setOutput(socket.getOutputStream()) //
 								.setExecutorService(this.executorService) //
-								.traceMessages(new PrintWriter(System.out)) //
+//								.traceMessages(new PrintWriter(System.out)) //
 								.create() //
 								.startListening();
 						this.rollbacks.add(rollback);
@@ -76,8 +75,13 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 	}
 
 	public static FlixLanguageServerSocketThread createAndStart(FlixLanguageServer server, int port) {
+		System.out.println("FlixLanguageServerSocketThread.createAndStart()");
+
 		final FlixLanguageServerSocketThread thread = new FlixLanguageServerSocketThread(server, port);
 		thread.start();
+
+		System.out.println("Started language socket thread on port " + port);
+
 		return thread;
 	}
 }

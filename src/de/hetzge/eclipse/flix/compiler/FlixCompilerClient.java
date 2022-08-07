@@ -10,6 +10,7 @@ import java.util.concurrent.CompletionStage;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
@@ -85,27 +86,40 @@ public class FlixCompilerClient implements AutoCloseable {
 		return send(jsonObject);
 	}
 
-	public CompletableFuture<JsonObject> sendComplete(CompletionParams position) {
+	public CompletableFuture<Either<JsonObject, JsonObject>> sendComplete(CompletionParams position) {
 		final String id = UUID.randomUUID().toString();
-		final CompletionStage<JsonObject> responseFuture = this.listener.startRequestResponse(id).thenApply(jsonObject -> jsonObject.get("result").getAsJsonObject());
+
 		final JsonObject jsonObject = GsonUtils.getGson().toJsonTree(position).getAsJsonObject();
 		jsonObject.addProperty("request", "lsp/complete");
 		jsonObject.addProperty("id", id);
+
+		final CompletionStage<Either<JsonObject, JsonObject>> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
 	}
 
-	public CompletableFuture<JsonObject> sendGoto(DeclarationParams params) {
+	public CompletableFuture<Either<JsonObject, JsonObject>> sendGoto(DeclarationParams params) {
 		final String id = UUID.randomUUID().toString();
-		final CompletionStage<JsonObject> responseFuture = this.listener.startRequestResponse(id).thenApply(jsonObject -> jsonObject.get("result").getAsJsonObject());
+
 		final JsonObject jsonObject = GsonUtils.getGson().toJsonTree(params).getAsJsonObject();
 		jsonObject.addProperty("request", "lsp/goto");
 		jsonObject.addProperty("id", id);
+
+		final CompletionStage<Either<JsonObject, JsonObject>> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
 	}
 
-	public CompletableFuture<JsonObject> sendHover(HoverParams params) {
+	public CompletableFuture<Either<JsonObject, JsonObject>> sendCheck() {
 		final String id = UUID.randomUUID().toString();
-		final CompletionStage<JsonObject> responseFuture = this.listener.startRequestResponse(id).thenApply(jsonObject -> jsonObject.get("result").getAsJsonObject());
+		final JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("request", "lsp/check");
+		jsonObject.addProperty("id", id);
+
+		final CompletionStage<Either<JsonObject, JsonObject>> responseFuture = this.listener.startRequestResponse(id);
+		return send(jsonObject).thenCompose(ignore -> responseFuture);
+	}
+
+	public CompletableFuture<Either<JsonObject, JsonObject>> sendHover(HoverParams params) {
+		final String id = UUID.randomUUID().toString();
 
 		final JsonObject positionJsonObject = new JsonObject();
 		positionJsonObject.addProperty("line", params.getPosition().getLine());
@@ -113,9 +127,11 @@ public class FlixCompilerClient implements AutoCloseable {
 
 		final JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("request", "lsp/hover");
-		jsonObject.addProperty("id", UUID.randomUUID().toString());
+		jsonObject.addProperty("id", id);
 		jsonObject.addProperty("uri", params.getTextDocument().getUri());
 		jsonObject.add("position", positionJsonObject);
+
+		final CompletableFuture<Either<JsonObject, JsonObject>> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
 	}
 
@@ -124,16 +140,27 @@ public class FlixCompilerClient implements AutoCloseable {
 	}
 
 	private CompletableFuture<Void> send(final String jsonString) {
-		System.out.println("Send: " + jsonString);
+//		System.out.println("Send: " + jsonString);
+
+		if (this.webSocket.isInputClosed() || this.webSocket.isOutputClosed()) {
+			System.out.println("CLOSED !!!");
+		} else {
+			System.out.println("NOT CLOSED !!!");
+		}
+
 		return this.webSocket.sendText(jsonString, true).thenRun(() -> {
 		});
 	}
 
 	public static synchronized FlixCompilerClient connect(int port) {
+		System.out.println("FlixCompilerClient.connect()");
 		return SafeRun.runWithResult(rollback -> {
 			final FlixCompilerProcessSocketListener listener = new FlixCompilerProcessSocketListener();
 			final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:" + port), listener).join();
 			rollback.add(webSocket::abort);
+
+			System.out.println("Connected compiler client on port " + port);
+
 			return new FlixCompilerClient(webSocket, listener, rollback);
 		});
 	}

@@ -25,3 +25,11 @@ Require-Bundle: com.google.gson;bundle-version="2.8.9",
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Automatic-Module-Name: eclipse.flix
 Bundle-ActivationPolicy: lazy
+Export-Package: de.hetzge.eclipse.flix,
+ de.hetzge.eclipse.flix.client,
+ de.hetzge.eclipse.flix.compiler,
+ de.hetzge.eclipse.flix.editor,
+ de.hetzge.eclipse.flix.launch,
+ de.hetzge.eclipse.flix.project,
+ de.hetzge.eclipse.flix.server,
+ de.hetzge.eclipse.utils

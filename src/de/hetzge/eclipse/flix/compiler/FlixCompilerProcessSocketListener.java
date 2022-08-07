@@ -7,10 +7,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
+
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 class FlixCompilerProcessSocketListener implements WebSocket.Listener {
+
+	private static final String SUCCESS_STATUS_VALUE = "success";
+	private static final String FAILURE_STATUS_VALUE = "failure";
 
 	private final StringBuilder builder;
 	private final Map<String, CompletableFuture<JsonObject>> messagesById; // memory leak
@@ -20,14 +26,27 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 		this.messagesById = new ConcurrentHashMap<>();
 	}
 
-	public CompletionStage<JsonObject> startRequestResponse(String id) {
+	public CompletableFuture<Either<JsonObject, JsonObject>> startRequestResponse(String id) {
 		System.out.println("Start request/response with id " + id);
-		final CompletableFuture<JsonObject> future = new CompletableFuture<JsonObject>().thenApply(message -> {
+		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
+		final CompletableFuture<Either<JsonObject, JsonObject>> successFailureFuture = future.thenApply(message -> {
 			this.messagesById.remove(id);
-			return message;
+			final String statusValue = message.get("status").getAsString();
+			final JsonElement jsonElement = message.get("result");
+			if (jsonElement == null) {
+				throw new IllegalStateException("Unexpected response: " + message);
+			}
+			final JsonObject resultJsonObject = jsonElement.getAsJsonObject();
+			if (statusValue.equals(SUCCESS_STATUS_VALUE)) {
+				return Either.forLeft(resultJsonObject);
+			} else if (statusValue.equals(FAILURE_STATUS_VALUE)) {
+				return Either.forRight(resultJsonObject);
+			} else {
+				throw new IllegalStateException(String.format("Unexpected status '%s'", statusValue));
+			}
 		});
 		this.messagesById.put(id, future);
-		return future;
+		return successFailureFuture;
 	}
 
 	@Override
@@ -38,7 +57,7 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 
 	@Override
 	public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-		System.out.println("[FLIX LSP SOCKET (" + last + ")]::" + data);
+		// System.out.println("[FLIX LSP SOCKET (" + last + ")]::" + data);
 
 		this.builder.append(data);
 		if (last) {
@@ -48,7 +67,6 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 			final String id = jsonObject.get("id").getAsString();
 			Optional.ofNullable(this.messagesById.get(id)).ifPresent(future -> {
 				System.out.println("Complete request/response with id " + id);
-				System.out.println("...... " + jsonObject);
 				future.complete(jsonObject);
 			});
 			this.builder.setLength(0);

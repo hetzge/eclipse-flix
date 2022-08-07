@@ -14,20 +14,27 @@ import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixCompilerProcess implements AutoCloseable {
 
-	private final Process process;
-	private final MonitorThread thread;
 	private final Rollback rollback;
+	private final Process process;
 
-	private FlixCompilerProcess(Process process, MonitorThread thread, Rollback rollback) {
+	private FlixCompilerProcess(Process process, Rollback rollback) {
 		this.process = process;
-		this.thread = thread;
 		this.rollback = rollback;
 	}
 
+	public boolean isAlive() {
+		return this.process.isAlive();
+	}
+
+	@Override
+	public void close() {
+		this.rollback.reset();
+	}
+
 	public static synchronized FlixCompilerProcess start(int port) {
+		System.out.println("FlixCompilerProcess.start()");
 		return SafeRun.runWithResult((rollback) -> {
 			try {
-				System.out.println("Start lsp");
 				final File jreExecutableFile = Utils.getJreExecutable();
 				final File flixJarFile = FlixUtils.loadFlixJarFile();
 
@@ -51,16 +58,14 @@ public final class FlixCompilerProcess implements AutoCloseable {
 				final MonitorThread thread = new MonitorThread(process);
 				rollback.add(thread::close);
 				thread.start();
-				return new FlixCompilerProcess(process, thread, rollback);
+
+				System.out.println("Started flix compiler process on port " + port);
+
+				return new FlixCompilerProcess(process, rollback);
 			} catch (final IOException exception) {
 				throw new RuntimeException(exception);
 			}
 		});
-	}
-
-	@Override
-	public void close() {
-		this.rollback.reset();
 	}
 
 	private static class MonitorThread extends Thread implements AutoCloseable {
@@ -81,7 +86,7 @@ public final class FlixCompilerProcess implements AutoCloseable {
 			String line = "";
 			try {
 				while (!this.done && (line = stdoutReader.readLine()) != null) {
-					System.out.println("[FLIX LSP PROCESS]::" + line);
+					// System.out.println("[FLIX LSP PROCESS]::" + line);
 				}
 			} catch (final IOException exception) {
 				throw new RuntimeException(exception);

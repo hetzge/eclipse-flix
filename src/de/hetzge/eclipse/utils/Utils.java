@@ -3,6 +3,7 @@ package de.hetzge.eclipse.utils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ServerSocket;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -22,8 +23,12 @@ public final class Utils {
 		}
 	}
 
-	public static String readFileContent(IFile file) throws IOException, CoreException {
-		return new String(file.getContents().readAllBytes(), StandardCharsets.UTF_8);
+	public static String readFileContent(IFile file) {
+		try {
+			return new String(file.getContents().readAllBytes(), StandardCharsets.UTF_8);
+		} catch (IOException | CoreException exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 
 	public static File getJreExecutable() {
@@ -50,6 +55,14 @@ public final class Utils {
 		}
 		os = os.toLowerCase();
 		return os.startsWith("windows");
+	}
+
+	public synchronized static int queryPort() {
+		try (ServerSocket socket = new ServerSocket(0);) {
+			return socket.getLocalPort();
+		} catch (final IOException exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 
 }

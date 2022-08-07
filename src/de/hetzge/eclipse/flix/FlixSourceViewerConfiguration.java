@@ -4,6 +4,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
@@ -16,6 +17,7 @@ import org.lxtk.DocumentService;
 import org.lxtk.LanguageOperationTarget;
 import org.lxtk.lx4e.ui.completion.CompletionProposalSorter;
 import org.lxtk.lx4e.ui.completion.ContentAssistProcessor;
+import org.lxtk.lx4e.ui.hover.DocumentHover;
 import org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector;
 
 /**
@@ -28,6 +30,11 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 	public FlixSourceViewerConfiguration(IPreferenceStore preferenceStore, ITextEditor editor) {
 		super(preferenceStore);
 		this.editor = editor;
+	}
+
+	@Override
+	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
+		return new DocumentHover(this::getLanguageOperationTarget);
 	}
 
 	@Override

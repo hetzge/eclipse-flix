@@ -1,28 +1,18 @@
 package de.hetzge.eclipse.flix;
 
-import de.hetzge.eclipse.flix.client.FlixLanguageClient;
+import org.lxtk.util.SafeRun.Rollback;
 
 public class FlixProject implements AutoCloseable {
 
-	private final FlixService service;
-	private final FlixLanguageClient languageClient;
+	private final Rollback rollback;
 
-	public FlixProject(FlixService service, FlixLanguageClient languageClient) {
-		this.service = service;
-		this.languageClient = languageClient;
-	}
-
-	public FlixService getService() {
-		return this.service;
-	}
-
-	public FlixLanguageClient getLanguageClient() {
-		return this.languageClient;
+	public FlixProject(Rollback rollback) {
+		this.rollback = rollback;
 	}
 
 	@Override
 	public void close() throws Exception {
-		this.service.close();
-		this.languageClient.dispose();
+		System.out.println("FlixProject.close()");
+		this.rollback.reset();
 	}
 }
