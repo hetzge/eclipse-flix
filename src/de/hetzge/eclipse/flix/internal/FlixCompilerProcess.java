@@ -24,7 +24,7 @@ public final class FlixCompilerProcess implements AutoCloseable {
 		this.rollback = rollback;
 	}
 
-	public static synchronized FlixCompilerProcess start() {
+	public static synchronized FlixCompilerProcess start(int port) {
 		return SafeRun.runWithResult((rollback) -> {
 			try {
 				System.out.println("Start lsp");
@@ -34,7 +34,7 @@ public final class FlixCompilerProcess implements AutoCloseable {
 				System.out.println("Use java from here: " + jreExecutableFile.getAbsolutePath());
 				System.out.println("Use flix from here: " + flixJarFile.getAbsolutePath());
 
-				final ProcessBuilder processBuilder = new ProcessBuilder(jreExecutableFile.getAbsolutePath(), "-jar", flixJarFile.getAbsolutePath(), "--lsp", "8112");
+				final ProcessBuilder processBuilder = new ProcessBuilder(jreExecutableFile.getAbsolutePath(), "-jar", flixJarFile.getAbsolutePath(), "--lsp", String.valueOf(port));
 				processBuilder.redirectErrorStream(true);
 				processBuilder.redirectOutput(Redirect.PIPE);
 				final Process process = processBuilder.start();

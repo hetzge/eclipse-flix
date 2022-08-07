@@ -12,6 +12,8 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
@@ -40,6 +42,12 @@ public final class FlixTextDocumentService implements TextDocumentService {
 		return this.flixService.decleration(params).thenApply(completionList -> {
 			return Either.forLeft(completionList);
 		});
+	}
+
+	@Override
+	public CompletableFuture<Hover> hover(HoverParams params) {
+		System.out.println("FlixTextDocumentService.hover()");
+		return this.flixService.hover(params);
 	}
 
 	@Override

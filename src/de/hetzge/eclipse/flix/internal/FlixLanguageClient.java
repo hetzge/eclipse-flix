@@ -18,14 +18,13 @@ import org.lxtk.client.AbstractLanguageClient;
 import org.lxtk.client.BufferingDiagnosticConsumer;
 import org.lxtk.client.CompletionFeature;
 import org.lxtk.client.DeclarationFeature;
-import org.lxtk.client.ExecuteCommandFeature;
 import org.lxtk.client.Feature;
 import org.lxtk.client.FileOperationsFeature;
+import org.lxtk.client.HoverFeature;
 import org.lxtk.client.ReferencesFeature;
 import org.lxtk.client.TextDocumentSyncFeature;
 import org.lxtk.jsonrpc.AbstractJsonRpcConnectionFactory;
 import org.lxtk.jsonrpc.JsonRpcConnectionFactory;
-import org.lxtk.lx4e.EclipseCommandService;
 import org.lxtk.lx4e.EclipseLog;
 import org.lxtk.lx4e.EclipseTextDocumentChangeEventMergeStrategy;
 import org.lxtk.lx4e.diagnostics.DiagnosticMarkers;
@@ -41,12 +40,14 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 
 	private final IProject project;
 	private final FlixService flixService;
+	private final int port;
 	private final EclipseLog log;
 	private final BufferingDiagnosticConsumer diagnosticConsumer;
 
-	public FlixLanguageClient(IProject project, FlixService flixService) {
+	public FlixLanguageClient(IProject project, FlixService flixService, int port) {
 		this.project = project;
 		this.flixService = flixService;
+		this.port = port;
 		this.log = new EclipseLog(Activator.getDefault().getBundle(), "flix-language-client:" + project.getName());
 		this.diagnosticConsumer = new BufferingDiagnosticConsumer(new DiagnosticMarkers(FlixMarkerResolutionGenerator.MARKER_TYPE));
 	}
@@ -73,6 +74,7 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 		features.add(textDocumentSyncFeature);
 		features.add(new ReferencesFeature(FlixCore.LANGUAGE_SERVICE));
 		features.add(new DeclarationFeature(FlixCore.LANGUAGE_SERVICE));
+		features.add(new HoverFeature(FlixCore.LANGUAGE_SERVICE));
 //		features.add(new ExecuteCommandFeature(new EclipseCommandService()));
 
 		return new EclipseLanguageClient<>(this.log, this.diagnosticConsumer, FlixCore.WORKSPACE_EDIT_CHANGE_FACTORY, features) {
@@ -102,7 +104,7 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 			@Override
 			protected StreamBasedConnection newStreamBasedConnection() {
 				try {
-					return new SocketConnection(new Socket("localhost", 10587));
+					return new SocketConnection(new Socket("localhost", FlixLanguageClient.this.port));
 				} catch (final IOException exception) {
 					throw new RuntimeException(exception);
 				}
@@ -114,5 +116,4 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 	protected Log log() {
 		return this.log;
 	}
-
 }

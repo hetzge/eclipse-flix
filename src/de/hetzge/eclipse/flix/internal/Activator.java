@@ -1,13 +1,20 @@
 package de.hetzge.eclipse.flix.internal;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
+
+import de.hetzge.eclipse.flix.FlixCore;
+import de.hetzge.eclipse.utils.EclipseUtils;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -24,7 +31,13 @@ public class Activator extends AbstractUIPlugin {
 
 	private FlixDocumentProvider flixDocumentProvider;
 
+	private final Map<IProject, FlixProject> connectedProjects;
+
 	private Rollback rollback;
+
+	public Activator() {
+		this.connectedProjects = new ConcurrentHashMap<>();
+	}
 
 	public ResourceMonitor getResourceMonitor() {
 		return this.resourceMonitor;
@@ -34,17 +47,45 @@ public class Activator extends AbstractUIPlugin {
 		return this.flixDocumentProvider;
 	}
 
+	public synchronized FlixProject getFlixProject(IProject project) {
+		return this.connectedProjects.computeIfAbsent(project, key -> {
+			FlixLogger.logInfo("Initialize flix for project under " + project.getLocationURI());
+			return SafeRun.runWithResult(rollback -> {
+				final int compilerPort = queryPort();
+				final int lspPort = queryPort();
+				final FlixService flixService = new FlixService(project);
+				this.rollback.add(flixService::close);
+				flixService.initialize(compilerPort, lspPort);
+				final FlixLanguageClient flixLanguageClient = new FlixLanguageClient(project, flixService, lspPort);
+				rollback.add(flixLanguageClient::dispose);
+				flixLanguageClient.connect();
+				return new FlixProject(flixService, flixLanguageClient);
+			});
+		});
+	}
+
+	private Integer queryPort() {
+		try (ServerSocket socket = new ServerSocket(0);) {
+			return socket.getLocalPort();
+		} catch (final IOException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
 
 		SafeRun.run(rollback -> {
-			final FlixService flixService = new FlixService();
-			rollback.add(flixService::close);
-			flixService.initialize();
-			final FlixLanguageClient flixLanguageClient = new FlixLanguageClient(ResourcesPlugin.getWorkspace().getRoot().getProjects()[0], flixService);
-			flixLanguageClient.connect();
+
+			/*
+			 * When open a document then check if the flix environment for this project is
+			 * already initialized and initialize if necessary.
+			 */
+			rollback.add(FlixCore.DOCUMENT_SERVICE.onDidAddTextDocument().subscribe(document -> {
+				EclipseUtils.getProject(document).ifPresent(this::getFlixProject);
+			})::dispose);
 
 			this.resourceMonitor = new ResourceMonitor();
 			ResourcesPlugin.getWorkspace().addResourceChangeListener(this.resourceMonitor, IResourceChangeEvent.POST_CHANGE);
@@ -56,6 +97,9 @@ public class Activator extends AbstractUIPlugin {
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
+		for (final FlixProject project : this.connectedProjects.values()) {
+			project.close();
+		}
 		if (this.rollback != null) {
 			this.rollback.reset();
 			this.rollback = null;
@@ -72,43 +116,4 @@ public class Activator extends AbstractUIPlugin {
 	public static Activator getDefault() {
 		return plugin;
 	}
-
-	/**
-	 * Utility method to log errors.
-	 *
-	 * @param thr The exception through which we noticed the error
-	 */
-	public static void logError(final Throwable thr) {
-		getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, 0, thr.getMessage(), thr));
-	}
-
-	/**
-	 * Utility method to log errors.
-	 *
-	 * @param message User comprehensible message
-	 * @param thr     The exception through which we noticed the error
-	 */
-	public static void logError(final String message, final Throwable thr) {
-		getDefault().getLog().log(new Status(IStatus.ERROR, PLUGIN_ID, 0, message, thr));
-	}
-
-	/**
-	 * Log an info message for this plug-in
-	 *
-	 * @param message
-	 */
-	public static void logInfo(final String message) {
-		getDefault().getLog().log(new Status(IStatus.INFO, PLUGIN_ID, 0, message, null));
-	}
-
-	/**
-	 * Utility method to log warnings for this plug-in.
-	 *
-	 * @param message User comprehensible message
-	 * @param thr     The exception through which we noticed the warning
-	 */
-	public static void logWarning(final String message, final Throwable thr) {
-		getDefault().getLog().log(new Status(IStatus.WARNING, PLUGIN_ID, 0, message, thr));
-	}
-
 }

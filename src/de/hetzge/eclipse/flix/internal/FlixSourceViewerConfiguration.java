@@ -39,6 +39,7 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 
 	@Override
 	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
+		System.out.println("FlixSourceViewerConfiguration.getHyperlinkDetectors()");
 		final IAdaptable context = new IAdaptable() {
 			@Override
 			public <T> T getAdapter(Class<T> adapter) {
@@ -52,7 +53,6 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 			}
 		};
 
-		System.out.println("FlixSourceViewerConfiguration.getHyperlinkDetectors()");
 		final DeclarationHyperlinkDetector declarationHyperlinkDetector = new DeclarationHyperlinkDetector();
 		declarationHyperlinkDetector.setContext(context);
 		return new IHyperlinkDetector[] { declarationHyperlinkDetector };

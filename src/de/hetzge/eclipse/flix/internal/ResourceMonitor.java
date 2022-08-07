@@ -37,9 +37,9 @@ public class ResourceMonitor implements IResourceChangeListener, FileCreateEvent
 			final int kind = delta.getKind();
 			final URI locationURI = file.getLocationURI();
 			if (kind == IResourceDelta.ADDED) {
-				this.onDidCreateFiles.emit(new FileCreateEvent(List.of(new FileCreate(locationURI))), Activator::logError);
+				this.onDidCreateFiles.emit(new FileCreateEvent(List.of(new FileCreate(locationURI))), FlixLogger::logError);
 			} else if (kind == IResourceDelta.REMOVED) {
-				this.onDidDeleteFiles.emit(new FileDeleteEvent(List.of(new FileDelete(locationURI))), Activator::logError);
+				this.onDidDeleteFiles.emit(new FileDeleteEvent(List.of(new FileDelete(locationURI))), FlixLogger::logError);
 			}
 		}
 		final IResourceDelta[] affectedChildren = delta.getAffectedChildren();

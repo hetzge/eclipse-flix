@@ -42,6 +42,9 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.lxtk.TextDocument;
+import org.lxtk.lx4e.EclipseTextDocument;
+import org.lxtk.lx4e.util.ResourceUtil;
 import org.osgi.framework.Bundle;
 
 import de.hetzge.eclipse.flix.internal.Activator;
@@ -116,6 +119,16 @@ public final class EclipseUtils {
 		} else {
 			throw new IllegalStateException("No projects in workspace");
 		}
+	}
+
+	public static Optional<IProject> getProject(TextDocument document) {
+		if (document instanceof EclipseTextDocument) {
+			final IFile file = ResourceUtil.getFile(((EclipseTextDocument) document).getCorrespondingElement());
+			if (file != null) {
+				return Optional.of(file.getProject());
+			}
+		}
+		return Optional.empty();
 	}
 
 	public static MessageConsole console(String name) {

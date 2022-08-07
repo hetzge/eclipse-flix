@@ -75,7 +75,7 @@ public class FlixDocumentProvider extends TextFileDocumentProvider implements Te
 				final Disposable registration = FlixCore.DOCUMENT_SERVICE.addTextDocument(document);
 				rollback.add(registration::dispose);
 
-				rollback.setLogger(Activator::logError);
+				rollback.setLogger(FlixLogger::logError);
 				info.disposeRunnable = rollback;
 			});
 		}
@@ -101,14 +101,14 @@ public class FlixDocumentProvider extends TextFileDocumentProvider implements Te
 		if (document != null) {
 			final TextDocumentWillSaveEvent event = new TextDocumentWillSaveEvent(document, TextDocumentSaveReason.Manual);
 
-			this.onWillSaveTextDocument.emit(event, Activator::logError);
+			this.onWillSaveTextDocument.emit(event, FlixLogger::logError);
 
-			final CompletableFuture<List<List<TextEdit>>> future = this.onWillSaveTextDocumentWaitUntil.emit(event, Activator::logError);
+			final CompletableFuture<List<List<TextEdit>>> future = this.onWillSaveTextDocumentWaitUntil.emit(event, FlixLogger::logError);
 			List<List<TextEdit>> result = null;
 			try {
 				result = future.get(1500, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException | ExecutionException | TimeoutException e) {
-				Activator.logError(e);
+				FlixLogger.logError(e);
 			}
 			if (result != null && !result.isEmpty()) {
 				final List<TextEdit> edits = new ArrayList<>();
@@ -116,7 +116,7 @@ public class FlixDocumentProvider extends TextFileDocumentProvider implements Te
 				try {
 					DocumentUtil.applyEdits(info.fTextFileBuffer.getDocument(), edits);
 				} catch (MalformedTreeException | BadLocationException e) {
-					Activator.logError(e);
+					FlixLogger.logError(e);
 				}
 			}
 		}
@@ -124,7 +124,7 @@ public class FlixDocumentProvider extends TextFileDocumentProvider implements Te
 		super.commitFileBuffer(monitor, info, overwrite);
 
 		if (document != null) {
-			this.onDidSaveTextDocument.emit(new TextDocumentSaveEvent(document, info.fTextFileBuffer.getDocument().get()), Activator::logError);
+			this.onDidSaveTextDocument.emit(new TextDocumentSaveEvent(document, info.fTextFileBuffer.getDocument().get()), FlixLogger::logError);
 		}
 	}
 

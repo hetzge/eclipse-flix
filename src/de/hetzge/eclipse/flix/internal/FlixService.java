@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
@@ -28,24 +30,27 @@ public final class FlixService implements AutoCloseable {
 	private static final String FLIX_PACKAGE_FILE_EXTENSION = "fpkg";
 	private static final String JAR_FILE_EXTENSION = "jar";
 
+	private final IProject project;
+	private final FlixLanguageServer server;
 	private FlixCompilerClient compilerClient;
 	private FlixCompilerProcess compilerProcess;
-	private final FlixLanguageServer server;
 	private Rollback rollback;
 
-	public FlixService() {
+	public FlixService(IProject project) {
+		this.project = project;
 		this.server = new FlixLanguageServer(this);
 	}
 
-	public void initialize() {
+	public void initialize(int compilerPort, int lspPort) {
 		close();
 		SafeRun.run(rollback -> {
 			System.out.println("FlixService.initialize()");
-			this.compilerProcess = FlixCompilerProcess.start();
+			this.compilerProcess = FlixCompilerProcess.start(compilerPort);
 			rollback.add(this.compilerProcess::close);
-			this.compilerClient = FlixCompilerClient.connect();
+			this.compilerClient = FlixCompilerClient.connect(compilerPort);
 			rollback.add(this.compilerClient::close);
-			new FlixLanguageServerSocketThread(this.server).start();
+			final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(this.server, lspPort);
+			rollback.add(socketThread::close);
 			this.rollback = rollback;
 		});
 	}
@@ -59,7 +64,7 @@ public final class FlixService implements AutoCloseable {
 	}
 
 	public void addWorkspaceUris() {
-		EclipseUtils.visitFiles(ResourcesPlugin.getWorkspace().getRoot(), this::addFile);
+		EclipseUtils.visitFiles(this.project, this::addFile);
 	}
 
 	public void addFile(IFile file) {
@@ -128,6 +133,13 @@ public final class FlixService implements AutoCloseable {
 		return this.compilerClient.sendGoto(params).thenApply(response -> {
 			return GsonUtils.getGson().fromJson(response, new TypeToken<List<Location>>() {
 			}.getType());
+		});
+	}
+
+	public CompletableFuture<Hover> hover(HoverParams params) {
+		return this.compilerClient.sendHover(params).thenApply(response -> {
+			System.out.println("HOVER: " + response);
+			return null;
 		});
 	}
 }

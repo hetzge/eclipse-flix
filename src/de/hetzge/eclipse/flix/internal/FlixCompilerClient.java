@@ -9,6 +9,7 @@ import java.util.concurrent.CompletionStage;
 
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
+import org.eclipse.lsp4j.HoverParams;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
@@ -100,6 +101,22 @@ public class FlixCompilerClient implements AutoCloseable {
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
 	}
 
+	public CompletableFuture<JsonObject> sendHover(HoverParams params) {
+		final String id = UUID.randomUUID().toString();
+		final CompletionStage<JsonObject> responseFuture = this.listener.startRequestResponse(id).thenApply(jsonObject -> jsonObject.get("result").getAsJsonObject());
+
+		final JsonObject positionJsonObject = new JsonObject();
+		positionJsonObject.addProperty("line", params.getPosition().getLine());
+		positionJsonObject.addProperty("character", params.getPosition().getCharacter());
+
+		final JsonObject jsonObject = new JsonObject();
+		jsonObject.addProperty("request", "lsp/hover");
+		jsonObject.addProperty("id", UUID.randomUUID().toString());
+		jsonObject.addProperty("uri", params.getTextDocument().getUri());
+		jsonObject.add("position", positionJsonObject);
+		return send(jsonObject).thenCompose(ignore -> responseFuture);
+	}
+
 	private CompletableFuture<Void> send(final JsonObject jsonObject) {
 		return send(GsonUtils.getGson().toJson(jsonObject));
 	}
@@ -110,10 +127,10 @@ public class FlixCompilerClient implements AutoCloseable {
 		});
 	}
 
-	public static synchronized FlixCompilerClient connect() {
+	public static synchronized FlixCompilerClient connect(int port) {
 		return SafeRun.runWithResult(rollback -> {
 			final FlixCompilerProcessSocketListener listener = new FlixCompilerProcessSocketListener();
-			final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:8112"), listener).join();
+			final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:" + port), listener).join();
 			rollback.add(webSocket::abort);
 			return new FlixCompilerClient(webSocket, listener, rollback);
 		});
