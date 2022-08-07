@@ -33,7 +33,8 @@ public class ResourceMonitor implements IResourceChangeListener, FileCreateEvent
 
 	private void handle(IResourceDelta delta) {
 		final IResource resource = delta.getResource();
-		if (resource instanceof final IFile file) {
+		if (resource instanceof IFile) {
+			final IFile file = (IFile) resource;
 			final int kind = delta.getKind();
 			final URI locationURI = file.getLocationURI();
 			if (kind == IResourceDelta.ADDED) {

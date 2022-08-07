@@ -192,7 +192,8 @@ public final class EclipseUtils {
 	public static Optional<IPath> path(EditorPart editor) {
 		final IEditorInput editorInput = editor.getEditorInput();
 
-		if (editorInput instanceof final FileEditorInput fileEditorInput) {
+		if (editorInput instanceof FileEditorInput) {
+			final FileEditorInput fileEditorInput = (FileEditorInput) editorInput;
 			return Optional.of(fileEditorInput.getPath());
 		} else {
 			return Optional.empty();
