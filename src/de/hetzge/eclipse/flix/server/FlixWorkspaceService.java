@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix.server;
 
 import java.net.URI;
 import java.util.List;
@@ -16,6 +16,8 @@ import org.eclipse.lsp4j.FileDelete;
 import org.eclipse.lsp4j.RenameFilesParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.services.WorkspaceService;
+
+import de.hetzge.eclipse.flix.FlixService;
 
 public final class FlixWorkspaceService implements WorkspaceService {
 

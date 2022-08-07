@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix.server;
 
 import java.net.URI;
 import java.util.List;
@@ -19,6 +19,8 @@ import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
+
+import de.hetzge.eclipse.flix.FlixService;
 
 public final class FlixTextDocumentService implements TextDocumentService {
 

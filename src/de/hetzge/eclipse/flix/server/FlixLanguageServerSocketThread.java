@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -13,6 +13,8 @@ import org.eclipse.lsp4j.launch.LSPLauncher.Builder;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
+
+import de.hetzge.eclipse.flix.FlixLogger;
 
 public final class FlixLanguageServerSocketThread extends Thread implements AutoCloseable {
 	private final int port;

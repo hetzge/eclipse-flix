@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal.project;
+package de.hetzge.eclipse.flix.project;
 
 import java.io.File;
 import java.io.IOException;

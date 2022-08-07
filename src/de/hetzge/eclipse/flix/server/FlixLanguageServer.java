@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix.server;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -21,6 +21,8 @@ import org.eclipse.lsp4j.WorkspaceServerCapabilities;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
+
+import de.hetzge.eclipse.flix.FlixService;
 
 // https://github.com/flix/flix/issues/806#issuecomment-612400296
 

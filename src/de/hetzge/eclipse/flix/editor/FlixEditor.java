@@ -1,12 +1,12 @@
-package de.hetzge.eclipse.flix.internal.editor;
+package de.hetzge.eclipse.flix.editor;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 
-import de.hetzge.eclipse.flix.internal.Activator;
-import de.hetzge.eclipse.flix.internal.FlixSourceViewerConfiguration;
+import de.hetzge.eclipse.flix.Activator;
+import de.hetzge.eclipse.flix.FlixSourceViewerConfiguration;
 
 /**
  * Flix text editor.

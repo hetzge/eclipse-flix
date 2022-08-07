@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix;
 
 import java.net.URI;
 
@@ -7,8 +7,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IURIEditorInput;
 import org.lxtk.LanguageOperationTarget;
-
-import de.hetzge.eclipse.flix.FlixCore;
 
 /**
  * Flix operation target provider.

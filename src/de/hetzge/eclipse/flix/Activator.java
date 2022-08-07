@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -13,7 +13,7 @@ import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
-import de.hetzge.eclipse.flix.FlixCore;
+import de.hetzge.eclipse.flix.client.FlixLanguageClient;
 import de.hetzge.eclipse.utils.EclipseUtils;
 
 /**

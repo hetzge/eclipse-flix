@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;

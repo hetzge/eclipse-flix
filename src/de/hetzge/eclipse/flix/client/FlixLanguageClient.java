@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix.client;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -34,7 +34,10 @@ import org.lxtk.util.Log;
 import org.lxtk.util.connect.SocketConnection;
 import org.lxtk.util.connect.StreamBasedConnection;
 
+import de.hetzge.eclipse.flix.Activator;
 import de.hetzge.eclipse.flix.FlixCore;
+import de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator;
+import de.hetzge.eclipse.flix.FlixService;
 
 public class FlixLanguageClient extends EclipseLanguageClientController<LanguageServer> {
 

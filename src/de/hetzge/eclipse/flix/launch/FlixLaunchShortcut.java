@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal.launch;
+package de.hetzge.eclipse.flix.launch;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;

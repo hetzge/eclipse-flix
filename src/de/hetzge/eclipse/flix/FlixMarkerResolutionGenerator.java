@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -7,8 +7,6 @@ import org.eclipse.ui.texteditor.MarkerUtilities;
 import org.lxtk.LanguageOperationTarget;
 import org.lxtk.lx4e.IWorkspaceEditChangeFactory;
 import org.lxtk.lx4e.ui.codeaction.AbstractMarkerResolutionGenerator;
-
-import de.hetzge.eclipse.flix.FlixCore;
 
 /**
  * Flix-specific extension of {@link AbstractMarkerResolutionGenerator}.

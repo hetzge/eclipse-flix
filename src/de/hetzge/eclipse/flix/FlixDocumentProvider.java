@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +29,6 @@ import org.lxtk.util.EventStream;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.WaitUntilEvent;
 import org.lxtk.util.WaitUntilEventEmitter;
-
-import de.hetzge.eclipse.flix.FlixCore;
 
 /**
  * Flix document provider.

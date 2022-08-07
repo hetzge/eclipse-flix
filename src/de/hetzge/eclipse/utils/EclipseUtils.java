@@ -47,7 +47,7 @@ import org.lxtk.lx4e.EclipseTextDocument;
 import org.lxtk.lx4e.util.ResourceUtil;
 import org.osgi.framework.Bundle;
 
-import de.hetzge.eclipse.flix.internal.Activator;
+import de.hetzge.eclipse.flix.Activator;
 
 public final class EclipseUtils {
 

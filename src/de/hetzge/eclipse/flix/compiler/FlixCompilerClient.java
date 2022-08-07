@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix.compiler;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -14,6 +14,8 @@ import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
 import com.google.gson.JsonObject;
+
+import de.hetzge.eclipse.flix.GsonUtils;
 
 public class FlixCompilerClient implements AutoCloseable {
 

@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Eclipse-flix
 Bundle-SymbolicName: eclipse-flix;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: de.hetzge.eclipse.flix.internal.Activator
+Bundle-Activator: de.hetzge.eclipse.flix.Activator
 Bundle-Vendor: hetzge
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

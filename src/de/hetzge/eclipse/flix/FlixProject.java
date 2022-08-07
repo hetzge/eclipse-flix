@@ -1,4 +1,6 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix;
+
+import de.hetzge.eclipse.flix.client.FlixLanguageClient;
 
 public class FlixProject implements AutoCloseable {
 

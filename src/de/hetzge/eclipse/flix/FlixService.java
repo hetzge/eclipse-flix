@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix;
 
 import java.io.IOException;
 import java.net.URI;
@@ -19,6 +19,10 @@ import org.lxtk.util.SafeRun.Rollback;
 
 import com.google.gson.reflect.TypeToken;
 
+import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
+import de.hetzge.eclipse.flix.compiler.FlixCompilerProcess;
+import de.hetzge.eclipse.flix.server.FlixLanguageServer;
+import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 

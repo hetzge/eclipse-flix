@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal.launch;
+package de.hetzge.eclipse.flix.launch;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,8 +20,8 @@ import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
+import de.hetzge.eclipse.flix.Activator;
 import de.hetzge.eclipse.flix.FlixUtils;
-import de.hetzge.eclipse.flix.internal.Activator;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 

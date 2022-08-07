@@ -31,7 +31,7 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            class="de.hetzge.eclipse.flix.internal.editor.FlixEditor"
+            class="de.hetzge.eclipse.flix.editor.FlixEditor"
             contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
             default="false"
             icon="icon.png"
@@ -79,7 +79,7 @@
    <extension
          point="org.eclipse.ui.ide.markerResolution">
       <markerResolutionGenerator
-            class="de.hetzge.eclipse.flix.internal.FlixMarkerResolutionGenerator"
+            class="de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator"
             markerType="de.hetzge.eclipse.flix.problem">
       </markerResolutionGenerator>
    </extension>
@@ -103,7 +103,7 @@
    <extension point="org.eclipse.debug.core.launchConfigurationTypes">
     <launchConfigurationType
         name="Flix launch"
-        delegate="de.hetzge.eclipse.flix.internal.launch.FlixLaunchConfigurationDelegate"
+        delegate="de.hetzge.eclipse.flix.launch.FlixLaunchConfigurationDelegate"
         modes="run"
         id="de.hetzge.eclipse.flix.launchConfigurationType">
     </launchConfigurationType>
@@ -125,7 +125,7 @@
 <!--			</description>-->
 <!--		</wizard>-->
 		<wizard category="de.hetzge.eclipse.flix.wizards"
-			class="de.hetzge.eclipse.flix.internal.project.FlixProjectWizard"
+			class="de.hetzge.eclipse.flix.project.FlixProjectWizard"
 			icon="icon.png" id="de.hetzge.eclipse.flix.newProject"
 			name="Flix Project" project="true">
 			<description>
@@ -136,7 +136,7 @@
    <extension
     point="org.eclipse.debug.ui.launchShortcuts">
     <shortcut
-        class="de.hetzge.eclipse.flix.internal.launch.FlixLaunchShortcut"
+        class="de.hetzge.eclipse.flix.launch.FlixLaunchShortcut"
         icon="icon.png"
         id="de.hetzge.eclipse.flix.launchShortcut"
         label="Flix run"

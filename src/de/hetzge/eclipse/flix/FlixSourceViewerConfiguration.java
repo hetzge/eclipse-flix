@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.internal;
+package de.hetzge.eclipse.flix;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -17,8 +17,6 @@ import org.lxtk.LanguageOperationTarget;
 import org.lxtk.lx4e.ui.completion.CompletionProposalSorter;
 import org.lxtk.lx4e.ui.completion.ContentAssistProcessor;
 import org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector;
-
-import de.hetzge.eclipse.flix.FlixCore;
 
 /**
  * Configuration for a source viewer which shows Proto content.
