@@ -12,7 +12,6 @@ import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
 import de.hetzge.eclipse.flix.client.FlixLanguageClient;
-import de.hetzge.eclipse.flix.server.FlixLanguageServer;
 import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
@@ -48,11 +47,8 @@ public class Activator extends AbstractUIPlugin {
 			FlixLogger.logInfo("Initialize flix for project under " + project.getLocationURI());
 			return SafeRun.runWithResult(rollback -> {
 
-				final FlixLanguageServer server = FlixLanguageServer.start(project);
-				rollback.add(server::close);
-
 				final int lspPort = Utils.queryPort();
-				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(server, lspPort);
+				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(project, lspPort);
 				rollback.add(socketThread::close);
 
 				final FlixLanguageClient client = FlixLanguageClient.connect(project, lspPort);

@@ -54,6 +54,12 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 	}
 
 	@Override
+	public void dispose() {
+		this.diagnosticConsumer.dispose();
+		super.dispose();
+	}
+
+	@Override
 	protected List<DocumentFilter> getDocumentSelector() {
 		return Collections.singletonList(new DocumentFilter(FlixCore.LANGUAGE_ID, "file", this.project.getLocation().append("**").toString())); //$NON-NLS-1$
 	}

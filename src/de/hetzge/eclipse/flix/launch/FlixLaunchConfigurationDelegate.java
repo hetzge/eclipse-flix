@@ -52,11 +52,12 @@ public class FlixLaunchConfigurationDelegate extends LaunchConfigurationDelegate
 		processBuilder.redirectErrorStream(true);
 		try {
 			try (PrintWriter writer = new PrintWriter(messageConsoleStream)) {
-				writer.write("### RUN ###\n");
+				writer.write("<<COMMAND LINE>>\n");
+				final long before = System.currentTimeMillis();
 				final Process process = processBuilder.start();
 				writer.write(process.info().commandLine().orElse(""));
 				writer.write("\n");
-				writer.write("###########\n");
+				writer.write("<<OUTPUT>>\n");
 				try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
 					while (process.isAlive() || reader.ready()) {
 						if (reader.ready()) {
@@ -67,7 +68,7 @@ public class FlixLaunchConfigurationDelegate extends LaunchConfigurationDelegate
 						}
 					}
 				}
-				writer.write("### END ###\n");
+				writer.write("<<TIME=" + (System.currentTimeMillis() - before) + "ms>>\n");
 			}
 		} catch (final InterruptedException | IOException exception) {
 			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Failed", exception));

@@ -13,37 +13,39 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import de.hetzge.eclipse.flix.FlixLogger;
+
 class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 
 	private static final String SUCCESS_STATUS_VALUE = "success";
 	private static final String FAILURE_STATUS_VALUE = "failure";
 
 	private final StringBuilder builder;
-	private final Map<String, CompletableFuture<JsonObject>> messagesById; // memory leak
+	private final Map<String, CompletableFuture<JsonObject>> messagesById; // TODO memory leak
 
 	public FlixCompilerProcessSocketListener() {
 		this.builder = new StringBuilder();
 		this.messagesById = new ConcurrentHashMap<>();
 	}
 
-	public CompletableFuture<Either<JsonObject, JsonObject>> startRequestResponse(String id) {
+	public CompletableFuture<Either<JsonElement, JsonElement>> startRequestResponse(String id) {
 		System.out.println("Start request/response with id " + id);
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		final CompletableFuture<Either<JsonObject, JsonObject>> successFailureFuture = future.thenApply(message -> {
+		final CompletableFuture<Either<JsonElement, JsonElement>> successFailureFuture = future.thenApply(message -> {
 			this.messagesById.remove(id);
 			final String statusValue = message.get("status").getAsString();
-			final JsonElement jsonElement = message.get("result");
-			if (jsonElement == null) {
-				throw new IllegalStateException("Unexpected response: " + message);
-			}
-			final JsonObject resultJsonObject = jsonElement.getAsJsonObject();
+			final JsonElement resultJsonElement = message.get("result");
 			if (statusValue.equals(SUCCESS_STATUS_VALUE)) {
-				return Either.forLeft(resultJsonObject);
+				return Either.forLeft(resultJsonElement != null ? resultJsonElement : new JsonObject());
 			} else if (statusValue.equals(FAILURE_STATUS_VALUE)) {
-				return Either.forRight(resultJsonObject);
+				return Either.forRight(resultJsonElement != null ? resultJsonElement : new JsonObject());
 			} else {
 				throw new IllegalStateException(String.format("Unexpected status '%s'", statusValue));
 			}
+		});
+		successFailureFuture.exceptionally(throwable -> {
+			FlixLogger.logError("Failed request response handling", throwable);
+			return null;
 		});
 		this.messagesById.put(id, future);
 		return successFailureFuture;
@@ -57,7 +59,7 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 
 	@Override
 	public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-		// System.out.println("[FLIX LSP SOCKET (" + last + ")]::" + data);
+		System.out.println("[FLIX LSP SOCKET (" + last + ")]::" + data);
 
 		this.builder.append(data);
 		if (last) {

@@ -1,7 +1,9 @@
 package de.hetzge.eclipse.flix.server;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.resources.IFile;
@@ -12,6 +14,11 @@ import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.services.LanguageClient;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 
 import de.hetzge.eclipse.flix.GsonUtils;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
@@ -30,11 +37,14 @@ public final class FlixServerService implements AutoCloseable {
 	private final IProject project;
 	private final FlixCompilerClient compilerClient;
 	private final FlixCompilerProcess compilerProcess;
+	private final Map<String, PublishDiagnosticsParams> diagnosticsParamsByUri;
+	private LanguageClient client;
 
 	public FlixServerService(IProject project, FlixCompilerClient compilerClient, FlixCompilerProcess compilerProcess) {
 		this.project = project;
 		this.compilerClient = compilerClient;
 		this.compilerProcess = compilerProcess;
+		this.diagnosticsParamsByUri = new HashMap<>();
 	}
 
 	@Override
@@ -135,6 +145,34 @@ public final class FlixServerService implements AutoCloseable {
 	}
 
 	public CompletableFuture<Void> compile() {
-		return this.compilerClient.sendCheck().thenApply(ignore -> null);
+		return this.compilerClient.sendCheck().thenApply(response -> {
+			synchronized (this.diagnosticsParamsByUri) {
+				if (response.isLeft()) {
+					System.out.println(response.getLeft() + " !!!");
+					for (final PublishDiagnosticsParams diagnosticsParams : this.diagnosticsParamsByUri.values()) {
+						this.client.publishDiagnostics(new PublishDiagnosticsParams(diagnosticsParams.getUri(), List.of()));
+					}
+					return null;
+				} else {
+					System.out.println(response.getRight() + " ???");
+					final JsonArray jsonArray = response.getRight().getAsJsonArray();
+					final Map<String, PublishDiagnosticsParams> diffMap = new HashMap<>(this.diagnosticsParamsByUri);
+					for (final JsonElement jsonElement : jsonArray) {
+						final PublishDiagnosticsParams publishDiagnosticsParams = GsonUtils.getGson().fromJson(jsonElement, PublishDiagnosticsParams.class);
+						this.diagnosticsParamsByUri.put(publishDiagnosticsParams.getUri(), publishDiagnosticsParams);
+						diffMap.remove(publishDiagnosticsParams.getUri());
+						this.client.publishDiagnostics(publishDiagnosticsParams);
+					}
+					for (final PublishDiagnosticsParams diagnosticsParams : diffMap.values()) {
+						this.client.publishDiagnostics(new PublishDiagnosticsParams(diagnosticsParams.getUri(), List.of()));
+					}
+					return null;
+				}
+			}
+		});
+	}
+
+	public void setClient(LanguageClient client) {
+		this.client = client;
 	}
 }

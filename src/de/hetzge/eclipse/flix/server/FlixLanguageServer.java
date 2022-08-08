@@ -19,6 +19,7 @@ import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.WorkspaceServerCapabilities;
+import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
@@ -128,5 +129,9 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 
 			return new FlixLanguageServer(new FlixServerService(project, compilerClient, compilerProcess));
 		});
+	}
+
+	public void setClient(LanguageClient client) {
+		this.flixService.setClient(client);
 	}
 }
