@@ -11,9 +11,7 @@ import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
-import org.eclipse.lsp4j.Location;
-
-import com.google.gson.reflect.TypeToken;
+import org.eclipse.lsp4j.LocationLink;
 
 import de.hetzge.eclipse.flix.GsonUtils;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
@@ -54,9 +52,9 @@ public final class FlixServerService implements AutoCloseable {
 		final URI uri = file.getLocationURI();
 		if (FLIX_FILE_EXTENSION.equals(fileExtension)) {
 			addUri(uri, Utils.readFileContent(file));
-		} else if (FLIX_PACKAGE_FILE_EXTENSION.equals(fileExtension)) {
+		} else if (isInLibFolder(file) && FLIX_PACKAGE_FILE_EXTENSION.equals(fileExtension)) {
 			addFpkg(file.getLocationURI());
-		} else if (JAR_FILE_EXTENSION.equals(fileExtension)) {
+		} else if (isInLibFolder(file) && JAR_FILE_EXTENSION.equals(fileExtension)) {
 			addJar(file.getLocationURI());
 		} else {
 			System.out.println("Ignore '" + uri + "'");
@@ -68,13 +66,17 @@ public final class FlixServerService implements AutoCloseable {
 		final URI uri = file.getLocationURI();
 		if (FLIX_FILE_EXTENSION.equals(fileExtension)) {
 			removeUri(uri);
-		} else if (FLIX_PACKAGE_FILE_EXTENSION.equals(fileExtension)) {
+		} else if (isInLibFolder(file) && FLIX_PACKAGE_FILE_EXTENSION.equals(fileExtension)) {
 			removeFpkg(uri);
-		} else if (JAR_FILE_EXTENSION.equals(fileExtension)) {
+		} else if (isInLibFolder(file) && JAR_FILE_EXTENSION.equals(fileExtension)) {
 			removeJar(uri);
 		} else {
 			System.out.println("Ignore '" + uri + "'");
 		}
+	}
+
+	private boolean isInLibFolder(IFile file) {
+		return this.project.getFullPath().append("/lib/").isPrefixOf(file.getFullPath());
 	}
 
 	public void addUri(URI uri, String content) {
@@ -111,11 +113,10 @@ public final class FlixServerService implements AutoCloseable {
 		});
 	}
 
-	public CompletableFuture<List<Location>> decleration(DeclarationParams params) {
+	public CompletableFuture<List<LocationLink>> decleration(DeclarationParams params) {
 		return this.compilerClient.sendGoto(params).thenApply(response -> {
 			if (response.isLeft()) {
-				return GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<Location>>() {
-				}.getType());
+				return List.of(GsonUtils.getGson().fromJson(response.getLeft(), LocationLink.class));
 			} else {
 				throw new RuntimeException();
 			}

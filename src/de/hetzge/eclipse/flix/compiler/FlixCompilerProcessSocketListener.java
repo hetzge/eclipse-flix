@@ -62,7 +62,6 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 		this.builder.append(data);
 		if (last) {
 			final String message = this.builder.toString();
-			System.out.println(message);
 			final JsonObject jsonObject = JsonParser.parseString(message).getAsJsonObject();
 			final String id = jsonObject.get("id").getAsString();
 			Optional.ofNullable(this.messagesById.get(id)).ifPresent(future -> {
@@ -79,5 +78,11 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 		System.out.println("Bad day! " + webSocket.toString());
 		error.printStackTrace();
 		WebSocket.Listener.super.onError(webSocket, error);
+	}
+
+	@Override
+	public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
+		System.out.println(String.format("Closed websocket with status code '%s' and reason '%s'", statusCode, reason));
+		return WebSocket.Listener.super.onClose(webSocket, statusCode, reason);
 	}
 }

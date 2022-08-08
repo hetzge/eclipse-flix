@@ -43,9 +43,6 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 		return CompletableFuture.supplyAsync(() -> {
 			System.out.println("FlixLanguageServer.initialize()");
 
-			this.flixService.addWorkspaceUris();
-			this.flixService.compile();
-
 			final FileOperationOptions fileOperationOptions = new FileOperationOptions();
 			fileOperationOptions.setFilters(List.of(new FileOperationFilter(new FileOperationPattern("**"))));
 			final FileOperationsServerCapabilities fileOperationsServerCapabilities = new FileOperationsServerCapabilities();
@@ -86,6 +83,9 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 	public void initialized(InitializedParams params) {
 		System.out.println("FlixLanguageServer.initialized()");
 		LanguageServer.super.initialized(params);
+
+		this.flixService.addWorkspaceUris();
+		this.flixService.compile();
 	}
 
 	@Override
@@ -124,8 +124,6 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 			rollback.add(compilerProcess::close);
 			final FlixCompilerClient compilerClient = FlixCompilerClient.connect(compilerPort);
 			rollback.add(compilerClient::close);
-
-			System.out.println("Started flix language server with port " + compilerPort);
 
 			return new FlixLanguageServer(new FlixServerService(project, compilerClient, compilerProcess));
 		});

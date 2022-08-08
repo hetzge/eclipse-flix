@@ -40,7 +40,7 @@ public final class FlixTextDocumentService implements TextDocumentService {
 	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> declaration(DeclarationParams params) {
 		System.out.println("FlixTextDocumentService.declaration()");
 		return this.flixService.decleration(params).thenApply(completionList -> {
-			return Either.forLeft(completionList);
+			return Either.forRight(completionList);
 		});
 	}
 

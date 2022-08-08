@@ -17,7 +17,7 @@ public final class Utils {
 
 	public static String readUriBase64Encoded(URI uri) {
 		try (InputStream inputStream = uri.toURL().openStream()) {
-			return new String(Base64.getEncoder().encode(inputStream.readAllBytes()), StandardCharsets.US_ASCII);
+			return Base64.getEncoder().encodeToString(inputStream.readAllBytes());
 		} catch (final IOException exception) {
 			throw new RuntimeException(exception);
 		}

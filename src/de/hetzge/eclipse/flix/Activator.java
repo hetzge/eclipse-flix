@@ -88,6 +88,7 @@ public class Activator extends AbstractUIPlugin {
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
+		System.out.println("Activator.stop()");
 		for (final FlixProject project : this.connectedProjects.values()) {
 			project.close();
 		}

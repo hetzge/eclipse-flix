@@ -140,15 +140,17 @@ public class FlixCompilerClient implements AutoCloseable {
 	}
 
 	private CompletableFuture<Void> send(final String jsonString) {
-//		System.out.println("Send: " + jsonString);
+		System.out.println("Send: " + ", length=" + jsonString.length());
 
 		if (this.webSocket.isInputClosed() || this.webSocket.isOutputClosed()) {
 			System.out.println("CLOSED !!!");
+			throw new RuntimeException("!!!!!!!");
 		} else {
 			System.out.println("NOT CLOSED !!!");
 		}
 
 		return this.webSocket.sendText(jsonString, true).thenRun(() -> {
+			System.out.println("Closed after: " + (this.webSocket.isInputClosed() || this.webSocket.isOutputClosed()));
 		});
 	}
 

@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.ProcessBuilder.Redirect;
 
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
@@ -28,6 +27,7 @@ public final class FlixCompilerProcess implements AutoCloseable {
 
 	@Override
 	public void close() {
+		System.out.println("FlixCompilerProcess.close()");
 		this.rollback.reset();
 	}
 
@@ -43,12 +43,11 @@ public final class FlixCompilerProcess implements AutoCloseable {
 
 				final ProcessBuilder processBuilder = new ProcessBuilder(jreExecutableFile.getAbsolutePath(), "-jar", flixJarFile.getAbsolutePath(), "--lsp", String.valueOf(port));
 				processBuilder.redirectErrorStream(true);
-				processBuilder.redirectOutput(Redirect.PIPE);
 				final Process process = processBuilder.start();
 				rollback.add(process::destroyForcibly);
-				final BufferedReader stdoutReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+				final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 				String line = "";
-				while ((line = stdoutReader.readLine()) != null) {
+				while ((line = reader.readLine()) != null) {
 					if (line.contains("LSP listening on")) {
 						break;
 					} else {
@@ -81,12 +80,12 @@ public final class FlixCompilerProcess implements AutoCloseable {
 
 		@Override
 		public void run() {
-			super.run();
-			final BufferedReader stdoutReader = new BufferedReader(new InputStreamReader(this.process.getInputStream()));
+			System.out.println("FlixCompilerProcess.MonitorThread.run()");
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(this.process.getInputStream()));
 			String line = "";
 			try {
-				while (!this.done && (line = stdoutReader.readLine()) != null) {
-					// System.out.println("[FLIX LSP PROCESS]::" + line);
+				while (!this.done && (line = reader.readLine()) != null) {
+					System.out.println("[FLIX LSP PROCESS]::" + line);
 				}
 			} catch (final IOException exception) {
 				throw new RuntimeException(exception);
@@ -96,6 +95,7 @@ public final class FlixCompilerProcess implements AutoCloseable {
 
 		@Override
 		public void close() {
+			System.out.println("FlixCompilerProcess.MonitorThread.close()");
 			this.done = true;
 		}
 	}

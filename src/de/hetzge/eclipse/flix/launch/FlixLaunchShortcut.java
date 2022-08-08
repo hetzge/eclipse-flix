@@ -70,6 +70,9 @@ public class FlixLaunchShortcut implements ILaunchShortcut {
 				final ILaunchConfigurationWorkingCopy copy = type.newInstance(null, String.format("Run '%s' in '%s'", file.getProjectRelativePath().toOSString().replaceAll("\\/", " "), project.getName()));
 				copy.setMappedResources(new IResource[] { file });
 				copy.doSave();
+
+				DebugUITools.launch(copy, mode);
+
 //				final int result = DebugUITools.openLaunchConfigurationDialog(PlatformUIUtil.getActiveShell(), copy, "eclipsezig.launchGroup", null);
 //				if (result == Window.OK) {
 //				} else {
