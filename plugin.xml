@@ -1,156 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension
-         id="problem"
-         name="Flix Problem"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.eclipse.core.resources.problemmarker">
-      </super>
-      <super
-            type="org.eclipse.core.resources.textmarker">
-      </super>
-   </extension>
-   <extension
-         point="org.eclipse.core.contenttype.contentTypes">
-      <content-type
-            id="de.hetzge.eclipse.flix"
-            name="Flix"
-            file-extensions="flix"
-            base-type="org.eclipse.core.runtime.text"
-            priority="normal">
-      </content-type>
-   </extension>
-<!--   <extension-->
-<!--         point="org.eclipse.core.runtime.preferences">-->
-<!--      <initializer-->
-<!--            class="org.lxtk.lx4e.internal.examples.proto.ProtoPreferenceInitializer">-->
-<!--      </initializer>-->
-<!--   </extension>-->
-   <extension
-         point="org.eclipse.ui.editors">
-      <editor
-            class="de.hetzge.eclipse.flix.editor.FlixEditor"
-            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
-            default="false"
-            icon="icon.png"
-            id="de.hetzge.eclipse.flix.editor"
-            name="Flix Editor">
-         <contentTypeBinding
-               contentTypeId="de.hetzge.eclipse.flix">
-         </contentTypeBinding>
-      </editor>
-   </extension>
-   <extension
-         point="org.eclipse.ui.contexts">
-      <context
-            id="de.hetzge.eclipse.flix.editor.scope"
-            parentId="org.eclipse.ui.textEditorScope"
-            name="Editing Flix Source"
-            description="Editing Flix Source Context">
-      </context>
-   </extension>
-   <extension
-         point="org.eclipse.tm4e.registry.grammars">
-      <grammar
-            scopeName="source.flix"
-            path="syntaxes/flix.tmLanguage.json" >
-      </grammar>
-      <scopeNameContentTypeBinding
-            contentTypeId="de.hetzge.eclipse.flix"
-            scopeName="source.flix">
-      </scopeNameContentTypeBinding>
-   </extension>
-   <extension
-         point="org.eclipse.tm4e.languageconfiguration.languageConfigurations">
-      <languageConfiguration
-            contentTypeId="de.hetzge.eclipse.flix"
-            path="language-configuration.json">
-      </languageConfiguration>
-   </extension>
-   <extension
-         point="org.eclipse.tm4e.ui.themes">
-      <themeAssociation
-            scopeName="source.flix"
-            themeId="org.eclipse.tm4e.ui.themes.Light">
-      </themeAssociation>
-   </extension>
-   <extension
-         point="org.eclipse.ui.ide.markerResolution">
-      <markerResolutionGenerator
-            class="de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator"
-            markerType="de.hetzge.eclipse.flix.problem">
-      </markerResolutionGenerator>
-   </extension>
-   <extension
-         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
-      <target
-            id="de.hetzge.eclipse.flix.editor"
-            name="Flix Hyperlink Target">
-      </target>
-   </extension>
-   <extension
-         point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
-      <hyperlinkDetector
-            activate="true"
-            class="org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector"
-            id="asdasdasdadas"
-            name="name"
-            targetId="de.hetzge.eclipse.flix.editor">
-      </hyperlinkDetector>
-   </extension>
-   <extension point="org.eclipse.debug.core.launchConfigurationTypes">
-    <launchConfigurationType
-        name="Flix launch"
-        delegate="de.hetzge.eclipse.flix.launch.FlixLaunchConfigurationDelegate"
-        modes="run"
-        id="de.hetzge.eclipse.flix.launchConfigurationType">
-    </launchConfigurationType>
-   </extension>
-   <extension
-		point="org.eclipse.debug.ui.launchConfigurationTypeImages">
-		<launchConfigurationTypeImage
-			id="de.hetzge.eclipse.flix.launchConfigurationType.image" configTypeID="de.hetzge.eclipse.flix.launchConfigurationType"
-			icon="icon.png" />
-   </extension>
+	<extension id="problem" name="Flix Problem" point="org.eclipse.core.resources.markers">
+		<super type="org.eclipse.core.resources.problemmarker"></super>
+		<super type="org.eclipse.core.resources.textmarker"></super>
+	</extension>
+	<extension point="org.eclipse.core.contenttype.contentTypes">
+		<content-type id="de.hetzge.eclipse.flix" name="Flix" file-extensions="flix" base-type="org.eclipse.core.runtime.text" priority="normal"></content-type>
+	</extension>
+	<!--   <extension-->
+	<!--         point="org.eclipse.core.runtime.preferences">-->
+	<!--      <initializer-->
+	<!--            class="org.lxtk.lx4e.internal.examples.proto.ProtoPreferenceInitializer">-->
+	<!--      </initializer>-->
+	<!--   </extension>-->
+	<extension point="org.eclipse.ui.editors">
+		<editor class="de.hetzge.eclipse.flix.editor.FlixEditor" contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor" default="false" icon="icon.png" id="de.hetzge.eclipse.flix.editor" name="Flix Editor">
+			<contentTypeBinding contentTypeId="de.hetzge.eclipse.flix"></contentTypeBinding>
+		</editor>
+	</extension>
+	<extension point="org.eclipse.ui.contexts">
+		<context id="de.hetzge.eclipse.flix.editor.scope" parentId="org.eclipse.ui.textEditorScope" name="Editing Flix Source" description="Editing Flix Source Context"></context>
+	</extension>
+	<extension point="org.eclipse.tm4e.registry.grammars">
+		<grammar scopeName="source.flix" path="syntaxes/flix.tmLanguage.json"></grammar>
+		<scopeNameContentTypeBinding contentTypeId="de.hetzge.eclipse.flix" scopeName="source.flix"></scopeNameContentTypeBinding>
+	</extension>
+	<extension point="org.eclipse.tm4e.languageconfiguration.languageConfigurations">
+		<languageConfiguration contentTypeId="de.hetzge.eclipse.flix" path="language-configuration.json"></languageConfiguration>
+	</extension>
+	<extension point="org.eclipse.tm4e.ui.themes">
+		<themeAssociation scopeName="source.flix" themeId="org.eclipse.tm4e.ui.themes.Light"></themeAssociation>
+	</extension>
+	<extension point="org.eclipse.ui.ide.markerResolution">
+		<markerResolutionGenerator class="de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator" markerType="de.hetzge.eclipse.flix.problem"></markerResolutionGenerator>
+	</extension>
+	<extension point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectorTargets">
+		<target id="de.hetzge.eclipse.flix.editor" name="Flix Hyperlink Target"></target>
+	</extension>
+	<extension point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
+		<hyperlinkDetector activate="true" class="org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector" id="asdasdasdadas" name="name" targetId="de.hetzge.eclipse.flix.editor"></hyperlinkDetector>
+	</extension>
+	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
+		<launchConfigurationType name="Flix launch" delegate="de.hetzge.eclipse.flix.launch.FlixLaunchConfigurationDelegate" modes="run" id="de.hetzge.eclipse.flix.launchConfigurationType"></launchConfigurationType>
+	</extension>
+	<extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+		<launchConfigurationTypeImage id="de.hetzge.eclipse.flix.launchConfigurationType.image" configTypeID="de.hetzge.eclipse.flix.launchConfigurationType" icon="icon.png" />
+	</extension>
 	<extension point="org.eclipse.ui.newWizards">
 		<category id="de.hetzge.eclipse.flix.wizards" name="Flix"></category>
-<!--		<wizard category="eclipsezig.wizards"-->
-<!--			class="eclipsezig.eclipse.project.ZigFileWizard"-->
-<!--			icon="icons/zigEditorIcon.png" id="eclipsezig.zig.newfile"-->
-<!--			name="Zig File">-->
-<!--			<description>-->
-<!--				Create a Zig file-->
-<!--			</description>-->
-<!--		</wizard>-->
-		<wizard category="de.hetzge.eclipse.flix.wizards"
-			class="de.hetzge.eclipse.flix.project.FlixProjectWizard"
-			icon="icon.png" id="de.hetzge.eclipse.flix.newProject"
-			name="Flix Project" project="true">
+		<!--		<wizard category="eclipsezig.wizards"-->
+		<!--			class="eclipsezig.eclipse.project.ZigFileWizard"-->
+		<!--			icon="icons/zigEditorIcon.png" id="eclipsezig.zig.newfile"-->
+		<!--			name="Zig File">-->
+		<!--			<description>-->
+		<!--				Create a Zig file-->
+		<!--			</description>-->
+		<!--		</wizard>-->
+		<wizard category="de.hetzge.eclipse.flix.wizards" class="de.hetzge.eclipse.flix.project.FlixProjectWizard" icon="icon.png" id="de.hetzge.eclipse.flix.newProject" name="Flix Project" project="true">
 			<description>
 				Create a Flix project
 			</description>
 		</wizard>
 	</extension>
-   <extension
-    point="org.eclipse.debug.ui.launchShortcuts">
-    <shortcut
-        class="de.hetzge.eclipse.flix.launch.FlixLaunchShortcut"
-        icon="icon.png"
-        id="de.hetzge.eclipse.flix.launchShortcut"
-        label="Flix run"
-        modes="run">
-        <contextualLaunch>
-            <enablement>
-                <with
-                    variable="selection">
-                    <count
-                        value="+">
-                    </count>
-                </with>
-            </enablement>
-        </contextualLaunch>
-    </shortcut>
-</extension>
+	<extension point="org.eclipse.debug.ui.launchShortcuts">
+		<shortcut class="de.hetzge.eclipse.flix.launch.FlixLaunchShortcut" icon="icon.png" id="de.hetzge.eclipse.flix.launchShortcut" label="Flix run" modes="run">
+			<contextualLaunch>
+				<enablement>
+					<with variable="selection">
+						<count value="+"></count>
+					</with>
+				</enablement>
+			</contextualLaunch>
+		</shortcut>
+	</extension>
+	<extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+		<launchConfigurationTabGroup class="de.hetzge.eclipse.flix.launch.FlixLaunchTabGroup" id="de.hetzge.eclipse.flix.launchTabGroups" type="de.hetzge.eclipse.flix.launchConfigurationType"></launchConfigurationTabGroup>
+	</extension>
+	<extension point="org.eclipse.debug.ui.launchGroups">
+		<launchGroup bannerImage="icon.png" id="de.hetzge.eclipse.flix.launchGroup" image="icon.png" label="Flix Launch Group" mode="run"></launchGroup>
+	</extension>
+
 </plugin>
