@@ -70,7 +70,7 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 	public void close() {
 		this.done = true;
 		for (final Rollback rollback : this.rollbacks) {
-			rollback.reset();
+			rollback.run();
 		}
 	}
 

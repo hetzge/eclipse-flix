@@ -13,6 +13,6 @@ public class FlixProject implements AutoCloseable {
 	@Override
 	public void close() throws Exception {
 		System.out.println("FlixProject.close()");
-		this.rollback.reset();
+		this.rollback.run();
 	}
 }

@@ -39,6 +39,7 @@ public final class FlixServerService implements AutoCloseable {
 
 	@Override
 	public void close() {
+		System.out.println("FlixServerService.close()");
 		this.compilerClient.close();
 		this.compilerProcess.close();
 	}
@@ -124,7 +125,6 @@ public final class FlixServerService implements AutoCloseable {
 	}
 
 	public CompletableFuture<Hover> hover(HoverParams params) {
-		System.out.println("IS ALIVE: " + this.compilerProcess.isAlive());
 		return this.compilerClient.sendHover(params).thenApply(response -> {
 			if (response.isLeft()) {
 				return GsonUtils.getGson().fromJson(response.getLeft(), Hover.class);

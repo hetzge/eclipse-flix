@@ -32,7 +32,7 @@ public class FlixCompilerClient implements AutoCloseable {
 
 	@Override
 	public void close() {
-		this.rollback.reset();
+		this.rollback.run();
 	}
 
 	public CompletableFuture<Void> sendAddUri(URI uri, String src) {
@@ -140,17 +140,8 @@ public class FlixCompilerClient implements AutoCloseable {
 	}
 
 	private CompletableFuture<Void> send(final String jsonString) {
-		System.out.println("Send: " + ", length=" + jsonString.length());
-
-		if (this.webSocket.isInputClosed() || this.webSocket.isOutputClosed()) {
-			System.out.println("CLOSED !!!");
-			throw new RuntimeException("!!!!!!!");
-		} else {
-			System.out.println("NOT CLOSED !!!");
-		}
-
+		System.out.println("Send with length " + jsonString.length());
 		return this.webSocket.sendText(jsonString, true).thenRun(() -> {
-			System.out.println("Closed after: " + (this.webSocket.isInputClosed() || this.webSocket.isOutputClosed()));
 		});
 	}
 

@@ -28,7 +28,7 @@ public final class FlixCompilerProcess implements AutoCloseable {
 	@Override
 	public void close() {
 		System.out.println("FlixCompilerProcess.close()");
-		this.rollback.reset();
+		this.rollback.run();
 	}
 
 	public static synchronized FlixCompilerProcess start(int port) {

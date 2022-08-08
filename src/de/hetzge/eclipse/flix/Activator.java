@@ -93,7 +93,7 @@ public class Activator extends AbstractUIPlugin {
 			project.close();
 		}
 		if (this.rollback != null) {
-			this.rollback.reset();
+			this.rollback.run();
 			this.rollback = null;
 		}
 		plugin = null;

@@ -113,6 +113,7 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 
 	@Override
 	public void close() {
+		System.out.println("FlixLanguageServer.close()");
 		this.flixService.close();
 	}
 
