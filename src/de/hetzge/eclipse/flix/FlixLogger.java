@@ -14,7 +14,7 @@ public final class FlixLogger {
 	 * @param throwable The exception through which we noticed the error
 	 */
 	public static void logError(final Throwable throwable) {
-		Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, throwable.getMessage(), throwable));
+		FlixActivator.getDefault().getLog().log(new Status(IStatus.ERROR, FlixConstants.PLUGIN_ID, 0, throwable.getMessage(), throwable));
 	}
 
 	/**
@@ -24,7 +24,7 @@ public final class FlixLogger {
 	 * @param throwable The exception through which we noticed the error
 	 */
 	public static void logError(final String message, final Throwable throwable) {
-		Activator.getDefault().getLog().log(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, message, throwable));
+		FlixActivator.getDefault().getLog().log(new Status(IStatus.ERROR, FlixConstants.PLUGIN_ID, 0, message, throwable));
 	}
 
 	/**
@@ -33,7 +33,7 @@ public final class FlixLogger {
 	 * @param message
 	 */
 	public static void logInfo(final String message) {
-		Activator.getDefault().getLog().log(new Status(IStatus.INFO, Activator.PLUGIN_ID, 0, message, null));
+		FlixActivator.getDefault().getLog().log(new Status(IStatus.INFO, FlixConstants.PLUGIN_ID, 0, message, null));
 	}
 
 	/**
@@ -43,6 +43,6 @@ public final class FlixLogger {
 	 * @param throwable The exception through which we noticed the warning
 	 */
 	public static void logWarning(final String message, final Throwable throwable) {
-		Activator.getDefault().getLog().log(new Status(IStatus.WARNING, Activator.PLUGIN_ID, 0, message, throwable));
+		FlixActivator.getDefault().getLog().log(new Status(IStatus.WARNING, FlixConstants.PLUGIN_ID, 0, message, throwable));
 	}
 }

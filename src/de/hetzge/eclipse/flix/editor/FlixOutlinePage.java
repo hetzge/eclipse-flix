@@ -15,7 +15,8 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.ui.IEditorPart;
 import org.lxtk.lx4e.ui.LanguageElementLabelProvider;
 
-import de.hetzge.eclipse.flix.Activator;
+import de.hetzge.eclipse.flix.Flix;
+import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixInputElementProvider;
 
 /**
@@ -60,13 +61,13 @@ public class FlixOutlinePage extends HandlyOutlinePage {
 	@Override
 	protected void addElementChangeListener(IElementChangeListener listener) {
 		System.out.println("FlixOutlinePage.addElementChangeListener()");
-		Activator.getDefault().getModelManager().getNotificationManager().addElementChangeListener(listener);
+		Flix.get().getModelManager().getNotificationManager().addElementChangeListener(listener);
 	}
 
 	@Override
 	protected void removeElementChangeListener(IElementChangeListener listener) {
 		System.out.println("FlixOutlinePage.removeElementChangeListener()");
-		Activator.getDefault().getModelManager().getNotificationManager().removeElementChangeListener(listener);
+		Flix.get().getModelManager().getNotificationManager().removeElementChangeListener(listener);
 	}
 
 	@Override
@@ -84,7 +85,7 @@ public class FlixOutlinePage extends HandlyOutlinePage {
 		static final LinkWithEditorPreference INSTANCE = new LinkWithEditorPreference();
 
 		LinkWithEditorPreference() {
-			super("FlixOutline.LinkWithEditor", new FlushingPreferenceStore(Activator.getDefault().getPreferenceStore())); //$NON-NLS-1$
+			super("FlixOutline.LinkWithEditor", new FlushingPreferenceStore(FlixActivator.getDefault().getPreferenceStore())); //$NON-NLS-1$
 			setDefault(true);
 		}
 	}

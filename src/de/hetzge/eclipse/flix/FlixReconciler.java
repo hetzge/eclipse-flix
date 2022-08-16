@@ -46,11 +46,11 @@ public class FlixReconciler extends EditorWorkingCopyReconciler {
 
 	@Override
 	protected void addElementChangeListener(IElementChangeListener listener) {
-		Activator.getDefault().getModelManager().getNotificationManager().addElementChangeListener(listener);
+		Flix.get().getModelManager().getNotificationManager().addElementChangeListener(listener);
 	}
 
 	@Override
 	protected void removeElementChangeListener(IElementChangeListener listener) {
-		Activator.getDefault().getModelManager().getNotificationManager().removeElementChangeListener(listener);
+		Flix.get().getModelManager().getNotificationManager().removeElementChangeListener(listener);
 	}
 }

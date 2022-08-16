@@ -37,7 +37,8 @@ import org.lxtk.util.SafeRun;
 import org.lxtk.util.connect.SocketConnection;
 import org.lxtk.util.connect.StreamBasedConnection;
 
-import de.hetzge.eclipse.flix.Activator;
+import de.hetzge.eclipse.flix.Flix;
+import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixCore;
 import de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator;
 
@@ -51,7 +52,7 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 	public FlixLanguageClient(IProject project, int port) {
 		this.project = project;
 		this.port = port;
-		this.log = new EclipseLog(Activator.getDefault().getBundle(), "flix-language-client:" + project.getName());
+		this.log = new EclipseLog(FlixActivator.getDefault().getBundle(), "flix-language-client:" + project.getName());
 		this.diagnosticConsumer = new BufferingDiagnosticConsumer(new DiagnosticMarkers(FlixMarkerResolutionGenerator.MARKER_TYPE));
 	}
 
@@ -79,7 +80,7 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 
 		final Collection<Feature<? super LanguageServer>> features = new ArrayList<>();
 		features.add(new CompletionFeature(FlixCore.LANGUAGE_SERVICE));
-		features.add(FileOperationsFeature.newInstance(Activator.getDefault().getResourceMonitor()));
+		features.add(FileOperationsFeature.newInstance(Flix.get().getResourceMonitor()));
 		features.add(textDocumentSyncFeature);
 		features.add(new ReferencesFeature(FlixCore.LANGUAGE_SERVICE));
 		features.add(new DeclarationFeature(FlixCore.LANGUAGE_SERVICE));

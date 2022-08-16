@@ -1,10 +1,12 @@
 package de.hetzge.eclipse.flix;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lxtk.util.SafeRun;
@@ -21,35 +23,28 @@ import de.hetzge.eclipse.utils.Utils;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin {
+public class FlixActivator extends AbstractUIPlugin {
 
-	public static final String PLUGIN_ID = "de.hetzge.eclipse.flix"; //$NON-NLS-1$
+	private static FlixActivator plugin;
 
-	private static Activator plugin;
+	public static FlixActivator getDefault() {
+		Objects.requireNonNull(plugin, "Flix plugin is not initialized");
+		return plugin;
+	}
 
-	private ResourceMonitor resourceMonitor;
-	private FlixDocumentProvider flixDocumentProvider;
 	private final Map<IProject, Rollback> connectedProjects;
 	private Rollback rollback;
 	private FlixModelManager modelManager;
 
-	public Activator() {
+	private Flix flix;
+
+	public FlixActivator() {
 		this.connectedProjects = new ConcurrentHashMap<>();
 	}
 
-	public ResourceMonitor getResourceMonitor() {
-		return this.resourceMonitor;
-	}
-
-	public FlixDocumentProvider getFlixDocumentProvider() {
-		return this.flixDocumentProvider;
-	}
-
-	public FlixModelManager getModelManager() {
-		if (this.modelManager == null) {
-			throw new IllegalStateException("Flix plugin is not initialized");
-		}
-		return this.modelManager;
+	public Flix getFlix() {
+		Objects.requireNonNull(this.flix, "Flix plugin is not initialized");
+		return this.flix;
 	}
 
 	@Override
@@ -58,11 +53,15 @@ public class Activator extends AbstractUIPlugin {
 		plugin = this;
 
 		SafeRun.run(rollback -> {
-			this.flixDocumentProvider = new FlixDocumentProvider();
-			this.modelManager = FlixModelManager.setup();
+			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+			this.modelManager = FlixModelManager.setup(workspace);
 			rollback.add(() -> {
 				this.modelManager.close();
 				this.modelManager = null;
+			});
+			this.flix = new Flix(this.modelManager);
+			rollback.add(() -> {
+				this.flix = null;
 			});
 
 			final FlixModel model = this.modelManager.getModel();
@@ -78,9 +77,8 @@ public class Activator extends AbstractUIPlugin {
 				EclipseUtils.getProject(document).ifPresent(this::initializeFlixProject);
 			})::dispose);
 
-			this.resourceMonitor = new ResourceMonitor();
-			ResourcesPlugin.getWorkspace().addResourceChangeListener(this.resourceMonitor, IResourceChangeEvent.POST_CHANGE);
-			rollback.add(() -> ResourcesPlugin.getWorkspace().removeResourceChangeListener(this.resourceMonitor));
+			workspace.addResourceChangeListener(this.flix.getResourceMonitor(), IResourceChangeEvent.POST_CHANGE);
+			rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getResourceMonitor()));
 			this.rollback = rollback;
 		});
 	}
@@ -100,15 +98,6 @@ public class Activator extends AbstractUIPlugin {
 		} finally {
 			super.stop(context);
 		}
-	}
-
-	/**
-	 * Returns the shared instance
-	 *
-	 * @return the shared instance
-	 */
-	public static Activator getDefault() {
-		return plugin;
 	}
 
 	private synchronized void initializeFlixProject(IProject project) {

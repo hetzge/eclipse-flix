@@ -6,7 +6,8 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import de.hetzge.eclipse.flix.Activator;
+import de.hetzge.eclipse.flix.Flix;
+import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixDocumentProvider;
 import de.hetzge.eclipse.flix.FlixSourceViewerConfiguration;
 
@@ -19,7 +20,7 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 
 	@Override
 	protected void initializeEditor() {
-		final FlixDocumentProvider documentProvider = Activator.getDefault().getFlixDocumentProvider();
+		final FlixDocumentProvider documentProvider = Flix.get().getDocumentProvider();
 		setPreferenceStore(getPreferenceStores());
 		setDocumentProvider(documentProvider);
 		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(getPreferenceStores(), this, documentProvider));
@@ -28,7 +29,7 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 	}
 
 	private ChainedPreferenceStore getPreferenceStores() {
-		return new ChainedPreferenceStore(new IPreferenceStore[] { Activator.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
+		return new ChainedPreferenceStore(new IPreferenceStore[] { FlixActivator.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
 	}
 
 	@Override

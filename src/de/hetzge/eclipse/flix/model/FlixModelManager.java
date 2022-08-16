@@ -2,6 +2,7 @@ package de.hetzge.eclipse.flix.model;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.context.Context;
@@ -65,7 +66,7 @@ public class FlixModelManager implements IModelManager, IResourceChangeListener,
 		return this.notificationManager;
 	}
 
-	public static FlixModelManager setup() {
+	public static FlixModelManager setup(IWorkspace workspace) {
 		System.out.println("FlixModelManager.setup()");
 		final NotificationManager notificationManager = new NotificationManager();
 
@@ -84,7 +85,7 @@ public class FlixModelManager implements IModelManager, IResourceChangeListener,
 		final FlixModel model = new FlixModel(context);
 		final ElementManager elementManager = new ElementManager(new FlixModelCache());
 		final FlixModelManager modelManager = new FlixModelManager(model, elementManager, notificationManager);
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(modelManager, IResourceChangeEvent.POST_CHANGE);
+		workspace.addResourceChangeListener(modelManager, IResourceChangeEvent.POST_CHANGE);
 		return modelManager;
 	}
 }

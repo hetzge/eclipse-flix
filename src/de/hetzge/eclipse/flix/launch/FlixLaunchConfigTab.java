@@ -1,7 +1,5 @@
 package de.hetzge.eclipse.flix.launch;
 
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
@@ -12,7 +10,6 @@ import de.hetzge.eclipse.utils.EclipseUtils;
 
 public class FlixLaunchConfigTab extends AbstractLaunchConfigurationTab {
 
-	private static final ILog LOG = Platform.getLog(FlixLaunchConfigTab.class);
 	private final Image image;
 
 	public FlixLaunchConfigTab() {

@@ -19,7 +19,7 @@ import org.eclipse.handly.model.impl.support.Element;
 import org.eclipse.handly.model.impl.support.IElementImplSupport;
 import org.eclipse.handly.model.impl.support.IModelManager;
 
-import de.hetzge.eclipse.flix.Activator;
+import de.hetzge.eclipse.flix.Flix;
 
 public class FlixModel extends Element implements IFlixModel, IModelImpl {
 
@@ -54,7 +54,7 @@ public class FlixModel extends Element implements IFlixModel, IModelImpl {
 
 	@Override
 	public IModelManager getModelManager_() {
-		return Activator.getDefault().getModelManager();
+		return Flix.get().getModelManager();
 	}
 
 	@Override

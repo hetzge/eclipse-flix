@@ -24,7 +24,7 @@ import org.lxtk.lx4e.model.ILanguageElement;
 import org.lxtk.lx4e.model.ILanguageSourceFile;
 import org.lxtk.lx4e.model.impl.LanguageElementDelta;
 
-import de.hetzge.eclipse.flix.Activator;
+import de.hetzge.eclipse.flix.Flix;
 
 public class FlixDeltaProcessor implements IResourceDeltaVisitor {
 
@@ -71,14 +71,14 @@ public class FlixDeltaProcessor implements IResourceDeltaVisitor {
 
 	private boolean processAddedProject(IProject project) {
 		System.out.println("FlixDeltaProcessor.processAddedProject()");
-		final FlixModel flixModel = Activator.getDefault().getModelManager().getModel();
+		final FlixModel flixModel = Flix.get().getModelManager().getModel();
 		getBody(flixModel).addChild(new FlixProject(flixModel, project));
 		return false;
 	}
 
 	private boolean processRemovedProject(IProject project) {
 		System.out.println("FlixDeltaProcessor.processRemovedProject()");
-		final FlixModel flixModel = Activator.getDefault().getModelManager().getModel();
+		final FlixModel flixModel = Flix.get().getModelManager().getModel();
 		getBody(flixModel).removeChild(new FlixProject(flixModel, project));
 		close(flixModel);
 		return false;

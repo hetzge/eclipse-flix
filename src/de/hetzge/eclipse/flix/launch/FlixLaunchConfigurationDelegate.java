@@ -20,7 +20,7 @@ import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
-import de.hetzge.eclipse.flix.Activator;
+import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.FlixUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
@@ -71,7 +71,7 @@ public class FlixLaunchConfigurationDelegate extends LaunchConfigurationDelegate
 				writer.write("<<TIME=" + (System.currentTimeMillis() - before) + "ms>>\n");
 			}
 		} catch (final InterruptedException | IOException exception) {
-			throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Failed", exception));
+			throw new CoreException(new Status(IStatus.ERROR, FlixConstants.PLUGIN_ID, "Failed", exception));
 		}
 	}
 }

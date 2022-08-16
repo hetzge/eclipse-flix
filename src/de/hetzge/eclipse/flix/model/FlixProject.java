@@ -8,7 +8,7 @@ import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.model.impl.support.Element;
 import org.eclipse.handly.model.impl.support.IModelManager;
 
-import de.hetzge.eclipse.flix.Activator;
+import de.hetzge.eclipse.flix.Flix;
 
 public class FlixProject extends Element implements IFlixProject {
 
@@ -29,7 +29,7 @@ public class FlixProject extends Element implements IFlixProject {
 
 	@Override
 	public IModelManager getModelManager_() {
-		return Activator.getDefault().getModelManager();
+		return Flix.get().getModelManager();
 	}
 
 	@Override

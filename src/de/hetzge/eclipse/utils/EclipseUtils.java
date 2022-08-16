@@ -47,7 +47,7 @@ import org.lxtk.lx4e.EclipseTextDocument;
 import org.lxtk.lx4e.util.ResourceUtil;
 import org.osgi.framework.Bundle;
 
-import de.hetzge.eclipse.flix.Activator;
+import de.hetzge.eclipse.flix.FlixConstants;
 
 public final class EclipseUtils {
 
@@ -205,7 +205,7 @@ public final class EclipseUtils {
 	}
 
 	public static Image createImage(String path) {
-		final Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
+		final Bundle bundle = Platform.getBundle(FlixConstants.PLUGIN_ID);
 		return ImageDescriptor.createFromURL(bundle.getEntry(path)).createImage();
 	}
 
@@ -220,7 +220,7 @@ public final class EclipseUtils {
 	}
 
 	public static URL createInternalUrl(String path) {
-		final Bundle bundle = Platform.getBundle(Activator.PLUGIN_ID);
+		final Bundle bundle = Platform.getBundle(FlixConstants.PLUGIN_ID);
 		return FileLocator.find(bundle, new Path(path), null);
 	}
 
