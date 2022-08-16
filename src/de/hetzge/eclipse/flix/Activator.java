@@ -12,6 +12,8 @@ import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
 import de.hetzge.eclipse.flix.client.FlixLanguageClient;
+import de.hetzge.eclipse.flix.model.FlixModel;
+import de.hetzge.eclipse.flix.model.FlixModelManager;
 import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
@@ -27,8 +29,9 @@ public class Activator extends AbstractUIPlugin {
 
 	private ResourceMonitor resourceMonitor;
 	private FlixDocumentProvider flixDocumentProvider;
-	private final Map<IProject, FlixProject> connectedProjects;
+	private final Map<IProject, Rollback> connectedProjects;
 	private Rollback rollback;
+	private FlixModelManager modelManager;
 
 	public Activator() {
 		this.connectedProjects = new ConcurrentHashMap<>();
@@ -42,8 +45,74 @@ public class Activator extends AbstractUIPlugin {
 		return this.flixDocumentProvider;
 	}
 
-	public synchronized FlixProject getOrInitializeFlixProject(IProject project) {
-		return this.connectedProjects.computeIfAbsent(project, key -> {
+	public FlixModelManager getModelManager() {
+		if (this.modelManager == null) {
+			throw new IllegalStateException("Flix plugin is not initialized");
+		}
+		return this.modelManager;
+	}
+
+	@Override
+	public void start(BundleContext context) throws Exception {
+		super.start(context);
+		plugin = this;
+
+		SafeRun.run(rollback -> {
+			this.flixDocumentProvider = new FlixDocumentProvider();
+			this.modelManager = FlixModelManager.setup();
+			rollback.add(() -> {
+				this.modelManager.close();
+				this.modelManager = null;
+			});
+
+			final FlixModel model = this.modelManager.getModel();
+			model.getProjects().forEach(project -> {
+				System.out.println(">>> " + project);
+			});
+
+			/*
+			 * When open a document then check if the flix environment for this project is
+			 * already initialized and initialize if necessary.
+			 */
+			rollback.add(FlixCore.DOCUMENT_SERVICE.onDidAddTextDocument().subscribe(document -> {
+				EclipseUtils.getProject(document).ifPresent(this::initializeFlixProject);
+			})::dispose);
+
+			this.resourceMonitor = new ResourceMonitor();
+			ResourcesPlugin.getWorkspace().addResourceChangeListener(this.resourceMonitor, IResourceChangeEvent.POST_CHANGE);
+			rollback.add(() -> ResourcesPlugin.getWorkspace().removeResourceChangeListener(this.resourceMonitor));
+			this.rollback = rollback;
+		});
+	}
+
+	@Override
+	public void stop(BundleContext context) throws Exception {
+		try {
+			System.out.println("Activator.stop()");
+			for (final Rollback rollback : this.connectedProjects.values()) {
+				rollback.run();
+			}
+			if (this.rollback != null) {
+				this.rollback.run();
+				this.rollback = null;
+			}
+			plugin = null;
+		} finally {
+			super.stop(context);
+		}
+	}
+
+	/**
+	 * Returns the shared instance
+	 *
+	 * @return the shared instance
+	 */
+	public static Activator getDefault() {
+		return plugin;
+	}
+
+	private synchronized void initializeFlixProject(IProject project) {
+		this.connectedProjects.computeIfAbsent(project, key -> {
 			FlixLogger.logInfo("Initialize flix for project under " + project.getLocationURI());
 			return SafeRun.runWithResult(rollback -> {
 
@@ -54,54 +123,8 @@ public class Activator extends AbstractUIPlugin {
 				final FlixLanguageClient client = FlixLanguageClient.connect(project, lspPort);
 				rollback.add(client::dispose);
 
-				return new FlixProject(rollback);
+				return rollback;
 			});
 		});
-	}
-
-	@Override
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-
-		SafeRun.run(rollback -> {
-
-			/*
-			 * When open a document then check if the flix environment for this project is
-			 * already initialized and initialize if necessary.
-			 */
-			rollback.add(FlixCore.DOCUMENT_SERVICE.onDidAddTextDocument().subscribe(document -> {
-				EclipseUtils.getProject(document).ifPresent(this::getOrInitializeFlixProject);
-			})::dispose);
-
-			this.resourceMonitor = new ResourceMonitor();
-			ResourcesPlugin.getWorkspace().addResourceChangeListener(this.resourceMonitor, IResourceChangeEvent.POST_CHANGE);
-			rollback.add(() -> ResourcesPlugin.getWorkspace().removeResourceChangeListener(this.resourceMonitor));
-			this.flixDocumentProvider = new FlixDocumentProvider();
-			this.rollback = rollback;
-		});
-	}
-
-	@Override
-	public void stop(BundleContext context) throws Exception {
-		System.out.println("Activator.stop()");
-		for (final FlixProject project : this.connectedProjects.values()) {
-			project.close();
-		}
-		if (this.rollback != null) {
-			this.rollback.run();
-			this.rollback = null;
-		}
-		plugin = null;
-		super.stop(context);
-	}
-
-	/**
-	 * Returns the shared instance
-	 *
-	 * @return the shared instance
-	 */
-	public static Activator getDefault() {
-		return plugin;
 	}
 }

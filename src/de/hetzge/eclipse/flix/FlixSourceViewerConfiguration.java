@@ -1,6 +1,7 @@
 package de.hetzge.eclipse.flix;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.handly.ui.IWorkingCopyManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DefaultInformationControl;
 import org.eclipse.jface.text.IDocument;
@@ -9,6 +10,7 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
+import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.tm4e.ui.text.TMPresentationReconciler;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
@@ -26,10 +28,12 @@ import org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector;
 public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
 	private final ITextEditor editor;
+	private final IWorkingCopyManager workingCopyManager;
 
-	public FlixSourceViewerConfiguration(IPreferenceStore preferenceStore, ITextEditor editor) {
+	public FlixSourceViewerConfiguration(IPreferenceStore preferenceStore, ITextEditor editor, IWorkingCopyManager workingCopyManager) {
 		super(preferenceStore);
 		this.editor = editor;
+		this.workingCopyManager = workingCopyManager;
 	}
 
 	@Override
@@ -40,6 +44,15 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 	@Override
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer viewer) {
 		return new TMPresentationReconciler();
+	}
+
+	@Override
+	public IReconciler getReconciler(ISourceViewer sourceViewer) {
+		System.out.println("FlixSourceViewerConfiguration.getReconciler()");
+		if (this.editor == null || !this.editor.isEditable() || this.workingCopyManager == null) {
+			return null;
+		}
+		return new FlixReconciler(this.editor, this.workingCopyManager);
 	}
 
 	@Override

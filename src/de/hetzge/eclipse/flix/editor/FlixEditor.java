@@ -4,8 +4,10 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
+import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import de.hetzge.eclipse.flix.Activator;
+import de.hetzge.eclipse.flix.FlixDocumentProvider;
 import de.hetzge.eclipse.flix.FlixSourceViewerConfiguration;
 
 /**
@@ -13,11 +15,14 @@ import de.hetzge.eclipse.flix.FlixSourceViewerConfiguration;
  */
 public class FlixEditor extends AbstractDecoratedTextEditor {
 
+	private IContentOutlinePage outlinePage;
+
 	@Override
 	protected void initializeEditor() {
+		final FlixDocumentProvider documentProvider = Activator.getDefault().getFlixDocumentProvider();
 		setPreferenceStore(getPreferenceStores());
-		setDocumentProvider(Activator.getDefault().getFlixDocumentProvider());
-		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(getPreferenceStores(), this));
+		setDocumentProvider(documentProvider);
+		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(getPreferenceStores(), this, documentProvider));
 		setEditorContextMenuId("#FlixEditorContext"); //$NON-NLS-1$
 		setRulerContextMenuId("#FlixRulerContext"); //$NON-NLS-1$
 	}
@@ -34,5 +39,23 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 	@Override
 	protected void initializeKeyBindingScopes() {
 		setKeyBindingScopes(new String[] { "de.hetzge.eclipse.flix.editor.scope" }); //$NON-NLS-1$
+	}
+
+	@Override
+	public <T> T getAdapter(Class<T> adapter) {
+		if (adapter == IContentOutlinePage.class) {
+			if (this.outlinePage == null) {
+				this.outlinePage = new FlixOutlinePage(this);
+			}
+			return adapter.cast(this.outlinePage);
+		}
+		return super.getAdapter(adapter);
+	}
+
+	public void closeOutlinePage() {
+		if (this.outlinePage != null) {
+			this.outlinePage = null;
+			resetHighlightRange();
+		}
 	}
 }

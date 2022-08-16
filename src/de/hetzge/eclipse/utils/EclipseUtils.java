@@ -70,6 +70,10 @@ public final class EclipseUtils {
 		}
 	}
 
+	public static Optional<IFile> getFile(IEditorInput input) {
+		return Optional.ofNullable(input.getAdapter(IFile.class));
+	}
+
 	public static Optional<IFile> getFile(ISelection selection) {
 		if (selection instanceof IStructuredSelection) {
 			final Object firstElement = ((IStructuredSelection) selection).getFirstElement();

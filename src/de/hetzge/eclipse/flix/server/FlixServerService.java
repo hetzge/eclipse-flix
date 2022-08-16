@@ -1,6 +1,7 @@
 package de.hetzge.eclipse.flix.server;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,10 +12,13 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import com.google.gson.JsonArray;
@@ -139,7 +143,7 @@ public final class FlixServerService implements AutoCloseable {
 			if (response.isLeft()) {
 				return GsonUtils.getGson().fromJson(response.getLeft(), Hover.class);
 			} else {
-				throw new RuntimeException();
+				throw new RuntimeException("Unexpected hover response");
 			}
 		});
 	}
@@ -168,6 +172,23 @@ public final class FlixServerService implements AutoCloseable {
 					}
 					return null;
 				}
+			}
+		});
+	}
+
+	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> symbols(URI uri) {
+		return this.compilerClient.sendSymbols(uri).thenApply(response -> {
+			System.out.println("SYMBOLS: " + response);
+
+			if (response.isLeft()) {
+				final List<Either<SymbolInformation, DocumentSymbol>> result = new ArrayList<>();
+				final JsonArray jsonArray = response.getLeft().getAsJsonArray();
+				for (final JsonElement jsonElement : jsonArray) {
+					result.add(Either.forRight(GsonUtils.getGson().fromJson(jsonElement, DocumentSymbol.class)));
+				}
+				return result;
+			} else {
+				throw new RuntimeException();
 			}
 		});
 	}

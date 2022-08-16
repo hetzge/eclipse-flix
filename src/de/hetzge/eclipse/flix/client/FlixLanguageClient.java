@@ -18,6 +18,7 @@ import org.lxtk.client.AbstractLanguageClient;
 import org.lxtk.client.BufferingDiagnosticConsumer;
 import org.lxtk.client.CompletionFeature;
 import org.lxtk.client.DeclarationFeature;
+import org.lxtk.client.DocumentSymbolFeature;
 import org.lxtk.client.Feature;
 import org.lxtk.client.FileOperationsFeature;
 import org.lxtk.client.HoverFeature;
@@ -82,6 +83,8 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 		features.add(new ReferencesFeature(FlixCore.LANGUAGE_SERVICE));
 		features.add(new DeclarationFeature(FlixCore.LANGUAGE_SERVICE));
 		features.add(new HoverFeature(FlixCore.LANGUAGE_SERVICE));
+		features.add(new DocumentSymbolFeature(FlixCore.LANGUAGE_SERVICE));
+//        features.add(new WorkspaceSymbolFeature(FlixCore.LANGUAGE_SERVICE, this.project));
 //		features.add(new ExecuteCommandFeature(new EclipseCommandService()));
 
 		return new EclipseLanguageClient<>(this.log, this.diagnosticConsumer, FlixCore.WORKSPACE_EDIT_CHANGE_FACTORY, features) {

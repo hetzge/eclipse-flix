@@ -10,11 +10,13 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.handly.buffer.TextFileBuffer;
+import org.eclipse.handly.model.ISourceFile;
+import org.eclipse.handly.ui.texteditor.SourceFileDocumentProvider;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.lsp4j.TextDocumentSaveReason;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.text.edits.MalformedTreeException;
-import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.eclipse.ui.IEditorInput;
 import org.lxtk.TextDocument;
 import org.lxtk.TextDocumentSaveEvent;
 import org.lxtk.TextDocumentSaveEventSource;
@@ -33,7 +35,7 @@ import org.lxtk.util.WaitUntilEventEmitter;
 /**
  * Flix document provider.
  */
-public class FlixDocumentProvider extends TextFileDocumentProvider implements TextDocumentWillSaveEventSource, TextDocumentWillSaveWaitUntilEventSource, TextDocumentSaveEventSource {
+public class FlixDocumentProvider extends SourceFileDocumentProvider implements TextDocumentWillSaveEventSource, TextDocumentWillSaveWaitUntilEventSource, TextDocumentSaveEventSource {
 	private final EventEmitter<TextDocumentWillSaveEvent> onWillSaveTextDocument = new EventEmitter<>();
 	private final WaitUntilEventEmitter<TextDocumentWillSaveEvent, List<TextEdit>> onWillSaveTextDocumentWaitUntil = new WaitUntilEventEmitter<>();
 	private final EventEmitter<TextDocumentSaveEvent> onDidSaveTextDocument = new EventEmitter<>();
@@ -128,5 +130,13 @@ public class FlixDocumentProvider extends TextFileDocumentProvider implements Te
 
 	private static class XFileInfo extends FileInfo {
 		Runnable disposeRunnable;
+	}
+
+	@Override
+	protected ISourceFile getSourceFile(Object element) {
+		if (!(element instanceof IEditorInput)) {
+			return null;
+		}
+		return FlixInputElementProvider.INSTANCE.getElement((IEditorInput) element);
 	}
 }

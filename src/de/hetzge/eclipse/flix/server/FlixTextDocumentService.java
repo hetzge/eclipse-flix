@@ -12,10 +12,13 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
@@ -48,6 +51,12 @@ public final class FlixTextDocumentService implements TextDocumentService {
 	public CompletableFuture<Hover> hover(HoverParams params) {
 		System.out.println("FlixTextDocumentService.hover()");
 		return this.flixService.hover(params);
+	}
+
+	@Override
+	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params) {
+		System.out.println("FlixTextDocumentService.documentSymbol()");
+		return this.flixService.symbols(URI.create(params.getTextDocument().getUri()));
 	}
 
 	@Override
