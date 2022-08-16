@@ -23,6 +23,7 @@ import org.lxtk.client.Feature;
 import org.lxtk.client.FileOperationsFeature;
 import org.lxtk.client.HoverFeature;
 import org.lxtk.client.ReferencesFeature;
+import org.lxtk.client.RenameFeature;
 import org.lxtk.client.TextDocumentSyncFeature;
 import org.lxtk.jsonrpc.AbstractJsonRpcConnectionFactory;
 import org.lxtk.jsonrpc.JsonRpcConnectionFactory;
@@ -84,6 +85,7 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 		features.add(new DeclarationFeature(FlixCore.LANGUAGE_SERVICE));
 		features.add(new HoverFeature(FlixCore.LANGUAGE_SERVICE));
 		features.add(new DocumentSymbolFeature(FlixCore.LANGUAGE_SERVICE));
+		features.add(new RenameFeature(FlixCore.LANGUAGE_SERVICE));
 //        features.add(new WorkspaceSymbolFeature(FlixCore.LANGUAGE_SERVICE, this.project));
 //		features.add(new ExecuteCommandFeature(new EclipseCommandService()));
 

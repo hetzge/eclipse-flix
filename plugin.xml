@@ -88,6 +88,13 @@
             description="Show the quick outline for the editor input"
             defaultHandler="de.hetzge.eclipse.flix.editor.FlixOutlinePopupHandler">
       </command>
+      <command
+            id="de.hetzge.eclipse.flix.editor.rename"
+            categoryId="org.eclipse.ltk.ui.category.refactoring"
+            name="Rename"
+            description="Rename the selected symbol"
+            defaultHandler="de.hetzge.eclipse.flix.editor.FlixRenameHandler">
+      </command>
    </extension>
       <extension point="org.eclipse.ui.bindings">
       <key
@@ -96,5 +103,33 @@
             contextId="de.hetzge.eclipse.flix.editor.scope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
       </key>
+      <key
+            sequence="M2+M3+R"
+            commandId="de.hetzge.eclipse.flix.editor.rename"
+            contextId="de.hetzge.eclipse.flix.editor.scope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
    </extension>
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="popup:#FlixEditorContext?after=group.open">
+<!--         <command-->
+<!--               commandId="org.eclipse.ui.edit.text.open.hyperlink"-->
+<!--               style="push">-->
+<!--         </command>-->
+         <command
+               commandId="de.hetzge.eclipse.flix.editor.quickOutline"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution locationURI="popup:#FlixEditorContext?endof=group.edit">
+         <menu
+               id="de.hetzge.eclipse.flix.editor.refactoring.menu"
+               label="Refactoring">
+            <command
+                  commandId="de.hetzge.eclipse.flix.editor.rename"
+                  style="push">
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+   
 </plugin>

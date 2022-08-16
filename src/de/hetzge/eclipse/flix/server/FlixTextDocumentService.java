@@ -18,8 +18,10 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
+import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
@@ -60,6 +62,12 @@ public final class FlixTextDocumentService implements TextDocumentService {
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params) {
 		System.out.println("FlixTextDocumentService.documentSymbol()");
 		return this.flixService.symbols(URI.create(params.getTextDocument().getUri()));
+	}
+
+	@Override
+	public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
+		System.out.println("FlixTextDocumentService.rename()");
+		return this.flixService.rename(params);
 	}
 
 	@Override

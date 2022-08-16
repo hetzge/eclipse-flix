@@ -10,6 +10,7 @@ import java.util.concurrent.CompletionStage;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
@@ -145,7 +146,17 @@ public class FlixCompilerClient implements AutoCloseable {
 		jsonObject.addProperty("uri", uri.toASCIIString());
 
 		final CompletableFuture<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
-		System.out.println("Send: " + jsonObject);
+		return send(jsonObject).thenCompose(ignore -> responseFuture);
+	}
+
+	public CompletableFuture<Either<JsonElement, JsonElement>> sendRename(RenameParams params) {
+		final String id = UUID.randomUUID().toString();
+
+		final JsonObject jsonObject = GsonUtils.getGson().toJsonTree(params).getAsJsonObject();
+		jsonObject.addProperty("request", "lsp/rename");
+		jsonObject.addProperty("id", id);
+
+		final CompletableFuture<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
 	}
 
