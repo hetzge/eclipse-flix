@@ -12,7 +12,7 @@ import org.lxtk.lx4e.refactoring.WorkspaceEditChangeFactory;
 import de.hetzge.eclipse.flix.model.FlixModelManager;
 import de.hetzge.eclipse.flix.utils.ResourceMonitor;
 
-public final class Flix {
+public final class Flix implements AutoCloseable {
 
 	public static Flix get() {
 		return FlixActivator.getDefault().getFlix();
@@ -26,8 +26,9 @@ public final class Flix {
 	private final FlixDocumentProvider documentProvider;
 	private final ResourceMonitor resourceMonitor;
 	private final FlixModelManager modelManager;
+	private final FlixProjectManager projectManager;
 
-	Flix(FlixModelManager modelManager) {
+	Flix() {
 		this.documentService = new EclipseDocumentService();
 		this.languageService = new EclipseLanguageService();
 		this.workspaceService = new EclipseWorkspaceService();
@@ -36,7 +37,8 @@ public final class Flix {
 		this.changeFactory.setFileOperationParticipantSupport(this.fileOperationParticipantSupport);
 		this.documentProvider = new FlixDocumentProvider();
 		this.resourceMonitor = new ResourceMonitor();
-		this.modelManager = modelManager;
+		this.modelManager = FlixModelManager.create();
+		this.projectManager = new FlixProjectManager();
 	}
 
 	public DocumentService getDocumentService() {
@@ -69,5 +71,15 @@ public final class Flix {
 
 	public FlixModelManager getModelManager() {
 		return this.modelManager;
+	}
+
+	public FlixProjectManager getProjectManager() {
+		return this.projectManager;
+	}
+
+	@Override
+	public void close() {
+		this.modelManager.close();
+		this.projectManager.close();
 	}
 }

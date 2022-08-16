@@ -49,14 +49,15 @@
 	</extension>
 	<extension point="org.eclipse.ui.newWizards">
 		<category id="de.hetzge.eclipse.flix.wizards" name="Flix"></category>
-		<!--		<wizard category="eclipsezig.wizards"-->
-		<!--			class="eclipsezig.eclipse.project.ZigFileWizard"-->
-		<!--			icon="icons/zigEditorIcon.png" id="eclipsezig.zig.newfile"-->
-		<!--			name="Zig File">-->
-		<!--			<description>-->
-		<!--				Create a Zig file-->
-		<!--			</description>-->
-		<!--		</wizard>-->
+		<wizard category="de.hetzge.eclipse.flix.wizards"
+			class="de.hetzge.eclipse.flix.project.FlixFileWizard"
+			icon="icon.png" id="de.hetzge.eclipse.flix..newfile"
+			name="Flix File">
+			<description>
+				Create a Flix file
+			</description>
+		</wizard>
+
 		<wizard category="de.hetzge.eclipse.flix.wizards" class="de.hetzge.eclipse.flix.project.FlixProjectWizard" icon="icon.png" id="de.hetzge.eclipse.flix.newProject" name="Flix Project" project="true">
 			<description>
 				Create a Flix project

@@ -2,7 +2,6 @@ package de.hetzge.eclipse.flix.model;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.context.Context;
@@ -46,19 +45,18 @@ public class FlixModelManager implements IModelManager, IResourceChangeListener,
 
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
-		if (event.getType() != IResourceChangeEvent.POST_CHANGE) {
-			return;
-		}
-		try {
-			final FlixDeltaProcessor deltaProcessor = new FlixDeltaProcessor();
-			event.getDelta().accept(deltaProcessor);
+		if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+			try {
+				final FlixDeltaProcessor deltaProcessor = new FlixDeltaProcessor();
+				event.getDelta().accept(deltaProcessor);
 
-			final IElementDelta[] deltas = deltaProcessor.getDeltas();
-			if (deltas.length > 0) {
-				getNotificationManager().fireElementChangeEvent(new ElementChangeEvent(IElementChangeEvent.POST_CHANGE, deltas));
+				final IElementDelta[] deltas = deltaProcessor.getDeltas();
+				if (deltas.length > 0) {
+					getNotificationManager().fireElementChangeEvent(new ElementChangeEvent(IElementChangeEvent.POST_CHANGE, deltas));
+				}
+			} catch (final CoreException exception) {
+				FlixLogger.logError(exception);
 			}
-		} catch (final CoreException exception) {
-			FlixLogger.logError(exception);
 		}
 	}
 
@@ -66,8 +64,8 @@ public class FlixModelManager implements IModelManager, IResourceChangeListener,
 		return this.notificationManager;
 	}
 
-	public static FlixModelManager setup(IWorkspace workspace) {
-		System.out.println("FlixModelManager.setup()");
+	public static FlixModelManager create() {
+		System.out.println("FlixModelManager.create()");
 		final NotificationManager notificationManager = new NotificationManager();
 
 		/*
@@ -85,7 +83,6 @@ public class FlixModelManager implements IModelManager, IResourceChangeListener,
 		final FlixModel model = new FlixModel(context);
 		final ElementManager elementManager = new ElementManager(new FlixModelCache());
 		final FlixModelManager modelManager = new FlixModelManager(model, elementManager, notificationManager);
-		workspace.addResourceChangeListener(modelManager, IResourceChangeEvent.POST_CHANGE);
 		return modelManager;
 	}
 }
