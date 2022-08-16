@@ -74,6 +74,7 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 			capabilities.setReferencesProvider(true);
 			capabilities.setDeclarationProvider(true);
 			capabilities.setDocumentSymbolProvider(true);
+			capabilities.setWorkspaceSymbolProvider(true);
 			capabilities.setRenameProvider(true);
 			final InitializeResult initializeResult = new InitializeResult();
 			initializeResult.setCapabilities(capabilities);

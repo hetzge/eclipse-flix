@@ -11,6 +11,7 @@ import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.RenameParams;
+import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
@@ -137,13 +138,24 @@ public class FlixCompilerClient implements AutoCloseable {
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> sendSymbols(URI uri) {
+	public CompletableFuture<Either<JsonElement, JsonElement>> sendDocumentSymbols(URI uri) {
 		final String id = UUID.randomUUID().toString();
 
 		final JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("request", "lsp/documentSymbols");
 		jsonObject.addProperty("id", id);
 		jsonObject.addProperty("uri", uri.toASCIIString());
+
+		final CompletableFuture<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
+		return send(jsonObject).thenCompose(ignore -> responseFuture);
+	}
+
+	public CompletableFuture<Either<JsonElement, JsonElement>> sendWorkspaceSymbols(WorkspaceSymbolParams params) {
+		final String id = UUID.randomUUID().toString();
+
+		final JsonObject jsonObject = GsonUtils.getGson().toJsonTree(params).getAsJsonObject();
+		jsonObject.addProperty("request", "lsp/workspaceSymbols");
+		jsonObject.addProperty("id", id);
 
 		final CompletableFuture<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
