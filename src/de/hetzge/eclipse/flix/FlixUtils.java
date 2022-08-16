@@ -1,12 +1,19 @@
 package de.hetzge.eclipse.flix;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.jar.JarArchiveInputStream;
+import org.apache.commons.compress.utils.IOUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 
@@ -27,6 +34,45 @@ public final class FlixUtils {
 			}
 		}
 		return flixJarFile;
+	}
+
+	public synchronized static File loadFlixFolder() {
+		final File flixSourceFolder = new File("flix.v0.30.0");
+		final File flixJarFile = loadFlixJarFile();
+		if (!flixSourceFolder.exists()) {
+			try {
+				extract(flixJarFile, flixSourceFolder);
+			} catch (final IOException exception) {
+				throw new RuntimeException(exception);
+			}
+		}
+		return flixSourceFolder;
+	}
+
+	private static void extract(final File archiveFile, final File flixSourceFolder) throws IOException {
+		try (ArchiveInputStream inputStream = new JarArchiveInputStream(new BufferedInputStream(Files.newInputStream(archiveFile.toPath())))) {
+			ArchiveEntry entry = null;
+			while ((entry = inputStream.getNextEntry()) != null) {
+				if (!inputStream.canReadEntryData(entry)) {
+					// log something?
+					continue;
+				}
+				final File file = new File(flixSourceFolder, entry.getName());
+				if (entry.isDirectory()) {
+					if (!file.isDirectory() && !file.mkdirs()) {
+						throw new IOException("failed to create directory " + file);
+					}
+				} else {
+					final File parent = file.getParentFile();
+					if (!parent.isDirectory() && !parent.mkdirs()) {
+						throw new IOException("failed to create directory " + parent);
+					}
+					try (OutputStream outputStream = Files.newOutputStream(file.toPath())) {
+						IOUtils.copy(inputStream, outputStream);
+					}
+				}
+			}
+		}
 	}
 
 	public static List<IFile> findFlixFiles(IContainer container) {

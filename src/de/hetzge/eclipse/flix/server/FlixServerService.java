@@ -1,5 +1,6 @@
 package de.hetzge.eclipse.flix.server;
 
+import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
+import de.hetzge.eclipse.flix.FlixUtils;
 import de.hetzge.eclipse.flix.GsonUtils;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerProcess;
@@ -131,11 +133,23 @@ public final class FlixServerService implements AutoCloseable {
 	public CompletableFuture<List<LocationLink>> decleration(DeclarationParams params) {
 		return this.compilerClient.sendGoto(params).thenApply(response -> {
 			if (response.isLeft()) {
-				return List.of(GsonUtils.getGson().fromJson(response.getLeft(), LocationLink.class));
+				final LocationLink link = GsonUtils.getGson().fromJson(response.getLeft(), LocationLink.class);
+				link.setTargetUri(fixLibraryUri(link.getTargetUri()));
+				return List.of(link);
 			} else {
 				throw new RuntimeException();
 			}
 		});
+	}
+
+	private String fixLibraryUri(String targetUriValue) {
+		if (targetUriValue.endsWith(".flix") && !targetUriValue.startsWith("file:")) {
+			final File sourceFolder = FlixUtils.loadFlixFolder();
+			final File sourceFile = new File(sourceFolder, "src/library/" + targetUriValue);
+			return sourceFile.toURI().toASCIIString();
+		} else {
+			return targetUriValue;
+		}
 	}
 
 	public CompletableFuture<Hover> hover(HoverParams params) {
@@ -178,8 +192,6 @@ public final class FlixServerService implements AutoCloseable {
 
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> symbols(URI uri) {
 		return this.compilerClient.sendSymbols(uri).thenApply(response -> {
-			System.out.println("SYMBOLS: " + response);
-
 			if (response.isLeft()) {
 				final List<Either<SymbolInformation, DocumentSymbol>> result = new ArrayList<>();
 				final JsonArray jsonArray = response.getLeft().getAsJsonArray();

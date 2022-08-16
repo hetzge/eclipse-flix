@@ -23,6 +23,8 @@ import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
+import de.hetzge.eclipse.flix.GsonUtils;
+
 public final class FlixTextDocumentService implements TextDocumentService {
 
 	private final FlixServerService flixService;
@@ -43,6 +45,7 @@ public final class FlixTextDocumentService implements TextDocumentService {
 	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> declaration(DeclarationParams params) {
 		System.out.println("FlixTextDocumentService.declaration()");
 		return this.flixService.decleration(params).thenApply(completionList -> {
+			System.out.println("Declaration: " + GsonUtils.getGson().toJson(completionList));
 			return Either.forRight(completionList);
 		});
 	}

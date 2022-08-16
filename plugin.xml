@@ -80,5 +80,21 @@
 	<extension point="org.eclipse.debug.ui.launchGroups">
 		<launchGroup bannerImage="icon.png" id="de.hetzge.eclipse.flix.launchGroup" image="icon.png" label="Flix Launch Group" mode="run"></launchGroup>
 	</extension>
-
+   <extension point="org.eclipse.ui.commands">
+      <command
+            id="de.hetzge.eclipse.flix.editor.quickOutline"
+            categoryId="org.eclipse.ui.category.navigate"
+            name="Quick Outline"
+            description="Show the quick outline for the editor input"
+            defaultHandler="de.hetzge.eclipse.flix.editor.FlixOutlinePopupHandler">
+      </command>
+   </extension>
+      <extension point="org.eclipse.ui.bindings">
+      <key
+            sequence="M1+O"
+            commandId="de.hetzge.eclipse.flix.editor.quickOutline"
+            contextId="de.hetzge.eclipse.flix.editor.scope"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+   </extension>
 </plugin>

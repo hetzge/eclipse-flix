@@ -145,6 +145,7 @@ public class FlixCompilerClient implements AutoCloseable {
 		jsonObject.addProperty("uri", uri.toASCIIString());
 
 		final CompletableFuture<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
+		System.out.println("Send: " + jsonObject);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
 	}
 

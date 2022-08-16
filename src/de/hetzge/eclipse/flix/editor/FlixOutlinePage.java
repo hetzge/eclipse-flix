@@ -7,7 +7,7 @@ import org.eclipse.handly.ui.outline.ProblemMarkerListenerContribution;
 import org.eclipse.handly.ui.preference.BooleanPreference;
 import org.eclipse.handly.ui.preference.FlushingPreferenceStore;
 import org.eclipse.handly.ui.preference.IBooleanPreference;
-import org.eclipse.handly.ui.viewer.ElementTreeContentProvider;
+import org.eclipse.handly.ui.viewer.DeferredElementTreeContentProvider;
 import org.eclipse.handly.ui.viewer.ProblemMarkerLabelDecorator;
 import org.eclipse.jface.viewers.DecoratingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
@@ -22,11 +22,7 @@ import de.hetzge.eclipse.flix.FlixInputElementProvider;
  * The content outline page of the Flix editor.
  */
 public class FlixOutlinePage extends HandlyOutlinePage {
-	/**
-	 * Constructor.
-	 *
-	 * @param editor not <code>null</code>
-	 */
+
 	public FlixOutlinePage(IEditorPart editor) {
 		init(editor);
 	}
@@ -76,7 +72,7 @@ public class FlixOutlinePage extends HandlyOutlinePage {
 	@Override
 	protected ITreeContentProvider getContentProvider() {
 		System.out.println("FlixOutlinePage.getContentProvider()");
-		return new ElementTreeContentProvider();
+		return new DeferredElementTreeContentProvider(getTreeViewer(), null);
 	}
 
 	@Override
@@ -88,7 +84,7 @@ public class FlixOutlinePage extends HandlyOutlinePage {
 		static final LinkWithEditorPreference INSTANCE = new LinkWithEditorPreference();
 
 		LinkWithEditorPreference() {
-			super("TypeScriptOutline.LinkWithEditor", new FlushingPreferenceStore(Activator.getDefault().getPreferenceStore())); //$NON-NLS-1$
+			super("FlixOutline.LinkWithEditor", new FlushingPreferenceStore(Activator.getDefault().getPreferenceStore())); //$NON-NLS-1$
 			setDefault(true);
 		}
 	}

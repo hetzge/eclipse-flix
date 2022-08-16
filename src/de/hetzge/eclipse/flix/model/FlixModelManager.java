@@ -5,6 +5,9 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.context.Context;
+import org.eclipse.handly.model.IElementChangeEvent;
+import org.eclipse.handly.model.IElementDelta;
+import org.eclipse.handly.model.impl.support.ElementChangeEvent;
 import org.eclipse.handly.model.impl.support.ElementManager;
 import org.eclipse.handly.model.impl.support.IModelManager;
 import org.eclipse.handly.model.impl.support.INotificationManager;
@@ -46,7 +49,13 @@ public class FlixModelManager implements IModelManager, IResourceChangeListener,
 			return;
 		}
 		try {
-			event.getDelta().accept(new FlixDeltaProcessor());
+			final FlixDeltaProcessor deltaProcessor = new FlixDeltaProcessor();
+			event.getDelta().accept(deltaProcessor);
+
+			final IElementDelta[] deltas = deltaProcessor.getDeltas();
+			if (deltas.length > 0) {
+				getNotificationManager().fireElementChangeEvent(new ElementChangeEvent(IElementChangeEvent.POST_CHANGE, deltas));
+			}
 		} catch (final CoreException exception) {
 			FlixLogger.logError(exception);
 		}
