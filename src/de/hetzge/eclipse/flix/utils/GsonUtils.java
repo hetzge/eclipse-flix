@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix;
+package de.hetzge.eclipse.flix.utils;
 
 import org.eclipse.lsp4j.jsonrpc.json.adapters.CollectionTypeAdapter;
 import org.eclipse.lsp4j.jsonrpc.json.adapters.EitherTypeAdapter;

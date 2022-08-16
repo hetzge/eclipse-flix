@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix;
+package de.hetzge.eclipse.flix.utils;
 
 import java.io.BufferedInputStream;
 import java.io.File;

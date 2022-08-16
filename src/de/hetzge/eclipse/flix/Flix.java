@@ -10,6 +10,7 @@ import org.lxtk.lx4e.refactoring.FileOperationParticipantSupport;
 import org.lxtk.lx4e.refactoring.WorkspaceEditChangeFactory;
 
 import de.hetzge.eclipse.flix.model.FlixModelManager;
+import de.hetzge.eclipse.flix.utils.ResourceMonitor;
 
 public final class Flix {
 

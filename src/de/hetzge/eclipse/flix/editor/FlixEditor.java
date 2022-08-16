@@ -9,11 +9,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixDocumentProvider;
-import de.hetzge.eclipse.flix.FlixSourceViewerConfiguration;
 
-/**
- * Flix text editor.
- */
 public class FlixEditor extends AbstractDecoratedTextEditor {
 
 	private IContentOutlinePage outlinePage;

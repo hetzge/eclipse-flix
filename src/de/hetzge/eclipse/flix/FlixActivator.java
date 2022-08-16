@@ -73,7 +73,7 @@ public class FlixActivator extends AbstractUIPlugin {
 			 * When open a document then check if the flix environment for this project is
 			 * already initialized and initialize if necessary.
 			 */
-			rollback.add(FlixCore.DOCUMENT_SERVICE.onDidAddTextDocument().subscribe(document -> {
+			rollback.add(Flix.get().getDocumentService().onDidAddTextDocument().subscribe(document -> {
 				EclipseUtils.getProject(document).ifPresent(this::initializeFlixProject);
 			})::dispose);
 

@@ -26,7 +26,7 @@ public final class FlixOperationTargetProvider {
 			return null;
 		}
 
-		return new LanguageOperationTarget(file.getLocationURI(), FlixCore.LANGUAGE_ID, FlixCore.LANGUAGE_SERVICE);
+		return new LanguageOperationTarget(file.getLocationURI(), FlixConstants.LANGUAGE_ID, Flix.get().getLanguageService());
 	}
 
 	/**
@@ -51,7 +51,7 @@ public final class FlixOperationTargetProvider {
 			return null;
 		}
 
-		return new LanguageOperationTarget(documentUri, FlixCore.LANGUAGE_ID, FlixCore.LANGUAGE_SERVICE);
+		return new LanguageOperationTarget(documentUri, FlixConstants.LANGUAGE_ID, Flix.get().getLanguageService());
 	}
 
 	private FlixOperationTargetProvider() {

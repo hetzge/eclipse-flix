@@ -18,7 +18,7 @@ import org.lxtk.util.SafeRun.Rollback;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import de.hetzge.eclipse.flix.GsonUtils;
+import de.hetzge.eclipse.flix.utils.GsonUtils;
 
 public class FlixCompilerClient implements AutoCloseable {
 

@@ -28,6 +28,6 @@ public class FlixMarkerResolutionGenerator extends AbstractMarkerResolutionGener
 
 	@Override
 	protected IWorkspaceEditChangeFactory getWorkspaceEditChangeFactory() {
-		return FlixCore.CHANGE_FACTORY;
+		return Flix.get().getChangeFactory();
 	}
 }

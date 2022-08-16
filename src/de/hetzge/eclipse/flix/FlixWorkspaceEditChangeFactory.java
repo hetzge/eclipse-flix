@@ -9,6 +9,6 @@ public class FlixWorkspaceEditChangeFactory extends WorkspaceEditChangeFactory {
 	public static final FlixWorkspaceEditChangeFactory INSTANCE = new FlixWorkspaceEditChangeFactory();
 
 	private FlixWorkspaceEditChangeFactory() {
-		super(FlixCore.DOCUMENT_SERVICE);
+		super(Flix.get().getDocumentService());
 	}
 }

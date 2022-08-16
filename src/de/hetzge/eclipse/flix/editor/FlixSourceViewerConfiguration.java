@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix;
+package de.hetzge.eclipse.flix.editor;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.handly.ui.IWorkingCopyManager;
@@ -22,8 +22,11 @@ import org.lxtk.lx4e.ui.completion.ContentAssistProcessor;
 import org.lxtk.lx4e.ui.hover.DocumentHover;
 import org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector;
 
+import de.hetzge.eclipse.flix.Flix;
+import de.hetzge.eclipse.flix.FlixOperationTargetProvider;
+
 /**
- * Configuration for a source viewer which shows Proto content.
+ * Configuration for a source viewer which shows Flix content.
  */
 public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
@@ -64,7 +67,7 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 				if (adapter == LanguageOperationTarget.class) {
 					return adapter.cast(getLanguageOperationTarget());
 				} else if (adapter == DocumentService.class) {
-					return adapter.cast(FlixCore.DOCUMENT_SERVICE);
+					return adapter.cast(Flix.get().getDocumentService());
 				} else {
 					return null;
 				}

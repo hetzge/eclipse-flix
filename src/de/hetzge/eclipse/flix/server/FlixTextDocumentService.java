@@ -25,7 +25,7 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
-import de.hetzge.eclipse.flix.GsonUtils;
+import de.hetzge.eclipse.flix.utils.GsonUtils;
 
 public final class FlixTextDocumentService implements TextDocumentService {
 

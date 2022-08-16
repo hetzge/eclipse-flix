@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
-import de.hetzge.eclipse.flix.FlixUtils;
+import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixCompilerProcess implements AutoCloseable {

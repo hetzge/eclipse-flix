@@ -13,6 +13,7 @@ import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.lxtk.DocumentUri;
+import org.lxtk.LanguageService;
 import org.lxtk.WorkspaceService;
 import org.lxtk.client.AbstractLanguageClient;
 import org.lxtk.client.BufferingDiagnosticConsumer;
@@ -39,7 +40,7 @@ import org.lxtk.util.connect.StreamBasedConnection;
 
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixActivator;
-import de.hetzge.eclipse.flix.FlixCore;
+import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator;
 
 public class FlixLanguageClient extends EclipseLanguageClientController<LanguageServer> {
@@ -64,7 +65,7 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 
 	@Override
 	protected List<DocumentFilter> getDocumentSelector() {
-		return Collections.singletonList(new DocumentFilter(FlixCore.LANGUAGE_ID, "file", this.project.getLocation().append("**").toString())); //$NON-NLS-1$
+		return Collections.singletonList(new DocumentFilter(FlixConstants.LANGUAGE_ID, "file", this.project.getLocation().append("**").toString())); //$NON-NLS-1$
 	}
 
 	@Override
@@ -74,26 +75,27 @@ public class FlixLanguageClient extends EclipseLanguageClientController<Language
 
 	@Override
 	protected AbstractLanguageClient<LanguageServer> getLanguageClient() {
+		final LanguageService languageService = Flix.get().getLanguageService();
 
-		final TextDocumentSyncFeature textDocumentSyncFeature = new TextDocumentSyncFeature(FlixCore.DOCUMENT_SERVICE);
+		final TextDocumentSyncFeature textDocumentSyncFeature = new TextDocumentSyncFeature(Flix.get().getDocumentService());
 		textDocumentSyncFeature.setChangeEventMergeStrategy(new EclipseTextDocumentChangeEventMergeStrategy());
 
 		final Collection<Feature<? super LanguageServer>> features = new ArrayList<>();
-		features.add(new CompletionFeature(FlixCore.LANGUAGE_SERVICE));
+		features.add(new CompletionFeature(languageService));
 		features.add(FileOperationsFeature.newInstance(Flix.get().getResourceMonitor()));
 		features.add(textDocumentSyncFeature);
-		features.add(new ReferencesFeature(FlixCore.LANGUAGE_SERVICE));
-		features.add(new DeclarationFeature(FlixCore.LANGUAGE_SERVICE));
-		features.add(new HoverFeature(FlixCore.LANGUAGE_SERVICE));
-		features.add(new DocumentSymbolFeature(FlixCore.LANGUAGE_SERVICE));
-		features.add(new RenameFeature(FlixCore.LANGUAGE_SERVICE));
+		features.add(new ReferencesFeature(languageService));
+		features.add(new DeclarationFeature(languageService));
+		features.add(new HoverFeature(languageService));
+		features.add(new DocumentSymbolFeature(languageService));
+		features.add(new RenameFeature(languageService));
 //        features.add(new WorkspaceSymbolFeature(FlixCore.LANGUAGE_SERVICE, this.project));
 //		features.add(new ExecuteCommandFeature(new EclipseCommandService()));
 
-		return new EclipseLanguageClient<>(this.log, this.diagnosticConsumer, FlixCore.WORKSPACE_EDIT_CHANGE_FACTORY, features) {
+		return new EclipseLanguageClient<>(this.log, this.diagnosticConsumer, Flix.get().getChangeFactory(), features) {
 			@Override
 			public WorkspaceService getWorkspaceService() {
-				return FlixCore.WORKSPACE_SERVICE;
+				return Flix.get().getWorkspaceService();
 			}
 
 			@Override

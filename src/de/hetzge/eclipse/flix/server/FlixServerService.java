@@ -27,10 +27,10 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
-import de.hetzge.eclipse.flix.FlixUtils;
-import de.hetzge.eclipse.flix.GsonUtils;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerProcess;
+import de.hetzge.eclipse.flix.utils.FlixUtils;
+import de.hetzge.eclipse.flix.utils.GsonUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 

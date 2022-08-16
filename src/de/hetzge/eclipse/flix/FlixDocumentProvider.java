@@ -69,10 +69,10 @@ public class FlixDocumentProvider extends SourceFileDocumentProvider implements 
 
 		try (TextFileBuffer buffer = info.fTextFileBufferLocationKind == null ? TextFileBuffer.forFileStore(info.fTextFileBuffer.getFileStore()) : TextFileBuffer.forLocation(info.fTextFileBuffer.getLocation(), info.fTextFileBufferLocationKind);) {
 			SafeRun.run(rollback -> {
-				final EclipseTextDocument document = new EclipseTextDocument(info.fTextFileBuffer.getFileStore().toURI(), FlixCore.LANGUAGE_ID, buffer, element);
+				final EclipseTextDocument document = new EclipseTextDocument(info.fTextFileBuffer.getFileStore().toURI(), FlixConstants.LANGUAGE_ID, buffer, element);
 				rollback.add(document::dispose);
 
-				final Disposable registration = FlixCore.DOCUMENT_SERVICE.addTextDocument(document);
+				final Disposable registration = Flix.get().getDocumentService().addTextDocument(document);
 				rollback.add(registration::dispose);
 
 				rollback.setLogger(FlixLogger::logError);
@@ -96,7 +96,7 @@ public class FlixDocumentProvider extends SourceFileDocumentProvider implements 
 
 	@Override
 	protected void commitFileBuffer(IProgressMonitor monitor, FileInfo info, boolean overwrite) throws CoreException {
-		final TextDocument document = FlixCore.DOCUMENT_SERVICE.getTextDocument(info.fTextFileBuffer.getFileStore().toURI());
+		final TextDocument document = Flix.get().getDocumentService().getTextDocument(info.fTextFileBuffer.getFileStore().toURI());
 
 		if (document != null) {
 			final TextDocumentWillSaveEvent event = new TextDocumentWillSaveEvent(document, TextDocumentSaveReason.Manual);

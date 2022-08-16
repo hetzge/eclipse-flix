@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix;
+package de.hetzge.eclipse.flix.utils;
 
 import java.net.URI;
 import java.util.List;
@@ -16,6 +16,8 @@ import org.lxtk.FileDeleteEvent;
 import org.lxtk.FileDeleteEventSource;
 import org.lxtk.util.EventEmitter;
 import org.lxtk.util.EventStream;
+
+import de.hetzge.eclipse.flix.FlixLogger;
 
 public class ResourceMonitor implements IResourceChangeListener, FileCreateEventSource, FileDeleteEventSource {
 	private final EventEmitter<FileCreateEvent> onDidCreateFiles;

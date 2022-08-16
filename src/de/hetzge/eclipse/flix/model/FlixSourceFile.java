@@ -9,7 +9,7 @@ import org.lxtk.lx4e.model.impl.LanguageElement;
 import org.lxtk.lx4e.model.impl.LanguageSourceFile;
 
 import de.hetzge.eclipse.flix.Flix;
-import de.hetzge.eclipse.flix.FlixCore;
+import de.hetzge.eclipse.flix.FlixConstants;
 
 public class FlixSourceFile extends LanguageSourceFile {
 
@@ -22,10 +22,10 @@ public class FlixSourceFile extends LanguageSourceFile {
 	}
 
 	public FlixSourceFile(LanguageElement parent, URI uri) {
-		super(parent, uri, FlixCore.LANGUAGE_ID);
+		super(parent, uri, FlixConstants.LANGUAGE_ID);
 		this.modelManager = Flix.get().getModelManager();
-		this.documentService = FlixCore.DOCUMENT_SERVICE;
-		this.languageService = FlixCore.LANGUAGE_SERVICE;
+		this.documentService = Flix.get().getDocumentService();
+		this.languageService = Flix.get().getLanguageService();
 	}
 
 	@Override

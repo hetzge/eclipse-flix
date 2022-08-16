@@ -14,7 +14,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.ide.undo.CreateProjectOperation;
 import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
 
-import de.hetzge.eclipse.flix.FlixUtils;
+import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 public class FlixProjectWizard extends Wizard implements INewWizard {

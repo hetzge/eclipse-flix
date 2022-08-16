@@ -21,7 +21,7 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
 import de.hetzge.eclipse.flix.FlixConstants;
-import de.hetzge.eclipse.flix.FlixUtils;
+import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
