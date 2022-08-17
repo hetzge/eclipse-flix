@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="eclipseflix.feature"
+      label="Feature"
+      version="0.0.1.qualifier">
+
+   <description url="http://www.example.com/description">
+      [Enter Feature Description here.]
+   </description>
+
+   <copyright url="http://www.example.com/copyright">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://www.example.com/license">
+      [Enter License Description here.]
+   </license>
+
+   <url>
+      <discovery label="Handly" url="http://download.eclipse.org/handly/releases/1.6.2/repository"/>
+      <discovery label="LXTK" url="https://lxtk.org/downloads/releases/v0.3/repository/"/>
+      <discovery label="LSP4J" url="https://download.eclipse.org/lsp4j/updates/releases/0.13.0/"/>
+   </url>
+
+   <plugin
+         id="de.hetzge.eclipse.flix"
+         download-size="0"
+         install-size="0"
+         version="0.0.1.qualifier"
+         unpack="false"/>
+
+</feature>

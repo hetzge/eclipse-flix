@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature id="eclipseflix.feature">
+      <category name="de.hetzge.eclipse.flix.category"/>
+   </feature>
+   <category-def name="de.hetzge.eclipse.flix.category" label="Flix"/>
+</site>
