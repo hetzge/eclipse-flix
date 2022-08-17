@@ -1,26 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="eclipseflix.feature"
-      label="Feature"
+      id="de.hetzge.eclipse.flix.feature"
+      label="Flix Language Support"
       version="0.0.1.qualifier">
 
-   <description url="http://www.example.com/description">
-      [Enter Feature Description here.]
-   </description>
-
-   <copyright url="http://www.example.com/copyright">
-      [Enter Copyright Description here.]
-   </copyright>
-
-   <license url="http://www.example.com/license">
-      [Enter License Description here.]
-   </license>
-
    <url>
-      <discovery label="Handly" url="http://download.eclipse.org/handly/releases/1.6.2/repository"/>
-      <discovery label="LXTK" url="https://lxtk.org/downloads/releases/v0.3/repository/"/>
-      <discovery label="LSP4J" url="https://download.eclipse.org/lsp4j/updates/releases/0.13.0/"/>
+      <discovery label="Handly" url="https://download.eclipse.org/handly/releases/1.6.2/repository"/>
+      <discovery label="LXTK" url="https://lxtk.org/downloads/releases/v0.3/repository"/>
+      <discovery label="LSP4J" url="https://download.eclipse.org/lsp4j/updates/releases/0.13.0"/>
    </url>
+
+   <requires>
+      <import plugin="com.google.gson" version="2.8.9" match="greaterOrEqual"/>
+      <import plugin="org.lxtk" version="0.3.0" match="greaterOrEqual"/>
+      <import plugin="org.lxtk.lx4e" version="0.3.0" match="greaterOrEqual"/>
+      <import plugin="org.lxtk.lx4e.ui" version="0.3.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.lsp4j" version="0.12.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.lsp4j.jsonrpc" version="0.12.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.lsp4j.debug" version="0.12.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jface.text" version="3.20.100" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.tm4e.core" version="0.4.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.tm4e.ui" version="0.4.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.handly" version="1.6.2" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.core.filesystem" version="1.9.400" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.debug.ui" version="3.16.100" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.ui.ide" version="3.19.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.editors" version="3.14.300" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.console" version="3.11.200" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="org.eclipse.handly.ui"/>
+      <import plugin="org.eclipse.ui.views"/>
+      <import plugin="org.apache.commons.compress" version="1.6.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ltk.core.refactoring" version="3.12.200" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jdt.junit" version="3.14.100" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jdt.junit.core" version="3.11.300" match="greaterOrEqual"/>
+   </requires>
 
    <plugin
          id="de.hetzge.eclipse.flix"

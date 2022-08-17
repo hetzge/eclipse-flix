@@ -16,15 +16,11 @@ import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
-import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceEdit;
-import org.eclipse.lsp4j.WorkspaceSymbol;
-import org.eclipse.lsp4j.WorkspaceSymbolLocation;
-import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 
@@ -211,27 +207,27 @@ public final class FlixServerService implements AutoCloseable {
 		});
 	}
 
-	public CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> workspaceSymbols(WorkspaceSymbolParams params) {
-		return this.compilerClient.sendWorkspaceSymbols(params).thenApply(response -> {
-			if (response.isLeft()) {
-				final List<WorkspaceSymbol> result = new ArrayList<>();
-				final JsonArray jsonArray = response.getLeft().getAsJsonArray();
-				for (final JsonElement jsonElement : jsonArray) {
-					final WorkspaceSymbol workspaceSymbol = GsonUtils.getGson().fromJson(jsonElement, WorkspaceSymbol.class);
-					final Either<Location, WorkspaceSymbolLocation> location = workspaceSymbol.getLocation();
-					if (location.isLeft()) {
-						location.getLeft().setUri(fixLibraryUri(location.getLeft().getUri()));
-					} else {
-						location.getRight().setUri(fixLibraryUri(location.getRight().getUri()));
-					}
-					result.add(workspaceSymbol);
-				}
-				return Either.forRight(result);
-			} else {
-				throw new RuntimeException();
-			}
-		});
-	}
+//	public CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> workspaceSymbols(WorkspaceSymbolParams params) {
+//		return this.compilerClient.sendWorkspaceSymbols(params).thenApply(response -> {
+//			if (response.isLeft()) {
+//				final List<WorkspaceSymbol> result = new ArrayList<>();
+//				final JsonArray jsonArray = response.getLeft().getAsJsonArray();
+//				for (final JsonElement jsonElement : jsonArray) {
+//					final WorkspaceSymbol workspaceSymbol = GsonUtils.getGson().fromJson(jsonElement, WorkspaceSymbol.class);
+//					final Either<Location, WorkspaceSymbolLocation> location = workspaceSymbol.getLocation();
+//					if (location.isLeft()) {
+//						location.getLeft().setUri(fixLibraryUri(location.getLeft().getUri()));
+//					} else {
+//						location.getRight().setUri(fixLibraryUri(location.getRight().getUri()));
+//					}
+//					result.add(workspaceSymbol);
+//				}
+//				return Either.forRight(result);
+//			} else {
+//				throw new RuntimeException();
+//			}
+//		});
+//	}
 
 	public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
 		return this.compilerClient.sendRename(params).thenApply(response -> {

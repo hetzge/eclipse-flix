@@ -7,6 +7,5 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>de.hetzge.eclipse.flix.update</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<packaging>eclipse-repository</packaging>
 </project>
