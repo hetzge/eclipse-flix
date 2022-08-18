@@ -9,13 +9,12 @@
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>./releng/de.hetzge.eclipse.flix.configuration</relativePath>
 	</parent>
-
 	<modules>
 		<module>bundles</module>
 		<module>features</module>
 		<module>releng</module>
+		<module>targets</module>
 	</modules>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -30,5 +29,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
 </project>

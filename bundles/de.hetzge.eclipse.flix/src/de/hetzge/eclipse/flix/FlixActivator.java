@@ -42,6 +42,7 @@ public class FlixActivator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+		FlixLogger.logInfo("Let's go Flix");
 
 		SafeRun.run(rollback -> {
 			this.flix = new Flix();

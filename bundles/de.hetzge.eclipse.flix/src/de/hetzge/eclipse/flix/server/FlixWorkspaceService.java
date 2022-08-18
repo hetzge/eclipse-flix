@@ -14,7 +14,11 @@ import org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams;
 import org.eclipse.lsp4j.FileCreate;
 import org.eclipse.lsp4j.FileDelete;
 import org.eclipse.lsp4j.RenameFilesParams;
+import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceEdit;
+import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.eclipse.lsp4j.WorkspaceSymbolParams;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
 public final class FlixWorkspaceService implements WorkspaceService {
@@ -25,11 +29,11 @@ public final class FlixWorkspaceService implements WorkspaceService {
 		this.flixService = flixService;
 	}
 
-//	@Override
-//	public CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> symbol(WorkspaceSymbolParams params) {
-//		System.out.println("FlixWorkspaceService.symbol()");
-//		return this.flixService.workspaceSymbols(params);
-//	}
+	@Override
+	public CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> symbol(WorkspaceSymbolParams params) {
+		System.out.println("FlixWorkspaceService.symbol()");
+		return this.flixService.workspaceSymbols(params);
+	}
 
 	@Override
 	public CompletableFuture<WorkspaceEdit> willDeleteFiles(DeleteFilesParams params) {

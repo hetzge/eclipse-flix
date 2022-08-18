@@ -12,28 +12,28 @@
 		<eclipse-repo.url>https://download.eclipse.org/releases/2022-06</eclipse-repo.url>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>eclipse-release</id>
-			<url>${eclipse-repo.url}</url>
-			<layout>p2</layout>
-		</repository>
-		<repository>
-			<id>lxtk</id>
-			<layout>p2</layout>
-			<url>https://lxtk.org/downloads/releases/v0.3/repository</url>
-		</repository>
-		<repository>
-			<id>handly</id>
-			<layout>p2</layout>
-			<url>http://download.eclipse.org/handly/releases/1.6.2/repository</url>
-		</repository>
-		<repository>
-			<id>lsp4j</id>
-			<layout>p2</layout>
-			<url>https://download.eclipse.org/lsp4j/updates/releases/0.12.0</url>
-		</repository>
-	</repositories>
+<!--	<repositories>-->
+<!--		<repository>-->
+<!--			<id>eclipse-release</id>-->
+<!--			<url>${eclipse-repo.url}</url>-->
+<!--			<layout>p2</layout>-->
+<!--		</repository>-->
+<!--		<repository>-->
+<!--			<id>lxtk</id>-->
+<!--			<layout>p2</layout>-->
+<!--			<url>https://lxtk.org/downloads/releases/v0.3/repository</url>-->
+<!--		</repository>-->
+<!--		<repository>-->
+<!--			<id>handly</id>-->
+<!--			<layout>p2</layout>-->
+<!--			<url>http://download.eclipse.org/handly/releases/1.6.2/repository</url>-->
+<!--		</repository>-->
+<!--		<repository>-->
+<!--			<id>lsp4j</id>-->
+<!--			<layout>p2</layout>-->
+<!--			<url>https://download.eclipse.org/lsp4j/updates/releases/0.12.0</url>-->
+<!--		</repository>-->
+<!--	</repositories>-->
 
 	<build>
 		<plugins>
@@ -74,33 +74,13 @@
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho.version}</version>
 				<configuration>
-					<environments>
-						<environment>
-							<os>linux</os>
-							<ws>gtk</ws>
-							<arch>x86</arch>
-						</environment>
-						<environment>
-							<os>linux</os>
-							<ws>gtk</ws>
-							<arch>x86_64</arch>
-						</environment>
-						<environment>
-							<os>win32</os>
-							<ws>win32</ws>
-							<arch>x86</arch>
-						</environment>
-						<environment>
-							<os>win32</os>
-							<ws>win32</ws>
-							<arch>x86_64</arch>
-						</environment>
-						<environment>
-							<os>macosx</os>
-							<ws>cocoa</ws>
-							<arch>x86_64</arch>
-						</environment>
-					</environments>
+					<target>
+						<artifact>
+							<groupId>${project.groupId}</groupId>
+							<artifactId>base</artifactId>
+							<version>${project.version}</version>
+						</artifact>
+					</target>
 				</configuration>
 			</plugin>
 		</plugins>
