@@ -50,6 +50,7 @@ public class FlixActivator extends AbstractUIPlugin {
 				this.flix.close();
 				this.flix = null;
 			});
+			final FlixProjectManager projectManager = this.flix.getProjectManager();
 
 			/*
 			 * Init model ...
@@ -57,6 +58,7 @@ public class FlixActivator extends AbstractUIPlugin {
 			final FlixModel model = this.flix.getModelManager().getModel();
 			model.getProjects().forEach(project -> {
 				System.out.println(">>> " + project);
+				projectManager.initializeFlixProject(project.getProject());
 			});
 
 			/*
@@ -64,7 +66,6 @@ public class FlixActivator extends AbstractUIPlugin {
 			 * already initialized and initialize if necessary.
 			 */
 			rollback.add(this.flix.getDocumentService().onDidAddTextDocument().subscribe(document -> {
-				final FlixProjectManager projectManager = this.flix.getProjectManager();
 				EclipseUtils.getProject(document).ifPresent(projectManager::initializeFlixProject);
 			})::dispose);
 

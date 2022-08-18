@@ -36,4 +36,9 @@ public class FlixProject extends Element implements IFlixProject {
 	public IResource getResource_() {
 		return this.project;
 	}
+
+	@Override
+	public IProject getProject() {
+		return this.project;
+	}
 }

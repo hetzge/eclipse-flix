@@ -7,12 +7,19 @@ import java.net.ServerSocket;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 
 public final class Utils {
 	private Utils() {
+	}
+
+	public static <T> List<T> toList(Iterable<T> iterable) {
+		return StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
 	}
 
 	public static String readUriBase64Encoded(URI uri) {

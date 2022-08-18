@@ -100,7 +100,7 @@
             id="de.hetzge.eclipse.flix.openSymbol"
             categoryId="org.eclipse.ui.category.navigate"
             name="Open Symbol (Flix)"
-            description="Show a list of project-wide symbols"
+            description="Show a list of workspace-wide symbols"
             defaultHandler="de.hetzge.eclipse.flix.FlixSymbolSelectionHandler">
       </command>
    </extension>
