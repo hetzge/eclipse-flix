@@ -216,13 +216,21 @@ public final class FlixServerService implements AutoCloseable {
 			if (response.isLeft()) {
 				final List<WorkspaceSymbol> result = new ArrayList<>();
 				final JsonArray jsonArray = response.getLeft().getAsJsonArray();
-				for (final JsonElement jsonElement : jsonArray) {
+				loop: for (final JsonElement jsonElement : jsonArray) {
 					final WorkspaceSymbol workspaceSymbol = GsonUtils.getGson().fromJson(jsonElement, WorkspaceSymbol.class);
 					final Either<Location, WorkspaceSymbolLocation> location = workspaceSymbol.getLocation();
 					if (location.isLeft()) {
 						location.getLeft().setUri(fixLibraryUri(location.getLeft().getUri()));
+						if ("<unknown>".equals(location.getLeft().getUri())) {
+							System.out.println("Skip symbol because uri is '<unknown>'");
+							continue loop;
+						}
 					} else {
 						location.getRight().setUri(fixLibraryUri(location.getRight().getUri()));
+						if ("<unknown>".equals(location.getRight().getUri())) {
+							System.out.println("Skip symbol because uri is '<unknown>'");
+							continue loop;
+						}
 					}
 					result.add(workspaceSymbol);
 				}
