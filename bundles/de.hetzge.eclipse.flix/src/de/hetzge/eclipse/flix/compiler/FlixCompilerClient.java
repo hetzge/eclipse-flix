@@ -5,7 +5,6 @@ import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
@@ -90,35 +89,15 @@ public class FlixCompilerClient implements AutoCloseable {
 	}
 
 	public CompletableFuture<Either<JsonElement, JsonElement>> sendComplete(CompletionParams position) {
-		final String id = UUID.randomUUID().toString();
-
-		final JsonObject jsonObject = GsonUtils.getGson().toJsonTree(position).getAsJsonObject();
-		jsonObject.addProperty("request", "lsp/complete");
-		jsonObject.addProperty("id", id);
-
-		final CompletionStage<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
-		return send(jsonObject).thenCompose(ignore -> responseFuture);
+		return send("lsp/complete", position);
 	}
 
 	public CompletableFuture<Either<JsonElement, JsonElement>> sendGoto(DeclarationParams params) {
-		final String id = UUID.randomUUID().toString();
-
-		final JsonObject jsonObject = GsonUtils.getGson().toJsonTree(params).getAsJsonObject();
-		jsonObject.addProperty("request", "lsp/goto");
-		jsonObject.addProperty("id", id);
-
-		final CompletionStage<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
-		return send(jsonObject).thenCompose(ignore -> responseFuture);
+		return send("lsp/goto", params);
 	}
 
 	public CompletableFuture<Either<JsonElement, JsonElement>> sendCheck() {
-		final String id = UUID.randomUUID().toString();
-		final JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("request", "lsp/check");
-		jsonObject.addProperty("id", id);
-
-		final CompletionStage<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
-		return send(jsonObject).thenCompose(ignore -> responseFuture);
+		return send("lsp/check", new Object());
 	}
 
 	public CompletableFuture<Either<JsonElement, JsonElement>> sendHover(HoverParams params) {
@@ -151,21 +130,18 @@ public class FlixCompilerClient implements AutoCloseable {
 	}
 
 	public CompletableFuture<Either<JsonElement, JsonElement>> sendWorkspaceSymbols(WorkspaceSymbolParams params) {
-		final String id = UUID.randomUUID().toString();
-
-		final JsonObject jsonObject = GsonUtils.getGson().toJsonTree(params).getAsJsonObject();
-		jsonObject.addProperty("request", "lsp/workspaceSymbols");
-		jsonObject.addProperty("id", id);
-
-		final CompletableFuture<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
-		return send(jsonObject).thenCompose(ignore -> responseFuture);
+		return send("lsp/workspaceSymbols", params);
 	}
 
 	public CompletableFuture<Either<JsonElement, JsonElement>> sendRename(RenameParams params) {
+		return send("lsp/rename", params);
+	}
+
+	public CompletableFuture<Either<JsonElement, JsonElement>> send(String request, Object params) {
 		final String id = UUID.randomUUID().toString();
 
 		final JsonObject jsonObject = GsonUtils.getGson().toJsonTree(params).getAsJsonObject();
-		jsonObject.addProperty("request", "lsp/rename");
+		jsonObject.addProperty("request", request);
 		jsonObject.addProperty("id", id);
 
 		final CompletableFuture<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);

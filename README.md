@@ -1,12 +1,28 @@
+# Eclipse Flix Language Support
+
+This project provides an plugin for the Eclipse IDE that provides language support 
+for the [Flix programming language](https://flix.dev).
+
 ## Build
 
 ```
 mvn clean verify
 ```
 
-## Additional update sites:
+## Useful links
 
-- http://download.eclipse.org/handly/releases/1.6.2/repository
-- https://lxtk.org/downloads/releases/v0.3/repository/
-- https://download.eclipse.org/lsp4j/updates/releases/0.12.0/
-  
+* [Eclipse Handly Tutorial](https://github.com/pisv/gethandly/wiki)
+* [LXTK LSP Eclipse Integration](https://github.com/lxtk-org/lxtk)
+* [Flix Visual Studio Code Plugin](https://github.com/flix/vscode-flix)
+
+## Package structure
+
+Under the `de.hetzge.eclipse.flix` package the following packages can be found:
+
+* **client**: The **L**anguage **S**erver **P**rotocol client that bridges the Eclipse IDE with the LSP Server
+* **server**: The **L**anguage **S**erver **P**rotocol server implementation that uses the Flix compiler internally to answer language requests
+* **editor**: Provides an Eclipse text editor with Flix editing support (Hover, Autocomplete, Highlighting ...)
+* **launch**: Allows to run Flix applications. Provide Eclipse UI extensions and commands for this purpose
+* **model**: The [Eclipse Handly](https://projects.eclipse.org/projects/technology.handly) language model
+* **project**: Extends Eclipse with functions to manage Flix projects (create projects and files)
+* **utils**: Collection of useful functions
