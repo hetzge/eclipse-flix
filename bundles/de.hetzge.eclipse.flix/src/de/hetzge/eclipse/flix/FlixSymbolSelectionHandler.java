@@ -11,13 +11,17 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.WorkspaceSymbolLocation;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.dialogs.SelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.lxtk.WorkspaceSymbolProvider;
 import org.lxtk.lx4e.ui.AbstractItemsSelectionHandler;
+import org.lxtk.lx4e.ui.symbols.WorkspaceSymbolItem;
 import org.lxtk.lx4e.ui.symbols.WorkspaceSymbolSelectionDialog;
 
 /**
@@ -56,14 +60,13 @@ public class FlixSymbolSelectionHandler extends AbstractItemsSelectionHandler {
 
 	@Override
 	protected Location getLocation(Object item) {
-		return ((SymbolInformation) item).getLocation();
-//		final Either<Location, WorkspaceSymbolLocation> location = ((WorkspaceSymbolItem) item).getResolvedLocation();
-//
-//		if (location.isLeft()) {
-//			return location.getLeft();
-//		} else {
-//			return new Location(location.getRight().getUri(), new Range(new Position(0, 0), new Position(0, 0)));
-//		}
+		final Either<Location, WorkspaceSymbolLocation> location = ((WorkspaceSymbolItem) item).getResolvedLocation();
+
+		if (location.isLeft()) {
+			return location.getLeft();
+		} else {
+			return new Location(location.getRight().getUri(), new Range(new Position(0, 0), new Position(0, 0)));
+		}
 	}
 
 	private static IResource getResource(ExecutionEvent event) {
