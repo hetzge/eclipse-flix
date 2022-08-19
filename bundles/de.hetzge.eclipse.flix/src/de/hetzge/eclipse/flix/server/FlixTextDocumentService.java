@@ -61,7 +61,7 @@ public final class FlixTextDocumentService implements TextDocumentService {
 	@Override
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params) {
 		System.out.println("FlixTextDocumentService.documentSymbol()");
-		return this.flixService.symbols(URI.create(params.getTextDocument().getUri()));
+		return this.flixService.documentSymbols(URI.create(params.getTextDocument().getUri()));
 	}
 
 	@Override

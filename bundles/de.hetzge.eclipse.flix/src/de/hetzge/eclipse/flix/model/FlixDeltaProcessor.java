@@ -112,7 +112,8 @@ class FlixDeltaProcessor implements IResourceDeltaVisitor {
 			}
 		}
 
-		return false;
+		// On change process children to update outline ...
+		return true;
 	}
 
 	private boolean processChangedFile(IResourceDelta resourceDelta) {

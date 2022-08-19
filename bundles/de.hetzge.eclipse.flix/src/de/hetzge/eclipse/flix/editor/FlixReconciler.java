@@ -30,8 +30,7 @@ public class FlixReconciler extends EditorWorkingCopyReconciler {
 			final Registry<DocumentSymbolProvider> providers = Flix.get().getLanguageService().getDocumentSymbolProviders();
 			rollback.add(providers.onDidAdd().subscribe(provider -> forceReconciling())::dispose);
 			rollback.add(providers.onDidRemove().subscribe(provider -> forceReconciling())::dispose);
-
-			rollback.setLogger(exception -> FlixLogger.logError(exception));
+			rollback.setLogger(FlixLogger::logError);
 			this.uninstallRunnable = rollback;
 		});
 	}

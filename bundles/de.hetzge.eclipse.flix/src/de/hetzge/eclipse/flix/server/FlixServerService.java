@@ -196,7 +196,7 @@ public final class FlixServerService implements AutoCloseable {
 		});
 	}
 
-	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> symbols(URI uri) {
+	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbols(URI uri) {
 		return this.compilerClient.sendDocumentSymbols(uri).thenApply(response -> {
 			if (response.isLeft()) {
 				final List<Either<SymbolInformation, DocumentSymbol>> result = new ArrayList<>();
