@@ -1,11 +1,5 @@
 package de.hetzge.eclipse.flix.model;
 
-import static org.eclipse.handly.model.IElementDeltaConstants.CHANGED;
-import static org.eclipse.handly.model.IElementDeltaConstants.F_CONTENT;
-import static org.eclipse.handly.model.IElementDeltaConstants.F_MARKERS;
-import static org.eclipse.handly.model.IElementDeltaConstants.F_SYNC;
-import static org.eclipse.handly.model.IElementDeltaConstants.F_UNDERLYING_RESOURCE;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,21 +11,25 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.IElementDelta;
-import org.eclipse.handly.model.impl.IElementImplExtension;
-import org.eclipse.handly.model.impl.support.Body;
+import org.eclipse.handly.model.IElementDeltaConstants;
 import org.eclipse.handly.model.impl.support.Element;
+import org.eclipse.handly.model.impl.support.ElementDelta;
 import org.lxtk.lx4e.model.ILanguageElement;
 import org.lxtk.lx4e.model.ILanguageSourceFile;
 import org.lxtk.lx4e.model.impl.LanguageElementDelta;
 
 import de.hetzge.eclipse.flix.Flix;
 
-public class FlixDeltaProcessor implements IResourceDeltaVisitor {
+class FlixDeltaProcessor implements IResourceDeltaVisitor {
 
 	private final List<IElementDelta> deltas;
+	private final FlixModel model;
+	private final List<IFlixProject> flixProjectsBefore;
 
 	public FlixDeltaProcessor() {
 		this.deltas = new ArrayList<>();
+		this.model = Flix.get().getModelManager().getModel();
+		this.flixProjectsBefore = this.model.getFlixProjects();
 	}
 
 	public IElementDelta[] getDeltas() {
@@ -39,28 +37,32 @@ public class FlixDeltaProcessor implements IResourceDeltaVisitor {
 	}
 
 	@Override
-	public boolean visit(IResourceDelta delta) throws CoreException {
-		switch (delta.getResource().getType()) {
+	public boolean visit(IResourceDelta resourceDelta) throws CoreException {
+		switch (resourceDelta.getResource().getType()) {
 		case IResource.ROOT:
 			return true;
 		case IResource.PROJECT:
-			final IProject project = (IProject) delta.getResource();
-			switch (delta.getKind()) {
+			final IProject project = (IProject) resourceDelta.getResource();
+			switch (resourceDelta.getKind()) {
 			case IResourceDelta.ADDED:
-				return processAddedProject(project);
+				return processAddedProject(project, 0L);
 			case IResourceDelta.REMOVED:
-				return processRemovedProject(project);
+				return processRemovedProject(project, 0L);
+			case IResourceDelta.CHANGED:
+				final boolean isOpenDelta = (resourceDelta.getFlags() & IResourceDelta.OPEN) != 0;
+				final boolean isDescriptionDelta = (resourceDelta.getFlags() & IResourceDelta.DESCRIPTION) != 0;
+				return processChangedProject(project, isOpenDelta, isDescriptionDelta);
 			default:
 				return true;
 			}
 		case IResource.FILE:
-			switch (delta.getKind()) {
+			switch (resourceDelta.getKind()) {
 			case IResourceDelta.ADDED:
 				return false; // TODO
 			case IResourceDelta.REMOVED:
 				return false; // TODO
 			case IResourceDelta.CHANGED:
-				return processChangedFile(delta);
+				return processChangedFile(resourceDelta);
 			default:
 				return false;
 			}
@@ -69,74 +71,107 @@ public class FlixDeltaProcessor implements IResourceDeltaVisitor {
 		}
 	}
 
-	private boolean processAddedProject(IProject project) {
+	private boolean processAddedProject(IProject project, long flags) {
 		System.out.println("FlixDeltaProcessor.processAddedProject()");
-		final FlixModel flixModel = Flix.get().getModelManager().getModel();
-		getBody(flixModel).addChild(new FlixProject(flixModel, project));
+		if (isFlixProject(project)) {
+			final FlixProject flixProject = this.model.addFlixProject(project);
+			this.deltas.add(createDeltaBuilder().added(flixProject, flags).getDelta());
+		}
 		return false;
 	}
 
-	private boolean processRemovedProject(IProject project) {
+	private boolean processRemovedProject(IProject project, long flags) {
 		System.out.println("FlixDeltaProcessor.processRemovedProject()");
-		final FlixModel flixModel = Flix.get().getModelManager().getModel();
-		getBody(flixModel).removeChild(new FlixProject(flixModel, project));
-		close(flixModel);
+		if (wasFlixProject(project)) {
+			final FlixProject flixProject = this.model.removeFlixProject(project);
+			this.deltas.add(createDeltaBuilder().removed(flixProject, flags).getDelta());
+		}
 		return false;
 	}
 
-	private boolean processChangedFile(IResourceDelta delta) {
-		System.out.println("FlixDeltaProcessor.processChangedFile()");
+	private boolean processChangedProject(IProject project, boolean isOpenDelta, boolean isDescriptionDelta) {
+		System.out.println("FlixDeltaProcessor.processChangedProject()");
 
-		final IFile file = (IFile) delta.getResource();
+		if (isOpenDelta) {
+			if (project.isOpen()) {
+				return processAddedProject(project, IElementDeltaConstants.F_OPEN);
+			} else {
+				return processRemovedProject(project, IElementDeltaConstants.F_OPEN);
+			}
+		}
+
+		if (isDescriptionDelta) {
+			final boolean isFlixProject = isFlixProject(project);
+			final boolean wasFooProject = wasFlixProject(project);
+			if (wasFooProject != isFlixProject) {
+				if (isFlixProject) {
+					return processAddedProject(project, IElementDeltaConstants.F_DESCRIPTION);
+				} else {
+					return processRemovedProject(project, IElementDeltaConstants.F_DESCRIPTION);
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private boolean processChangedFile(IResourceDelta resourceDelta) {
+		System.out.println("FlixDeltaProcessor.processChangedFile() " + resourceDelta);
+
+		final IFile file = (IFile) resourceDelta.getResource();
 		final ILanguageElement element = new FlixSourceFile(file.getLocationURI());
 		if (element != null) {
-			final LanguageElementDelta result = new LanguageElementDelta(element);
-			result.setKind(CHANGED);
+			final LanguageElementDelta elementDelta = new LanguageElementDelta(element);
+			elementDelta.setKind(IElementDeltaConstants.CHANGED);
 
 			long flags = 0;
 
 			final boolean isWorkingCopy = isWorkingCopy(element);
 
 			if (isWorkingCopy) {
-				flags |= F_UNDERLYING_RESOURCE;
+				flags |= IElementDeltaConstants.F_UNDERLYING_RESOURCE;
 			}
 
-			if ((delta.getFlags() & ~(IResourceDelta.MARKERS | IResourceDelta.SYNC)) != 0) {
-				flags |= F_CONTENT;
+			if ((resourceDelta.getFlags() & ~(IResourceDelta.MARKERS | IResourceDelta.SYNC)) != 0) {
+				flags |= IElementDeltaConstants.F_CONTENT;
 				if (!isWorkingCopy) {
 					close(element);
 				}
 			}
 
-			if ((delta.getFlags() & IResourceDelta.MARKERS) != 0) {
-				flags |= F_MARKERS;
-				result.setMarkerDeltas(delta.getMarkerDeltas());
+			if ((resourceDelta.getFlags() & IResourceDelta.MARKERS) != 0) {
+				flags |= IElementDeltaConstants.F_MARKERS;
+				elementDelta.setMarkerDeltas(resourceDelta.getMarkerDeltas());
 			}
 
-			if ((delta.getFlags() & IResourceDelta.SYNC) != 0) {
-				flags |= F_SYNC;
+			if ((resourceDelta.getFlags() & IResourceDelta.SYNC) != 0) {
+				flags |= IElementDeltaConstants.F_SYNC;
 			}
 
-			result.setFlags(flags);
+			elementDelta.setFlags(flags);
 
-			this.deltas.add(result);
+			this.deltas.add(elementDelta);
 		}
 		return false;
+	}
+
+	private ElementDelta.Builder createDeltaBuilder() {
+		return new ElementDelta.Builder(new ElementDelta(this.model));
 	}
 
 	private static boolean isWorkingCopy(ILanguageElement element) {
 		return element instanceof ILanguageSourceFile && ((ILanguageSourceFile) element).isWorkingCopy();
 	}
 
-	private Body getBody(IElementImplExtension element) {
-		try {
-			return (Body) element.getBody_();
-		} catch (final CoreException exception) {
-			throw new RuntimeException(exception);
-		}
-	}
-
 	private static void close(IElement element) {
 		((Element) element).close_();
+	}
+
+	private boolean wasFlixProject(IProject project) {
+		return this.flixProjectsBefore.stream().filter(flixProject -> flixProject.getProject().equals(project)).findFirst().isPresent();
+	}
+
+	private boolean isFlixProject(IProject project) {
+		return FlixProject.isActiveFlixProject(project);
 	}
 }

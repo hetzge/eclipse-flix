@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.lsp4j.DocumentFilter;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.lxtk.DocumentService;
@@ -38,10 +37,11 @@ import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator;
+import de.hetzge.eclipse.flix.model.IFlixProject;
 
 public class FlixLanguageClientController extends EclipseLanguageClientController<LanguageServer> {
 
-	private final IProject project;
+	private final IFlixProject flixProject;
 	private final int port;
 	private final EclipseLog log;
 	private final BufferingDiagnosticConsumer diagnosticConsumer;
@@ -49,19 +49,19 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 	private final LanguageService languageService;
 	private final DocumentService documentService;
 
-	public FlixLanguageClientController(IProject project, int port) {
-		this.project = project;
+	public FlixLanguageClientController(IFlixProject flixProject, int port) {
+		this.flixProject = flixProject;
 		this.port = port;
-		this.log = new EclipseLog(FlixActivator.getDefault().getBundle(), "flix-language-client:" + project.getName()); //$NON-NLS-1$
+		this.log = new EclipseLog(FlixActivator.getDefault().getBundle(), "flix-language-client:" + flixProject.getProject().getName()); //$NON-NLS-1$
 		this.diagnosticConsumer = new BufferingDiagnosticConsumer(new DiagnosticMarkers(FlixMarkerResolutionGenerator.MARKER_TYPE));
-		this.documentFilter = new DocumentFilter(FlixConstants.LANGUAGE_ID, "file", this.project.getLocation().append("**").toString()); //$NON-NLS-1$ //$NON-NLS-2$
+		this.documentFilter = new DocumentFilter(FlixConstants.LANGUAGE_ID, "file", this.flixProject.getProject().getLocation().append("**").toString()); //$NON-NLS-1$ //$NON-NLS-2$
 		this.languageService = Flix.get().getLanguageService();
 		this.documentService = Flix.get().getDocumentService();
 	}
 
 	@Override
 	protected AbstractLanguageClient<LanguageServer> getLanguageClient() {
-		return new FlixEclipseLanguageClient(this.log, this.project, this.diagnosticConsumer, createFeatureList());
+		return new FlixEclipseLanguageClient(this.log, this.flixProject, this.diagnosticConsumer, createFeatureList());
 	}
 
 	private List<Feature<? super LanguageServer>> createFeatureList() {
@@ -76,7 +76,7 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		features.add(new DeclarationFeature(this.languageService));
 		features.add(new HoverFeature(this.languageService));
 		features.add(new DocumentSymbolFeature(this.languageService));
-		features.add(new WorkspaceSymbolFeature(this.languageService, this.project));
+		features.add(new WorkspaceSymbolFeature(this.languageService, this.flixProject));
 		features.add(new RenameFeature(this.languageService));
 		return features;
 	}
@@ -117,10 +117,10 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		super.dispose();
 	}
 
-	public static FlixLanguageClientController connect(IProject project, int port) {
+	public static FlixLanguageClientController connect(IFlixProject flixProject, int port) {
 		System.out.println("FlixLanguageClient.connect()");
 		return SafeRun.runWithResult(rollback -> {
-			final FlixLanguageClientController flixLanguageClient = new FlixLanguageClientController(project, port);
+			final FlixLanguageClientController flixLanguageClient = new FlixLanguageClientController(flixProject, port);
 			rollback.add(flixLanguageClient::dispose);
 			flixLanguageClient.connect();
 

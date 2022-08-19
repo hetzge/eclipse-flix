@@ -6,4 +6,6 @@ public interface IFlixProject {
 
 	IProject getProject();
 
+	boolean isActive();
+
 }

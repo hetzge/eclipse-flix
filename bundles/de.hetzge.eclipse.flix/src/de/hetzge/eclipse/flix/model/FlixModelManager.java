@@ -2,7 +2,6 @@ package de.hetzge.eclipse.flix.model;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.context.Context;
 import org.eclipse.handly.model.IElementChangeEvent;
@@ -15,7 +14,7 @@ import org.eclipse.handly.model.impl.support.NotificationManager;
 
 import de.hetzge.eclipse.flix.FlixLogger;
 
-public class FlixModelManager implements IModelManager, IResourceChangeListener, AutoCloseable {
+public class FlixModelManager implements IModelManager, IResourceChangeListener {
 
 	private final FlixModel model;
 	private final ElementManager elementManager;
@@ -25,11 +24,6 @@ public class FlixModelManager implements IModelManager, IResourceChangeListener,
 		this.model = model;
 		this.elementManager = elementManager;
 		this.notificationManager = notificationManager;
-	}
-
-	@Override
-	public void close() {
-		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 	}
 
 	@Override
@@ -52,7 +46,7 @@ public class FlixModelManager implements IModelManager, IResourceChangeListener,
 
 				final IElementDelta[] deltas = deltaProcessor.getDeltas();
 				if (deltas.length > 0) {
-					getNotificationManager().fireElementChangeEvent(new ElementChangeEvent(IElementChangeEvent.POST_CHANGE, deltas));
+					this.notificationManager.fireElementChangeEvent(new ElementChangeEvent(IElementChangeEvent.POST_CHANGE, deltas));
 				}
 			} catch (final CoreException exception) {
 				FlixLogger.logError(exception);
@@ -82,7 +76,6 @@ public class FlixModelManager implements IModelManager, IResourceChangeListener,
 
 		final FlixModel model = new FlixModel(context);
 		final ElementManager elementManager = new ElementManager(new FlixModelCache());
-		final FlixModelManager modelManager = new FlixModelManager(model, elementManager, notificationManager);
-		return modelManager;
+		return new FlixModelManager(model, elementManager, notificationManager);
 	}
 }

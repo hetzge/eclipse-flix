@@ -79,7 +79,6 @@ public final class Flix implements AutoCloseable {
 
 	@Override
 	public void close() {
-		this.modelManager.close();
 		this.projectManager.close();
 	}
 }

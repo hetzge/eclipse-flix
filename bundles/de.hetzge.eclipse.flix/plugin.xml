@@ -103,6 +103,12 @@
             description="Show a list of workspace-wide symbols"
             defaultHandler="de.hetzge.eclipse.flix.FlixSymbolSelectionHandler">
       </command>
+      <command
+            defaultHandler="de.hetzge.eclipse.flix.project.FlixProjectNatureHandler"
+            description="Converts the project to a Flix project"
+            id="de.hetzge.eclipse.flix.nature.create"
+            name="Add Flix project nature">
+      </command>
    </extension>
       <extension point="org.eclipse.ui.bindings">
       <key
@@ -145,6 +151,35 @@
             </command>
          </menu>
       </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.ui.projectConfigure">
+         <command
+               commandId="de.hetzge.eclipse.flix.nature.create"
+               icon="icon.png"
+               label="Convert to Flix project"
+               style="push"
+               tooltip="Convert to Flix project">
+         </command>
+      </menuContribution>
    </extension>
-   
+    <extension
+         id="de.hetzge.eclipse.flix.nature"
+         name="Flix Project Nature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class=
+"de.hetzge.eclipse.flix.project.FlixProjectNature">
+         </run>
+      </runtime>
+   </extension>
+    <extension
+          point="org.eclipse.ui.ide.projectNatureImages">
+       <image
+             icon="icon2.png"
+             id="de.hetzge.eclipse.flix.nature.image"
+             natureId="de.hetzge.eclipse.flix.nature">
+       </image>
+    </extension>
 </plugin>

@@ -2,8 +2,10 @@ package de.hetzge.eclipse.flix.model;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -13,6 +15,8 @@ import org.eclipse.handly.ApiLevel;
 import org.eclipse.handly.context.Context;
 import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.model.Elements;
+import org.eclipse.handly.model.IElement;
+import org.eclipse.handly.model.impl.IElementImplExtension;
 import org.eclipse.handly.model.impl.IModelImpl;
 import org.eclipse.handly.model.impl.support.Body;
 import org.eclipse.handly.model.impl.support.Element;
@@ -66,21 +70,59 @@ public class FlixModel extends Element implements IFlixModel, IModelImpl {
 	public void buildStructure_(IContext context, IProgressMonitor monitor) throws CoreException {
 		System.out.println("FlixModel.buildStructure_()");
 
-		final List<FlixProject> projects = Arrays.asList(this.workspace.getRoot().getProjects()).stream() //
-				.map(project -> new FlixProject(this, project)) //
+		final List<IFlixProject> flixProjects = Arrays.asList(this.workspace.getRoot().getProjects()).stream() //
+				.map(this::createFlixProject) //
+				.filter(IFlixProject::isActive) //
 				.collect(Collectors.toList());
 
 		final Body body = new Body();
-		body.setChildren(projects.toArray(Elements.EMPTY_ARRAY));
+		body.setChildren(flixProjects.toArray(Elements.EMPTY_ARRAY));
 		context.get(IElementImplSupport.NEW_ELEMENTS).put(this, body);
 	}
 
 	@Override
-	public List<IFlixProject> getProjects() {
+	public List<IFlixProject> getFlixProjects() {
 		try {
 			return Arrays.asList(getChildren()).stream().map(IFlixProject.class::cast).collect(Collectors.toList());
 		} catch (final CoreException exception) {
 			throw new RuntimeException(exception);
 		}
+	}
+
+	@Override
+	public Optional<IFlixProject> getFlixProject(IProject project) {
+		final FlixProject referenceFlixProject = createFlixProject(project);
+		return getFlixProjects().stream().filter(flixProject -> {
+			return referenceFlixProject.equals(flixProject);
+		}).findFirst();
+	}
+
+	FlixProject addFlixProject(IProject project) {
+		final FlixProject flixProject = createFlixProject(project);
+		getBody(this).addChild(flixProject);
+		return flixProject;
+	}
+
+	FlixProject removeFlixProject(IProject project) {
+		final FlixProject flixProject = createFlixProject(project);
+		getBody(this).removeChild(flixProject);
+		close(flixProject);
+		return flixProject;
+	}
+
+	private Body getBody(IElementImplExtension element) {
+		try {
+			return (Body) element.getBody_();
+		} catch (final CoreException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	FlixProject createFlixProject(IProject project) {
+		return new FlixProject(this, project);
+	}
+
+	private static void close(IElement element) {
+		((Element) element).close_();
 	}
 }

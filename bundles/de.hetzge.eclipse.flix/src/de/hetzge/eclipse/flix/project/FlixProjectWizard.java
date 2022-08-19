@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -15,6 +16,7 @@ import org.eclipse.ui.ide.undo.CreateProjectOperation;
 import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
 
 import de.hetzge.eclipse.flix.utils.FlixUtils;
+import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 public class FlixProjectWizard extends Wizard implements INewWizard {
@@ -45,8 +47,9 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 		final FlixProjectPage page = (FlixProjectPage) getStartingPage();
 		final File jreExecutableFile = Utils.getJreExecutable();
 		final File flixJarFile = FlixUtils.loadFlixJarFile();
-		final File newProjectFolder = new File(page.getLocationPath().toFile(), page.getProjectName());
-		final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(page.getProjectName());
+		final String projectName = page.getProjectName();
+		final File newProjectFolder = new File(page.getLocationPath().toFile(), projectName);
+		final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
 
 		try {
 			getContainer().run(true, true, monitor -> {
@@ -61,9 +64,10 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 				}
 
 				try {
+					EclipseUtils.addNature(description, FlixProjectNature.ID);
 					final CreateProjectOperation projectOperation = new CreateProjectOperation(description, "Create flix project");
 					projectOperation.execute(monitor, WorkspaceUndoUtil.getUIInfoAdapter(getShell()));
-				} catch (final ExecutionException exception) {
+				} catch (final ExecutionException | CoreException exception) {
 					throw new InvocationTargetException(exception);
 				}
 

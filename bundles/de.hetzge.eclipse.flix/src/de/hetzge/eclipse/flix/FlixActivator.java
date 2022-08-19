@@ -5,18 +5,25 @@ import java.util.Objects;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.handly.model.ElementDeltas;
+import org.eclipse.handly.model.IElement;
+import org.eclipse.handly.model.IElementChangeEvent;
+import org.eclipse.handly.model.IElementChangeListener;
+import org.eclipse.handly.model.IElementDelta;
+import org.eclipse.handly.model.impl.support.NotificationManager;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
 import de.hetzge.eclipse.flix.model.FlixModel;
-import de.hetzge.eclipse.utils.EclipseUtils;
+import de.hetzge.eclipse.flix.model.FlixModelManager;
+import de.hetzge.eclipse.flix.model.IFlixProject;
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class FlixActivator extends AbstractUIPlugin {
+public class FlixActivator extends AbstractUIPlugin implements IElementChangeListener {
 
 	private static FlixActivator plugin;
 
@@ -53,27 +60,24 @@ public class FlixActivator extends AbstractUIPlugin {
 			final FlixProjectManager projectManager = this.flix.getProjectManager();
 
 			/*
-			 * Init model ...
+			 * Init model and projects ...
 			 */
-			final FlixModel model = this.flix.getModelManager().getModel();
-			model.getProjects().forEach(project -> {
-				System.out.println(">>> " + project);
-				projectManager.initializeFlixProject(project.getProject());
+			final FlixModelManager modelManager = this.flix.getModelManager();
+			final FlixModel model = modelManager.getModel();
+			model.getFlixProjects().forEach(flixProject -> {
+				System.out.println(">>> " + flixProject);
+				projectManager.initializeFlixProject(flixProject);
 			});
-
-			/*
-			 * When open a document then check if the flix environment for this project is
-			 * already initialized and initialize if necessary.
-			 */
-			rollback.add(this.flix.getDocumentService().onDidAddTextDocument().subscribe(document -> {
-				EclipseUtils.getProject(document).ifPresent(projectManager::initializeFlixProject);
-			})::dispose);
 
 			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
 			workspace.addResourceChangeListener(this.flix.getResourceMonitor(), IResourceChangeEvent.POST_CHANGE);
 			rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getResourceMonitor()));
-			workspace.addResourceChangeListener(this.flix.getModelManager(), IResourceChangeEvent.POST_CHANGE);
-			rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getModelManager()));
+			workspace.addResourceChangeListener(modelManager, IResourceChangeEvent.POST_CHANGE);
+			rollback.add(() -> workspace.removeResourceChangeListener(modelManager));
+
+			final NotificationManager notificationManager = modelManager.getNotificationManager();
+			notificationManager.addElementChangeListener(this);
+			rollback.add(() -> notificationManager.removeElementChangeListener(this));
 
 			this.rollback = rollback;
 		});
@@ -81,8 +85,8 @@ public class FlixActivator extends AbstractUIPlugin {
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
+		System.out.println("FlixActivator.stop()");
 		try {
-			System.out.println("Activator.stop()");
 			if (this.rollback != null) {
 				this.rollback.run();
 				this.rollback = null;
@@ -90,6 +94,27 @@ public class FlixActivator extends AbstractUIPlugin {
 			plugin = null;
 		} finally {
 			super.stop(context);
+		}
+	}
+
+	@Override
+	public void elementChanged(IElementChangeEvent event) {
+		System.out.println("FlixActivator.elementChanged()");
+		for (final IElementDelta delta : event.getDeltas()) {
+			for (final IElementDelta addedChildDelta : ElementDeltas.getAddedChildren(delta)) {
+				final IElement element = ElementDeltas.getElement(addedChildDelta);
+				if (element instanceof IFlixProject) {
+					final IFlixProject flixProject = (IFlixProject) element;
+					Flix.get().getProjectManager().initializeFlixProject(flixProject);
+				}
+			}
+			for (final IElementDelta removedChildDelta : ElementDeltas.getRemovedChildren(delta)) {
+				final IElement element = ElementDeltas.getElement(removedChildDelta);
+				if (element instanceof IFlixProject) {
+					final IFlixProject flixProject = (IFlixProject) element;
+					Flix.get().getProjectManager().closeProject(flixProject);
+				}
+			}
 		}
 	}
 

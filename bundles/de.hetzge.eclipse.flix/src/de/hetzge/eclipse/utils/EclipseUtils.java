@@ -11,6 +11,7 @@ import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -19,6 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
@@ -243,6 +245,32 @@ public final class EclipseUtils {
 		} catch (final PartInitException exception) {
 			throw new IllegalStateException(String.format("Failed to open file '%s'", path.toOSString()), exception);
 		}
+	}
+
+	public static IStatus addNature(final IProject project, String natureId) throws CoreException {
+		final IProjectDescription description = project.getDescription();
+		final IStatus status = addNature(description, natureId);
+		project.setDescription(description, null);
+		return status;
+	}
+
+	public static IStatus addNature(final IProjectDescription description, String natureId) throws CoreException {
+		final String[] natures = description.getNatureIds();
+		final String[] newNatures = new String[natures.length + 1];
+		System.arraycopy(natures, 0, newNatures, 0, natures.length);
+
+		// add nature
+		newNatures[natures.length] = natureId;
+
+		// validate the natures
+		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		final IStatus status = workspace.validateNatureSet(newNatures);
+
+		// only apply new nature, if the status is ok
+		if (status.getCode() == IStatus.OK) {
+			description.setNatureIds(newNatures);
+		}
+		return status;
 	}
 
 }

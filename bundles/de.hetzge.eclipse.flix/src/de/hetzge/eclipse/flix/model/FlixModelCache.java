@@ -12,6 +12,7 @@ class FlixModelCache implements IBodyCache {
 	private static final int DEFAULT_FILE_SIZE = 250;
 	private static final int DEFAULT_CHILDREN_SIZE = DEFAULT_FILE_SIZE * 20; // average 20 children per file
 
+	private Object model;
 	private final ElementCache fileCache;
 	private final HashMap<IElement, Object> symbolCache;
 
@@ -25,7 +26,9 @@ class FlixModelCache implements IBodyCache {
 
 	@Override
 	public Object get(IElement element) {
-		if (element instanceof ILanguageSourceFile) {
+		if (element instanceof IFlixModel) {
+			return this.model;
+		} else if (element instanceof ILanguageSourceFile) {
 			return this.fileCache.get(element);
 		} else {
 			return this.symbolCache.get(element);
@@ -34,7 +37,9 @@ class FlixModelCache implements IBodyCache {
 
 	@Override
 	public Object peek(IElement element) {
-		if (element instanceof ILanguageSourceFile) {
+		if (element instanceof IFlixModel) {
+			return this.model;
+		} else if (element instanceof ILanguageSourceFile) {
 			return this.fileCache.peek(element);
 		} else {
 			return this.symbolCache.get(element);
@@ -43,7 +48,9 @@ class FlixModelCache implements IBodyCache {
 
 	@Override
 	public void put(IElement element, Object body) {
-		if (element instanceof ILanguageSourceFile) {
+		if (element instanceof IFlixModel) {
+			this.model = body;
+		} else if (element instanceof ILanguageSourceFile) {
 			this.fileCache.put(element, body);
 		} else if (element instanceof ILanguageSymbol) {
 			this.symbolCache.put(element, body);
@@ -54,7 +61,9 @@ class FlixModelCache implements IBodyCache {
 
 	@Override
 	public void remove(IElement element) {
-		if (element instanceof ILanguageSourceFile) {
+		if (element instanceof IFlixModel) {
+			this.model = null;
+		} else if (element instanceof ILanguageSourceFile) {
 			this.fileCache.remove(element);
 		} else {
 			this.symbolCache.remove(element);
