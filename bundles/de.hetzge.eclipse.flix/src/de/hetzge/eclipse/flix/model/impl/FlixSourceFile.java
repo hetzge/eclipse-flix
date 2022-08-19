@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.model;
+package de.hetzge.eclipse.flix.model.impl;
 
 import java.net.URI;
 
@@ -13,33 +13,26 @@ import de.hetzge.eclipse.flix.FlixConstants;
 
 public class FlixSourceFile extends LanguageSourceFile {
 
-	private final FlixModelManager modelManager;
-	private final DocumentService documentService;
-	private final LanguageService languageService;
-
 	public FlixSourceFile(URI uri) {
 		this(null, uri);
 	}
 
 	public FlixSourceFile(LanguageElement parent, URI uri) {
 		super(parent, uri, FlixConstants.LANGUAGE_ID);
-		this.modelManager = Flix.get().getModelManager();
-		this.documentService = Flix.get().getDocumentService();
-		this.languageService = Flix.get().getLanguageService();
 	}
 
 	@Override
 	public IModelManager getModelManager_() {
-		return this.modelManager;
+		return Flix.get().getModelManager();
 	}
 
 	@Override
 	protected DocumentService getDocumentService() {
-		return this.documentService;
+		return Flix.get().getDocumentService();
 	}
 
 	@Override
 	protected LanguageService getLanguageService() {
-		return this.languageService;
+		return Flix.get().getLanguageService();
 	}
 }

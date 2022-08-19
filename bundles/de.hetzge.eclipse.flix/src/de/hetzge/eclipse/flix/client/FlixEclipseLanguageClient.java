@@ -14,7 +14,7 @@ import org.lxtk.lx4e.EclipseLog;
 import org.lxtk.lx4e.ui.EclipseLanguageClient;
 
 import de.hetzge.eclipse.flix.Flix;
-import de.hetzge.eclipse.flix.model.IFlixProject;
+import de.hetzge.eclipse.flix.model.api.IFlixProject;
 
 class FlixEclipseLanguageClient extends EclipseLanguageClient<LanguageServer> {
 

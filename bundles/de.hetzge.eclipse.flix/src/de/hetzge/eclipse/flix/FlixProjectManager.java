@@ -8,7 +8,7 @@ import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
 import de.hetzge.eclipse.flix.client.FlixLanguageClientController;
-import de.hetzge.eclipse.flix.model.IFlixProject;
+import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread;
 import de.hetzge.eclipse.utils.Utils;
 

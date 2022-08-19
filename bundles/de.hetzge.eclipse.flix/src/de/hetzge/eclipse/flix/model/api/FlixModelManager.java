@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.model;
+package de.hetzge.eclipse.flix.model.api;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -13,6 +13,9 @@ import org.eclipse.handly.model.impl.support.INotificationManager;
 import org.eclipse.handly.model.impl.support.NotificationManager;
 
 import de.hetzge.eclipse.flix.FlixLogger;
+import de.hetzge.eclipse.flix.model.impl.FlixDeltaProcessor;
+import de.hetzge.eclipse.flix.model.impl.FlixModel;
+import de.hetzge.eclipse.flix.model.impl.FlixModelCache;
 
 public class FlixModelManager implements IModelManager, IResourceChangeListener {
 
@@ -27,7 +30,7 @@ public class FlixModelManager implements IModelManager, IResourceChangeListener 
 	}
 
 	@Override
-	public FlixModel getModel() {
+	public IFlixModel getModel() {
 		System.out.println("FlixModelManager.getModel()");
 		return this.model;
 	}
@@ -41,7 +44,7 @@ public class FlixModelManager implements IModelManager, IResourceChangeListener 
 	public void resourceChanged(IResourceChangeEvent event) {
 		if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
 			try {
-				final FlixDeltaProcessor deltaProcessor = new FlixDeltaProcessor();
+				final FlixDeltaProcessor deltaProcessor = new FlixDeltaProcessor(this.model);
 				event.getDelta().accept(deltaProcessor);
 
 				final IElementDelta[] deltas = deltaProcessor.getDeltas();

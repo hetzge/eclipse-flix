@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.model;
+package de.hetzge.eclipse.flix.model.impl;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -10,6 +10,7 @@ import org.eclipse.handly.model.impl.support.Element;
 import org.eclipse.handly.model.impl.support.IModelManager;
 
 import de.hetzge.eclipse.flix.Flix;
+import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
 
 public class FlixProject extends Element implements IFlixProject {

@@ -37,7 +37,7 @@ import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator;
-import de.hetzge.eclipse.flix.model.IFlixProject;
+import de.hetzge.eclipse.flix.model.api.IFlixProject;
 
 public class FlixLanguageClientController extends EclipseLanguageClientController<LanguageServer> {
 

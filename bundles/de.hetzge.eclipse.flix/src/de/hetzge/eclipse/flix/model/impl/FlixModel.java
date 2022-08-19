@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.model;
+package de.hetzge.eclipse.flix.model.impl;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,8 +15,6 @@ import org.eclipse.handly.ApiLevel;
 import org.eclipse.handly.context.Context;
 import org.eclipse.handly.context.IContext;
 import org.eclipse.handly.model.Elements;
-import org.eclipse.handly.model.IElement;
-import org.eclipse.handly.model.impl.IElementImplExtension;
 import org.eclipse.handly.model.impl.IModelImpl;
 import org.eclipse.handly.model.impl.support.Body;
 import org.eclipse.handly.model.impl.support.Element;
@@ -24,6 +22,8 @@ import org.eclipse.handly.model.impl.support.IElementImplSupport;
 import org.eclipse.handly.model.impl.support.IModelManager;
 
 import de.hetzge.eclipse.flix.Flix;
+import de.hetzge.eclipse.flix.model.api.IFlixModel;
+import de.hetzge.eclipse.flix.model.api.IFlixProject;
 
 public class FlixModel extends Element implements IFlixModel, IModelImpl {
 
@@ -97,32 +97,7 @@ public class FlixModel extends Element implements IFlixModel, IModelImpl {
 		}).findFirst();
 	}
 
-	FlixProject addFlixProject(IProject project) {
-		final FlixProject flixProject = createFlixProject(project);
-		getBody(this).addChild(flixProject);
-		return flixProject;
-	}
-
-	FlixProject removeFlixProject(IProject project) {
-		final FlixProject flixProject = createFlixProject(project);
-		getBody(this).removeChild(flixProject);
-		close(flixProject);
-		return flixProject;
-	}
-
-	private Body getBody(IElementImplExtension element) {
-		try {
-			return (Body) element.getBody_();
-		} catch (final CoreException exception) {
-			throw new RuntimeException(exception);
-		}
-	}
-
-	FlixProject createFlixProject(IProject project) {
+	private FlixProject createFlixProject(IProject project) {
 		return new FlixProject(this, project);
-	}
-
-	private static void close(IElement element) {
-		((Element) element).close_();
 	}
 }

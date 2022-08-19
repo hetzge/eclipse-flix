@@ -8,7 +8,7 @@ import org.eclipse.handly.ui.IInputElementProvider;
 import org.eclipse.ui.IEditorInput;
 import org.lxtk.lx4e.model.ILanguageSourceFile;
 
-import de.hetzge.eclipse.flix.model.FlixSourceFile;
+import de.hetzge.eclipse.flix.model.impl.FlixSourceFile;
 import de.hetzge.eclipse.utils.EclipseUtils;
 
 /**

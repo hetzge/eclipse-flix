@@ -16,9 +16,9 @@ import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
-import de.hetzge.eclipse.flix.model.FlixModel;
-import de.hetzge.eclipse.flix.model.FlixModelManager;
-import de.hetzge.eclipse.flix.model.IFlixProject;
+import de.hetzge.eclipse.flix.model.api.FlixModelManager;
+import de.hetzge.eclipse.flix.model.api.IFlixModel;
+import de.hetzge.eclipse.flix.model.api.IFlixProject;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -63,7 +63,7 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 			 * Init model and projects ...
 			 */
 			final FlixModelManager modelManager = this.flix.getModelManager();
-			final FlixModel model = modelManager.getModel();
+			final IFlixModel model = modelManager.getModel();
 			model.getFlixProjects().forEach(flixProject -> {
 				System.out.println(">>> " + flixProject);
 				projectManager.initializeFlixProject(flixProject);

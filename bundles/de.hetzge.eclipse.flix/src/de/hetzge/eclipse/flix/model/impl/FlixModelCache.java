@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.model;
+package de.hetzge.eclipse.flix.model.impl;
 
 import java.util.HashMap;
 
@@ -8,7 +8,9 @@ import org.eclipse.handly.model.impl.support.IBodyCache;
 import org.lxtk.lx4e.model.ILanguageSourceFile;
 import org.lxtk.lx4e.model.ILanguageSymbol;
 
-class FlixModelCache implements IBodyCache {
+import de.hetzge.eclipse.flix.model.api.IFlixModel;
+
+public class FlixModelCache implements IBodyCache {
 	private static final int DEFAULT_FILE_SIZE = 250;
 	private static final int DEFAULT_CHILDREN_SIZE = DEFAULT_FILE_SIZE * 20; // average 20 children per file
 
@@ -16,9 +18,8 @@ class FlixModelCache implements IBodyCache {
 	private final ElementCache fileCache;
 	private final HashMap<IElement, Object> symbolCache;
 
-	FlixModelCache() {
-		// set the size of the caches as a function of the maximum amount of memory
-		// available
+	public FlixModelCache() {
+		// set the size of the caches as a function of the maximum amount of memory available
 		final double memoryRatio = getMemoryRatio();
 		this.fileCache = new ElementCache((int) (DEFAULT_FILE_SIZE * memoryRatio));
 		this.symbolCache = new HashMap<>((int) (DEFAULT_CHILDREN_SIZE * memoryRatio));

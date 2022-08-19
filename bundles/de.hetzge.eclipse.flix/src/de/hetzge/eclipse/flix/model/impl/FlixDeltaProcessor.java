@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.model;
+package de.hetzge.eclipse.flix.model.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,23 +12,25 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.IElementDelta;
 import org.eclipse.handly.model.IElementDeltaConstants;
+import org.eclipse.handly.model.impl.IElementImplExtension;
+import org.eclipse.handly.model.impl.support.Body;
 import org.eclipse.handly.model.impl.support.Element;
 import org.eclipse.handly.model.impl.support.ElementDelta;
 import org.lxtk.lx4e.model.ILanguageElement;
 import org.lxtk.lx4e.model.ILanguageSourceFile;
 import org.lxtk.lx4e.model.impl.LanguageElementDelta;
 
-import de.hetzge.eclipse.flix.Flix;
+import de.hetzge.eclipse.flix.model.api.IFlixProject;
 
-class FlixDeltaProcessor implements IResourceDeltaVisitor {
+public class FlixDeltaProcessor implements IResourceDeltaVisitor {
 
 	private final List<IElementDelta> deltas;
 	private final FlixModel model;
 	private final List<IFlixProject> flixProjectsBefore;
 
-	public FlixDeltaProcessor() {
+	public FlixDeltaProcessor(FlixModel model) {
 		this.deltas = new ArrayList<>();
-		this.model = Flix.get().getModelManager().getModel();
+		this.model = model;
 		this.flixProjectsBefore = this.model.getFlixProjects();
 	}
 
@@ -74,7 +76,7 @@ class FlixDeltaProcessor implements IResourceDeltaVisitor {
 	private boolean processAddedProject(IProject project, long flags) {
 		System.out.println("FlixDeltaProcessor.processAddedProject()");
 		if (isFlixProject(project)) {
-			final FlixProject flixProject = this.model.addFlixProject(project);
+			final FlixProject flixProject = addFlixProject(project);
 			this.deltas.add(createDeltaBuilder().added(flixProject, flags).getDelta());
 		}
 		return false;
@@ -83,7 +85,7 @@ class FlixDeltaProcessor implements IResourceDeltaVisitor {
 	private boolean processRemovedProject(IProject project, long flags) {
 		System.out.println("FlixDeltaProcessor.processRemovedProject()");
 		if (wasFlixProject(project)) {
-			final FlixProject flixProject = this.model.removeFlixProject(project);
+			final FlixProject flixProject = removeFlixProject(project);
 			this.deltas.add(createDeltaBuilder().removed(flixProject, flags).getDelta());
 		}
 		return false;
@@ -156,6 +158,28 @@ class FlixDeltaProcessor implements IResourceDeltaVisitor {
 		return false;
 	}
 
+	private FlixProject addFlixProject(IProject project) {
+		final FlixProject flixProject = createFlixProject(project);
+		getBody(this.model).addChild(flixProject);
+		close(flixProject);
+		return flixProject;
+	}
+
+	private FlixProject removeFlixProject(IProject project) {
+		final FlixProject flixProject = createFlixProject(project);
+		getBody(this.model).removeChild(flixProject);
+		close(flixProject);
+		return flixProject;
+	}
+
+	private Body getBody(IElementImplExtension element) {
+		try {
+			return (Body) element.getBody_();
+		} catch (final CoreException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
 	private ElementDelta.Builder createDeltaBuilder() {
 		return new ElementDelta.Builder(new ElementDelta(this.model));
 	}
@@ -174,5 +198,9 @@ class FlixDeltaProcessor implements IResourceDeltaVisitor {
 
 	private boolean isFlixProject(IProject project) {
 		return FlixProject.isActiveFlixProject(project);
+	}
+
+	private FlixProject createFlixProject(IProject project) {
+		return new FlixProject(this.model, project);
 	}
 }

@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.model;
+package de.hetzge.eclipse.flix.model.api;
 
 import org.eclipse.core.resources.IProject;
 
