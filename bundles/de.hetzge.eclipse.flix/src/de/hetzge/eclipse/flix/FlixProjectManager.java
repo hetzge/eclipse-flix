@@ -27,7 +27,7 @@ public class FlixProjectManager implements AutoCloseable {
 			return SafeRun.runWithResult(rollback -> {
 
 				final int lspPort = Utils.queryPort();
-				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(flixProject.getProject(), lspPort);
+				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(flixProject, lspPort);
 				rollback.add(socketThread::close);
 
 				final FlixLanguageClientController client = FlixLanguageClientController.connect(flixProject, lspPort);

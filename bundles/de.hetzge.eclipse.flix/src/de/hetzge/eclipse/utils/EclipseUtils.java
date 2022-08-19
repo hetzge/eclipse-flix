@@ -3,8 +3,11 @@ package de.hetzge.eclipse.utils;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -49,6 +52,7 @@ import org.lxtk.lx4e.EclipseTextDocument;
 import org.lxtk.lx4e.util.ResourceUtil;
 import org.osgi.framework.Bundle;
 
+import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixConstants;
 
 public final class EclipseUtils {
@@ -56,6 +60,16 @@ public final class EclipseUtils {
 	private static final ILog LOG = Platform.getLog(EclipseUtils.class);
 
 	private EclipseUtils() {
+	}
+
+	public static List<IFile> collectFiles(IContainer container, Predicate<IFile> filter) {
+		final List<IFile> files = new ArrayList<>();
+		EclipseUtils.visitFiles(container, file -> {
+			if (filter.test(file)) {
+				files.add(file);
+			}
+		});
+		return files;
 	}
 
 	public static void visitFiles(IContainer container, Consumer<IFile> fileConsumer) {
@@ -148,7 +162,7 @@ public final class EclipseUtils {
 		}
 
 		// no console found, so create a new one
-		final MessageConsole newConsole = new MessageConsole(name, null);
+		final MessageConsole newConsole = new MessageConsole(name, "de.hetzge.eclipse.flix.consoleType", FlixActivator.getImageDescriptor(FlixConstants.ICON_IMAGE_KEY), true);
 		consoleManager.addConsoles(new IConsole[] { newConsole });
 		return newConsole;
 	}

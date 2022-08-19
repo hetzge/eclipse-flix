@@ -11,6 +11,9 @@ import org.eclipse.handly.model.IElementChangeEvent;
 import org.eclipse.handly.model.IElementChangeListener;
 import org.eclipse.handly.model.IElementDelta;
 import org.eclipse.handly.model.impl.support.NotificationManager;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
@@ -118,4 +121,17 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 		}
 	}
 
+	@Override
+	protected void initializeImageRegistry(ImageRegistry reg) {
+		super.initializeImageRegistry(reg);
+		reg.put(FlixConstants.ICON_IMAGE_KEY, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "icon.png"));
+	}
+
+	public static Image getImage(String symbolicName) {
+		return FlixActivator.getDefault().getImageRegistry().get(symbolicName);
+	}
+
+	public static ImageDescriptor getImageDescriptor(String symbolicName) {
+		return FlixActivator.getDefault().getImageRegistry().getDescriptor(symbolicName);
+	}
 }

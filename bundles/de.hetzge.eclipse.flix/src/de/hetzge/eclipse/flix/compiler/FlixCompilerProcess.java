@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
-import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixCompilerProcess implements AutoCloseable {
@@ -31,12 +30,11 @@ public final class FlixCompilerProcess implements AutoCloseable {
 		this.rollback.run();
 	}
 
-	public static synchronized FlixCompilerProcess start(int port) {
+	public static synchronized FlixCompilerProcess start(File flixJarFile, int port) {
 		System.out.println("FlixCompilerProcess.start()");
 		return SafeRun.runWithResult((rollback) -> {
 			try {
 				final File jreExecutableFile = Utils.getJreExecutable();
-				final File flixJarFile = FlixUtils.loadFlixJarFile();
 
 				System.out.println("Use java from here: " + jreExecutableFile.getAbsolutePath());
 				System.out.println("Use flix from here: " + flixJarFile.getAbsolutePath());

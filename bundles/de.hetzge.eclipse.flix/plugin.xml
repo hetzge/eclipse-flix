@@ -49,10 +49,7 @@
 	</extension>
 	<extension point="org.eclipse.ui.newWizards">
 		<category id="de.hetzge.eclipse.flix.wizards" name="Flix"></category>
-		<wizard category="de.hetzge.eclipse.flix.wizards"
-			class="de.hetzge.eclipse.flix.project.FlixFileWizard"
-			icon="icon.png" id="de.hetzge.eclipse.flix..newfile"
-			name="Flix File">
+		<wizard category="de.hetzge.eclipse.flix.wizards" class="de.hetzge.eclipse.flix.project.FlixFileWizard" icon="icon.png" id="de.hetzge.eclipse.flix..newfile" name="Flix File">
 			<description>
 				Create a Flix file
 			</description>
@@ -81,125 +78,45 @@
 	<extension point="org.eclipse.debug.ui.launchGroups">
 		<launchGroup bannerImage="icon.png" id="de.hetzge.eclipse.flix.launchGroup" image="icon.png" label="Flix Launch Group" mode="run"></launchGroup>
 	</extension>
-   <extension point="org.eclipse.ui.commands">
-      <command
-            id="de.hetzge.eclipse.flix.editor.quickOutline"
-            categoryId="org.eclipse.ui.category.navigate"
-            name="Quick Outline"
-            description="Show the quick outline for the editor input"
-            defaultHandler="de.hetzge.eclipse.flix.editor.FlixOutlinePopupHandler">
-      </command>
-      <command
-            id="de.hetzge.eclipse.flix.editor.rename"
-            categoryId="org.eclipse.ltk.ui.category.refactoring"
-            name="Rename"
-            description="Rename the selected symbol"
-            defaultHandler="de.hetzge.eclipse.flix.editor.FlixRenameHandler">
-      </command>
-      <command
-            id="de.hetzge.eclipse.flix.openSymbol"
-            categoryId="org.eclipse.ui.category.navigate"
-            name="Open Symbol (Flix)"
-            description="Show a list of workspace-wide symbols"
-            defaultHandler="de.hetzge.eclipse.flix.FlixSymbolSelectionHandler">
-      </command>
-      <command
-            defaultHandler="de.hetzge.eclipse.flix.project.FlixProjectNatureHandler"
-            description="Converts the project to a Flix project"
-            id="de.hetzge.eclipse.flix.nature.create"
-            name="Add Flix project nature">
-      </command>
-      <command
-            id="de.hetzge.eclipse.flix.editor.findReferences"
-            categoryId="org.eclipse.search.ui.category.search"
-            name="Find References"
-            description="Find references to the selected symbol"
-            defaultHandler="de.hetzge.eclipse.flix.editor.FlixFindReferencesHandler">
-      </command>
-   </extension>
-      <extension point="org.eclipse.ui.bindings">
-      <key
-            sequence="M1+O"
-            commandId="de.hetzge.eclipse.flix.editor.quickOutline"
-            contextId="de.hetzge.eclipse.flix.editor.scope"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
-      </key>
-      <key
-            sequence="M2+M3+R"
-            commandId="de.hetzge.eclipse.flix.editor.rename"
-            contextId="de.hetzge.eclipse.flix.editor.scope"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
-      </key>
-      <key
-            sequence="M1+M2+T"
-            commandId="de.hetzge.eclipse.flix.openSymbol"
-            contextId="org.eclipse.ui.contexts.window"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
-      </key>
-      <key
-            sequence="M1+M2+G"
-            commandId="de.hetzge.eclipse.flix.editor.findReferences"
-            contextId="de.hetzge.eclipse.flix.editor.scope"
-            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
-      </key>
-   </extension>
-   <extension point="org.eclipse.ui.menus">
-      <menuContribution locationURI="popup:#FlixEditorContext?after=group.open">
-<!--         <command-->
-<!--               commandId="org.eclipse.ui.edit.text.open.hyperlink"-->
-<!--               style="push">-->
-<!--         </command>-->
-         <command
-               commandId="de.hetzge.eclipse.flix.editor.quickOutline"
-               style="push">
-         </command>
-      </menuContribution>
-      <menuContribution locationURI="popup:#FlixEditorContext?endof=group.edit">
-         <menu
-               id="de.hetzge.eclipse.flix.editor.refactoring.menu"
-               label="Refactoring">
-            <command
-                  commandId="de.hetzge.eclipse.flix.editor.rename"
-                  style="push">
-            </command>
-         </menu>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
-            locationURI="popup:org.eclipse.ui.projectConfigure">
-         <command
-               commandId="de.hetzge.eclipse.flix.nature.create"
-               icon="icon.png"
-               label="Convert to Flix project"
-               style="push"
-               tooltip="Convert to Flix project">
-         </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:#FlixEditorContext?after=group.find">
-         <command
-               commandId="de.hetzge.eclipse.flix.editor.findReferences"
-               style="push">
-         </command>
-      </menuContribution>
-   </extension>
-    <extension
-         id="de.hetzge.eclipse.flix.nature"
-         name="Flix Project Nature"
-         point="org.eclipse.core.resources.natures">
-      <runtime>
-         <run
-               class=
-"de.hetzge.eclipse.flix.project.FlixProjectNature">
-         </run>
-      </runtime>
-   </extension>
-    <extension
-          point="org.eclipse.ui.ide.projectNatureImages">
-       <image
-             icon="icon2.png"
-             id="de.hetzge.eclipse.flix.nature.image"
-             natureId="de.hetzge.eclipse.flix.nature">
-       </image>
-    </extension>
+	<extension point="org.eclipse.ui.commands">
+		<command id="de.hetzge.eclipse.flix.editor.quickOutline" categoryId="org.eclipse.ui.category.navigate" name="Quick Outline" description="Show the quick outline for the editor input" defaultHandler="de.hetzge.eclipse.flix.editor.FlixOutlinePopupHandler"></command>
+		<command id="de.hetzge.eclipse.flix.editor.rename" categoryId="org.eclipse.ltk.ui.category.refactoring" name="Rename" description="Rename the selected symbol" defaultHandler="de.hetzge.eclipse.flix.editor.FlixRenameHandler"></command>
+		<command id="de.hetzge.eclipse.flix.openSymbol" categoryId="org.eclipse.ui.category.navigate" name="Open Symbol (Flix)" description="Show a list of workspace-wide symbols" defaultHandler="de.hetzge.eclipse.flix.FlixSymbolSelectionHandler"></command>
+		<command defaultHandler="de.hetzge.eclipse.flix.project.FlixProjectNatureHandler" description="Converts the project to a Flix project" id="de.hetzge.eclipse.flix.nature.create" name="Add Flix project nature"></command>
+		<command id="de.hetzge.eclipse.flix.editor.findReferences" categoryId="org.eclipse.search.ui.category.search" name="Find References" description="Find references to the selected symbol" defaultHandler="de.hetzge.eclipse.flix.editor.FlixFindReferencesHandler"></command>
+	</extension>
+	<extension point="org.eclipse.ui.bindings">
+		<key sequence="M1+O" commandId="de.hetzge.eclipse.flix.editor.quickOutline" contextId="de.hetzge.eclipse.flix.editor.scope" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"></key>
+		<key sequence="M2+M3+R" commandId="de.hetzge.eclipse.flix.editor.rename" contextId="de.hetzge.eclipse.flix.editor.scope" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"></key>
+		<key sequence="M1+M2+T" commandId="de.hetzge.eclipse.flix.openSymbol" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"></key>
+		<key sequence="M1+M2+G" commandId="de.hetzge.eclipse.flix.editor.findReferences" contextId="de.hetzge.eclipse.flix.editor.scope" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"></key>
+	</extension>
+	<extension point="org.eclipse.ui.menus">
+		<menuContribution locationURI="popup:#FlixEditorContext?after=group.open">
+			<!--         <command-->
+			<!--               commandId="org.eclipse.ui.edit.text.open.hyperlink"-->
+			<!--               style="push">-->
+			<!--         </command>-->
+			<command commandId="de.hetzge.eclipse.flix.editor.quickOutline" style="push"></command>
+		</menuContribution>
+		<menuContribution locationURI="popup:#FlixEditorContext?endof=group.edit">
+			<menu id="de.hetzge.eclipse.flix.editor.refactoring.menu" label="Refactoring">
+				<command commandId="de.hetzge.eclipse.flix.editor.rename" style="push"></command>
+			</menu>
+		</menuContribution>
+		<menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.projectConfigure">
+			<command commandId="de.hetzge.eclipse.flix.nature.create" icon="icon.png" label="Convert to Flix project" style="push" tooltip="Convert to Flix project"></command>
+		</menuContribution>
+		<menuContribution locationURI="popup:#FlixEditorContext?after=group.find">
+			<command commandId="de.hetzge.eclipse.flix.editor.findReferences" style="push"></command>
+		</menuContribution>
+	</extension>
+	<extension id="de.hetzge.eclipse.flix.nature" name="Flix Project Nature" point="org.eclipse.core.resources.natures">
+		<runtime>
+			<run class="de.hetzge.eclipse.flix.project.FlixProjectNature"></run>
+		</runtime>
+	</extension>
+	<extension point="org.eclipse.ui.ide.projectNatureImages">
+		<image icon="icon2.png" id="de.hetzge.eclipse.flix.nature.image" natureId="de.hetzge.eclipse.flix.nature"></image>
+	</extension>
 </plugin>

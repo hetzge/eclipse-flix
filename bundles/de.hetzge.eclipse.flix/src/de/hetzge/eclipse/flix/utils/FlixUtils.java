@@ -7,17 +7,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.jar.JarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-
-import de.hetzge.eclipse.utils.EclipseUtils;
 
 public final class FlixUtils {
 	private FlixUtils() {
@@ -74,19 +68,4 @@ public final class FlixUtils {
 			}
 		}
 	}
-
-	public static List<IFile> findFlixFiles(IContainer container) {
-		final List<IFile> files = new ArrayList<>();
-		EclipseUtils.visitFiles(container, file -> {
-			if (isFlixFile(file)) {
-				files.add(file);
-			}
-		});
-		return files;
-	}
-
-	private static boolean isFlixFile(IFile file) {
-		return file.getFileExtension() != null && (file.getFileExtension().equals("flix") || file.getFileExtension().equals("fpkg"));
-	}
-
 }

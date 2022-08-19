@@ -1,5 +1,10 @@
 package de.hetzge.eclipse.flix.model.impl;
 
+import java.io.File;
+import java.util.List;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -12,6 +17,8 @@ import org.eclipse.handly.model.impl.support.IModelManager;
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
+import de.hetzge.eclipse.flix.utils.FlixUtils;
+import de.hetzge.eclipse.utils.EclipseUtils;
 
 public class FlixProject extends Element implements IFlixProject {
 
@@ -51,6 +58,39 @@ public class FlixProject extends Element implements IFlixProject {
 	@Override
 	public boolean isActive() {
 		return isActiveFlixProject(this.project);
+	}
+
+	@Override
+	public File getFlixCompilerJarFile() {
+		final IFile flixJarInProjectFile = this.project.getFile("flix.jar");
+		if (flixJarInProjectFile.exists()) {
+			return flixJarInProjectFile.getRawLocation().toFile();
+		} else {
+			return FlixUtils.loadFlixJarFile();
+		}
+	}
+
+	@Override
+	public List<IFile> getFlixSourceFiles() {
+		return EclipseUtils.collectFiles(getSourceFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("flix")));
+	}
+
+	@Override
+	public List<IFile> getFlixJarLibraryFiles() {
+		return EclipseUtils.collectFiles(getLibraryFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("jar")));
+	}
+
+	@Override
+	public List<IFile> getFlixFpkgLibraryFiles() {
+		return EclipseUtils.collectFiles(getLibraryFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("fpkg")));
+	}
+
+	private IFolder getSourceFolder() {
+		return this.project.getFolder("src");
+	}
+
+	private IFolder getLibraryFolder() {
+		return this.project.getFolder("lib");
 	}
 
 	public static boolean isActiveFlixProject(IProject project) {
