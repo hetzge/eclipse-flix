@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
@@ -35,27 +34,23 @@ import com.google.gson.reflect.TypeToken;
 
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerProcess;
+import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.flix.utils.GsonUtils;
-import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
 
 public final class FlixServerService implements AutoCloseable {
 
-	private static final String FLIX_FILE_EXTENSION = "flix";
-	private static final String FLIX_PACKAGE_FILE_EXTENSION = "fpkg";
-	private static final String JAR_FILE_EXTENSION = "jar";
-
-	private final IProject project;
+	private final IFlixProject flixProject;
 	private final FlixCompilerClient compilerClient;
 	private final FlixCompilerProcess compilerProcess;
 	private final Map<String, PublishDiagnosticsParams> diagnosticsParamsByUri;
 	private LanguageClient client;
 
-	public FlixServerService(IProject project, FlixCompilerClient compilerClient, FlixCompilerProcess compilerProcess) {
-		this.project = project;
+	public FlixServerService(IFlixProject flixProject, FlixCompilerClient compilerClient, FlixCompilerProcess compilerProcess) {
+		this.flixProject = flixProject;
 		this.compilerClient = compilerClient;
 		this.compilerProcess = compilerProcess;
 		this.diagnosticsParamsByUri = new HashMap<>();
@@ -69,39 +64,41 @@ public final class FlixServerService implements AutoCloseable {
 	}
 
 	public void addWorkspaceUris() {
-		EclipseUtils.visitFiles(this.project, this::addFile);
+		for (final IFile sourceFile : this.flixProject.getFlixSourceFiles()) {
+			addFile(sourceFile);
+		}
+		for (final IFile libraryFile : this.flixProject.getFlixFpkgLibraryFiles()) {
+			addFile(libraryFile);
+		}
+		for (final IFile libraryFile : this.flixProject.getFlixJarLibraryFiles()) {
+			addFile(libraryFile);
+		}
 	}
 
 	public void addFile(IFile file) {
-		final String fileExtension = file.getFileExtension();
 		final URI uri = file.getLocationURI();
-		if (FLIX_FILE_EXTENSION.equals(fileExtension)) {
+		if (this.flixProject.isFlixSourceFile(file)) {
 			addUri(uri, Utils.readFileContent(file));
-		} else if (isInLibFolder(file) && FLIX_PACKAGE_FILE_EXTENSION.equals(fileExtension)) {
+		} else if (this.flixProject.isFlixFpkgLibraryFile(file)) {
 			addFpkg(file.getLocationURI());
-		} else if (isInLibFolder(file) && JAR_FILE_EXTENSION.equals(fileExtension)) {
+		} else if (this.flixProject.isFlixJarLibraryFile(file)) {
 			addJar(file.getLocationURI());
 		} else {
-			System.out.println("Ignore '" + uri + "'");
+			System.out.println("[" + this.flixProject.getProject().getName() + "] Ignore '" + uri + "'");
 		}
 	}
 
 	public void removeFile(IFile file) {
-		final String fileExtension = file.getFileExtension();
 		final URI uri = file.getLocationURI();
-		if (FLIX_FILE_EXTENSION.equals(fileExtension)) {
+		if (this.flixProject.isFlixSourceFile(file)) {
 			removeUri(uri);
-		} else if (isInLibFolder(file) && FLIX_PACKAGE_FILE_EXTENSION.equals(fileExtension)) {
+		} else if (this.flixProject.isFlixFpkgLibraryFile(file)) {
 			removeFpkg(uri);
-		} else if (isInLibFolder(file) && JAR_FILE_EXTENSION.equals(fileExtension)) {
+		} else if (this.flixProject.isFlixJarLibraryFile(file)) {
 			removeJar(uri);
 		} else {
-			System.out.println("Ignore '" + uri + "'");
+			System.out.println("[" + this.flixProject.getProject().getName() + "] Ignore '" + uri + "'");
 		}
-	}
-
-	private boolean isInLibFolder(IFile file) {
-		return this.project.getFullPath().append("/lib/").isPrefixOf(file.getFullPath());
 	}
 
 	public void addUri(URI uri, String content) {

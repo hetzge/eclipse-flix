@@ -65,6 +65,7 @@ public final class FlixWorkspaceService implements WorkspaceService {
 				this.flixService.removeFile(file);
 			}
 		}
+		this.flixService.compile();
 	}
 
 	@Override
@@ -83,6 +84,7 @@ public final class FlixWorkspaceService implements WorkspaceService {
 				this.flixService.addFile(file);
 			}
 		}
+		this.flixService.compile();
 	}
 
 	@Override

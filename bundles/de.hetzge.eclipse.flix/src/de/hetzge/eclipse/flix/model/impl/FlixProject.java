@@ -85,6 +85,21 @@ public class FlixProject extends Element implements IFlixProject {
 		return EclipseUtils.collectFiles(getLibraryFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("fpkg")));
 	}
 
+	@Override
+	public boolean isFlixSourceFile(IFile file) {
+		return file.getFileExtension() != null && file.getFileExtension().equals("flix") && getSourceFolder().getRawLocation().isPrefixOf(file.getRawLocation());
+	}
+
+	@Override
+	public boolean isFlixJarLibraryFile(IFile file) {
+		return file.getFileExtension() != null && file.getFileExtension().equals("jar") && getLibraryFolder().getRawLocation().isPrefixOf(file.getRawLocation());
+	}
+
+	@Override
+	public boolean isFlixFpkgLibraryFile(IFile file) {
+		return file.getFileExtension() != null && file.getFileExtension().equals("fpkg") && getLibraryFolder().getRawLocation().isPrefixOf(file.getRawLocation());
+	}
+
 	private IFolder getSourceFolder() {
 		return this.project.getFolder("src");
 	}

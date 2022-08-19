@@ -130,7 +130,7 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 			final FlixCompilerClient compilerClient = FlixCompilerClient.connect(compilerPort);
 			rollback.add(compilerClient::close);
 
-			return new FlixLanguageServer(new FlixServerService(flixProject.getProject(), compilerClient, compilerProcess));
+			return new FlixLanguageServer(new FlixServerService(flixProject, compilerClient, compilerProcess));
 		});
 	}
 

@@ -20,4 +20,10 @@ public interface IFlixProject {
 
 	List<IFile> getFlixFpkgLibraryFiles();
 
+	boolean isFlixSourceFile(IFile file);
+
+	boolean isFlixJarLibraryFile(IFile file);
+
+	boolean isFlixFpkgLibraryFile(IFile file);
+
 }
