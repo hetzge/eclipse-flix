@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -135,6 +136,10 @@ public class FlixCompilerClient implements AutoCloseable {
 
 	public CompletableFuture<Either<JsonElement, JsonElement>> sendRename(RenameParams params) {
 		return send("lsp/rename", params);
+	}
+
+	public CompletableFuture<Either<JsonElement, JsonElement>> sendUses(ReferenceParams params) {
+		return send("lsp/uses", params);
 	}
 
 	public CompletableFuture<Either<JsonElement, JsonElement>> send(String request, Object params) {

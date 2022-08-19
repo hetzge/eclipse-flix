@@ -109,6 +109,13 @@
             id="de.hetzge.eclipse.flix.nature.create"
             name="Add Flix project nature">
       </command>
+      <command
+            id="de.hetzge.eclipse.flix.editor.findReferences"
+            categoryId="org.eclipse.search.ui.category.search"
+            name="Find References"
+            description="Find references to the selected symbol"
+            defaultHandler="de.hetzge.eclipse.flix.editor.FlixFindReferencesHandler">
+      </command>
    </extension>
       <extension point="org.eclipse.ui.bindings">
       <key
@@ -127,6 +134,12 @@
             sequence="M1+M2+T"
             commandId="de.hetzge.eclipse.flix.openSymbol"
             contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+      <key
+            sequence="M1+M2+G"
+            commandId="de.hetzge.eclipse.flix.editor.findReferences"
+            contextId="de.hetzge.eclipse.flix.editor.scope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
       </key>
    </extension>
@@ -160,6 +173,13 @@
                label="Convert to Flix project"
                style="push"
                tooltip="Convert to Flix project">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:#FlixEditorContext?after=group.find">
+         <command
+               commandId="de.hetzge.eclipse.flix.editor.findReferences"
+               style="push">
          </command>
       </menuContribution>
    </extension>

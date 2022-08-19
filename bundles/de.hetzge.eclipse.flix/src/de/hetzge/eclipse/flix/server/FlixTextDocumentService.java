@@ -18,14 +18,13 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.TextDocumentService;
-
-import de.hetzge.eclipse.flix.utils.GsonUtils;
 
 public final class FlixTextDocumentService implements TextDocumentService {
 
@@ -47,9 +46,14 @@ public final class FlixTextDocumentService implements TextDocumentService {
 	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> declaration(DeclarationParams params) {
 		System.out.println("FlixTextDocumentService.declaration()");
 		return this.flixService.decleration(params).thenApply(completionList -> {
-			System.out.println("Declaration: " + GsonUtils.getGson().toJson(completionList));
 			return Either.forRight(completionList);
 		});
+	}
+
+	@Override
+	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
+		System.out.println("FlixTextDocumentService.references()");
+		return this.flixService.references(params);
 	}
 
 	@Override

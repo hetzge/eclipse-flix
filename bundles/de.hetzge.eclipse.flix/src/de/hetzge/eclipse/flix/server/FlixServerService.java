@@ -19,6 +19,7 @@ import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceEdit;
@@ -30,6 +31,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
 
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerProcess;
@@ -245,6 +247,18 @@ public final class FlixServerService implements AutoCloseable {
 		return this.compilerClient.sendRename(params).thenApply(response -> {
 			if (response.isLeft()) {
 				return GsonUtils.getGson().fromJson(response.getLeft(), WorkspaceEdit.class);
+			} else {
+				throw new RuntimeException();
+			}
+		});
+	}
+
+	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
+		return this.compilerClient.sendUses(params).thenApply(response -> {
+			System.out.println(response.getLeft());
+			if (response.isLeft()) {
+				return GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<Location>>() {
+				}.getType());
 			} else {
 				throw new RuntimeException();
 			}
