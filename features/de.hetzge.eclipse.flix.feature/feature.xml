@@ -36,6 +36,10 @@
       <import plugin="org.eclipse.ltk.core.refactoring" version="3.12.200" match="greaterOrEqual"/>
       <import plugin="org.eclipse.jdt.junit" version="3.14.100" match="greaterOrEqual"/>
       <import plugin="org.eclipse.jdt.junit.core" version="3.11.300" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.tm.terminal.control" version="5.3.200" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.tm.terminal.view.core" version="4.8.300" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.tm.terminal.view.ui" version="4.10.300" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.tm.terminal.connector.process" version="4.8.100" match="greaterOrEqual"/>
    </requires>
 
    <plugin

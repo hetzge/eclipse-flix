@@ -96,11 +96,11 @@
 		<launchGroup bannerImage="assets/icons/icon3.png" id="de.hetzge.eclipse.flix.testLaunchGroup" image="assets/icons/icon3.png" label="Flix Test Launch Group" mode="run"></launchGroup>
 	</extension>
 	<extension point="org.eclipse.ui.commands">
-		<command id="de.hetzge.eclipse.flix.editor.quickOutline" categoryId="org.eclipse.ui.category.navigate" name="Quick Outline" description="Show the quick outline for the editor input" defaultHandler="de.hetzge.eclipse.flix.editor.FlixOutlinePopupHandler"></command>
-		<command id="de.hetzge.eclipse.flix.editor.rename" categoryId="org.eclipse.ltk.ui.category.refactoring" name="Rename" description="Rename the selected symbol" defaultHandler="de.hetzge.eclipse.flix.editor.FlixRenameHandler"></command>
+		<command id="de.hetzge.eclipse.flix.editor.quickOutline" categoryId="org.eclipse.ui.category.navigate" name="Quick Outline (Flix)" description="Show the quick outline for the editor input" defaultHandler="de.hetzge.eclipse.flix.editor.FlixOutlinePopupHandler"></command>
+		<command id="de.hetzge.eclipse.flix.editor.rename" categoryId="org.eclipse.ltk.ui.category.refactoring" name="Rename (Flix)" description="Rename the selected symbol" defaultHandler="de.hetzge.eclipse.flix.editor.FlixRenameHandler"></command>
 		<command id="de.hetzge.eclipse.flix.openSymbol" categoryId="org.eclipse.ui.category.navigate" name="Open Symbol (Flix)" description="Show a list of workspace-wide symbols" defaultHandler="de.hetzge.eclipse.flix.FlixSymbolSelectionHandler"></command>
 		<command defaultHandler="de.hetzge.eclipse.flix.project.FlixProjectNatureHandler" description="Converts the project to a Flix project" id="de.hetzge.eclipse.flix.nature.create" name="Add Flix project nature"></command>
-		<command id="de.hetzge.eclipse.flix.editor.findReferences" categoryId="org.eclipse.search.ui.category.search" name="Find References" description="Find references to the selected symbol" defaultHandler="de.hetzge.eclipse.flix.editor.FlixFindReferencesHandler"></command>
+		<command id="de.hetzge.eclipse.flix.editor.findReferences" categoryId="org.eclipse.search.ui.category.search" name="Find References (Flix)" description="Find references to the selected symbol" defaultHandler="de.hetzge.eclipse.flix.editor.FlixFindReferencesHandler"></command>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
 		<key sequence="M1+O" commandId="de.hetzge.eclipse.flix.editor.quickOutline" contextId="de.hetzge.eclipse.flix.editor.scope" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"></key>
