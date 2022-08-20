@@ -26,3 +26,11 @@ Under the `de.hetzge.eclipse.flix` package the following packages can be found:
 * **model**: The [Eclipse Handly](https://projects.eclipse.org/projects/technology.handly) language model
 * **project**: Extends Eclipse with functions to manage Flix projects (create projects and files)
 * **utils**: Collection of useful functions
+  
+## Ideas and TODOs
+
+* Use `org.eclipse.core.resources.builders` to send deltas to LSP server
+* Implement `Project` > `Clean` for Flix projects
+	* Clean build directory
+	* Reinit project lsp server
+* Show state of project in footer 

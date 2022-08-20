@@ -22,7 +22,7 @@ public class FlixLaunchConfigTab extends AbstractLaunchConfigurationTab {
 	private FlixLaunchConfigurationControl control;
 
 	public FlixLaunchConfigTab() {
-		this.image = EclipseUtils.createImage("/icon.png");
+		this.image = EclipseUtils.createImage("assets/icons/icon.png");
 	}
 
 	@Override

@@ -7,21 +7,21 @@ import org.eclipse.ui.IEditorPart;
 
 import de.hetzge.eclipse.utils.EclipseUtils;
 
-public class FlixLaunchShortcut implements ILaunchShortcut {
+public class FlixTestLaunchShortcut implements ILaunchShortcut {
 
 	@Override
 	public void launch(ISelection selection, String mode) {
-		System.out.println("FlixLaunchShortcut.launch(A)");
+		System.out.println("FlixTestLaunchShortcut.launch(A)");
 		launch(mode, EclipseUtils.getFile(selection).orElseThrow());
 	}
 
 	@Override
 	public void launch(IEditorPart editor, String mode) {
-		System.out.println("FlixLaunchShortcut.launch(B)");
+		System.out.println("FlixTestLaunchShortcut.launch(B)");
 		launch(mode, EclipseUtils.getFile(editor).orElseThrow());
 	}
 
 	private void launch(String mode, final IFile file) {
-		FlixLaunchUtils.launchProject(file, mode, "de.hetzge.eclipse.flix.launchConfigurationType", "Run");
+		FlixLaunchUtils.launchProject(file, mode, "de.hetzge.eclipse.flix.testLaunchConfigurationType", "Test");
 	}
 }

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
@@ -16,7 +15,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 import org.eclipse.tm.terminal.view.core.TerminalServiceFactory;
 import org.eclipse.tm.terminal.view.core.interfaces.ITerminalService;
 import org.eclipse.tm.terminal.view.core.interfaces.constants.ITerminalsConnectorConstants;
@@ -25,7 +24,9 @@ import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.utils.Utils;
 
-public class FlixLaunchConfigurationDelegate extends LaunchConfigurationDelegate {
+public class FlixTestLaunchConfigurationDelegate implements ILaunchConfigurationDelegate {
+
+	// TODO JUnitViewEditorLauncher
 
 	private static final ILog LOG = Platform.getLog(FlixLaunchConfigurationDelegate.class);
 
@@ -35,28 +36,14 @@ public class FlixLaunchConfigurationDelegate extends LaunchConfigurationDelegate
 
 		final IProject project = configuration.getMappedResources()[0].getProject();
 		final IFlixProject flixProject = Flix.get().getModelManager().getModel().getFlixProject(project).orElseThrow(() -> new CoreException(Status.error("Not a valid flix project")));
-		final FlixLaunchConfiguration launchConfiguration = new FlixLaunchConfiguration(configuration);
 		final File jreExecutableFile = Utils.getJreExecutable();
 		final File flixJarFile = flixProject.getFlixCompilerJarFile();
-		final String name = "Run " + flixProject.getProject().getName();
+		final String name = "Test " + flixProject.getProject().getName();
 
 		final List<String> arguments = new ArrayList<>();
 		arguments.add("-jar");
 		arguments.add(flixJarFile.getAbsolutePath());
-		arguments.add("run");
-		launchConfiguration.getEntrypoint().ifPresent(entrypoint -> {
-			arguments.add("--entrypoint");
-			arguments.add(entrypoint);
-		});
-		for (final IFile sourceFile : flixProject.getFlixSourceFiles()) {
-			arguments.add(sourceFile.getFullPath().toFile().getAbsolutePath());
-		}
-		for (final IFile libraryFile : flixProject.getFlixFpkgLibraryFiles()) {
-			arguments.add(libraryFile.getFullPath().toFile().getAbsolutePath());
-		}
-		for (final IFile libraryFile : flixProject.getFlixJarLibraryFiles()) {
-			arguments.add(libraryFile.getFullPath().toFile().getAbsolutePath());
-		}
+		arguments.add("test");
 
 		final Map<String, Object> properties = new HashMap<>();
 		properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID, "de.hetzge.eclipse.flix.processLauncherDelegate");
@@ -71,5 +58,4 @@ public class FlixLaunchConfigurationDelegate extends LaunchConfigurationDelegate
 		terminalService.closeConsole(properties, LOG::log);
 		terminalService.openConsole(properties, LOG::log);
 	}
-
 }

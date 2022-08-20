@@ -124,7 +124,7 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 	@Override
 	protected void initializeImageRegistry(ImageRegistry reg) {
 		super.initializeImageRegistry(reg);
-		reg.put(FlixConstants.ICON_IMAGE_KEY, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "icon.png"));
+		reg.put(FlixConstants.ICON_IMAGE_KEY, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "assets/icons/icon.png"));
 	}
 
 	public static Image getImage(String symbolicName) {
