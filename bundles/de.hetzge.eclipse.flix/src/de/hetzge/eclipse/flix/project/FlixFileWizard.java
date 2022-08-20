@@ -54,17 +54,16 @@ public class FlixFileWizard extends Wizard implements INewWizard {
 	public boolean performFinish() {
 		final String containerName = this.flixFilePage.getContainerFullPath().toOSString();
 		final String fileName = this.flixFilePage.getFileName();
-		final IRunnableWithProgress operation = monitor -> {
-			try {
-				doFinish(containerName, fileName, monitor);
-			} catch (final CoreException e) {
-				throw new InvocationTargetException(e);
-			} finally {
-				monitor.done();
-			}
-		};
 		try {
-			getContainer().run(true, false, operation);
+			getContainer().run(true, false, monitor -> {
+				try {
+					doFinish(containerName, fileName, monitor);
+				} catch (final CoreException e) {
+					throw new InvocationTargetException(e);
+				} finally {
+					monitor.done();
+				}
+			});
 		} catch (final InterruptedException exception) {
 			return false;
 		} catch (final InvocationTargetException exception) {

@@ -60,7 +60,7 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 				this.flix.close();
 				this.flix = null;
 			});
-			final FlixProjectManager projectManager = this.flix.getProjectManager();
+			final FlixLanguageToolingManager projectManager = this.flix.getLanguageToolingManager();
 
 			/*
 			 * Init model and projects ...
@@ -69,7 +69,7 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 			final IFlixModel model = modelManager.getModel();
 			model.getFlixProjects().forEach(flixProject -> {
 				System.out.println(">>> " + flixProject);
-				projectManager.initializeFlixProject(flixProject);
+				projectManager.connectProject(flixProject);
 			});
 
 			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -108,14 +108,14 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 				final IElement element = ElementDeltas.getElement(addedChildDelta);
 				if (element instanceof IFlixProject) {
 					final IFlixProject flixProject = (IFlixProject) element;
-					Flix.get().getProjectManager().initializeFlixProject(flixProject);
+					Flix.get().getLanguageToolingManager().connectProject(flixProject);
 				}
 			}
 			for (final IElementDelta removedChildDelta : ElementDeltas.getRemovedChildren(delta)) {
 				final IElement element = ElementDeltas.getElement(removedChildDelta);
 				if (element instanceof IFlixProject) {
 					final IFlixProject flixProject = (IFlixProject) element;
-					Flix.get().getProjectManager().closeProject(flixProject);
+					Flix.get().getLanguageToolingManager().disconnectProject(flixProject);
 				}
 			}
 		}

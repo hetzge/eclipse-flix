@@ -29,8 +29,6 @@ public interface IFlixProject {
 
 	boolean isFlixFpkgLibraryFile(IFile file);
 
-	void restart();
-
 	IFolder getSourceFolder();
 
 	IFolder getLibraryFolder();

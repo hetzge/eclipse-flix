@@ -34,3 +34,4 @@ Under the `de.hetzge.eclipse.flix` package the following packages can be found:
 	* Fix duplicate language tooling init when new project is created
 * Show state of project in footer 
 * Fix unpack flix.jar from project
+* Run flix compiler in terminals

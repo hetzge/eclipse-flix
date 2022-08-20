@@ -23,7 +23,7 @@ public class FlixTestLaunchConfigurationDelegate implements ILaunchConfiguration
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		LOG.info(String.format("Launch '%s'", configuration.getName()));
 		final IProject project = configuration.getMappedResources()[0].getProject();
-		final IFlixProject flixProject = Flix.get().getModelManager().getModel().getFlixProject(project).orElseThrow(() -> new CoreException(Status.error("Not a valid flix project")));
+		final IFlixProject flixProject = Flix.get().getModel().getFlixProject(project).orElseThrow(() -> new CoreException(Status.error("Not a valid flix project")));
 		FlixLauncher.launchTest(flixProject);
 	}
 

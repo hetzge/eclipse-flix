@@ -67,7 +67,6 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 				} catch (final ExecutionException | CoreException exception) {
 					throw new InvocationTargetException(exception);
 				}
-
 			});
 		} catch (InvocationTargetException | InterruptedException exception) {
 			throw new RuntimeException(exception);

@@ -15,7 +15,6 @@ import org.eclipse.handly.model.impl.support.Element;
 import org.eclipse.handly.model.impl.support.IModelManager;
 
 import de.hetzge.eclipse.flix.Flix;
-import de.hetzge.eclipse.flix.FlixProjectManager;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
@@ -99,14 +98,6 @@ public class FlixProject extends Element implements IFlixProject {
 	@Override
 	public boolean isFlixFpkgLibraryFile(IFile file) {
 		return file.getFileExtension() != null && file.getFileExtension().equals("fpkg") && getLibraryFolder().getRawLocation().isPrefixOf(file.getRawLocation());
-	}
-
-	@Override
-	public void restart() {
-		System.out.println("FlixProject.restart()");
-		final FlixProjectManager projectManager = Flix.get().getProjectManager();
-		projectManager.closeProject(this);
-		projectManager.initializeFlixProject(this);
 	}
 
 	@Override

@@ -17,19 +17,16 @@ public class FlixProjectBuilder extends IncrementalProjectBuilder {
 	private final IFlixModel model;
 
 	public FlixProjectBuilder() {
-		this.model = Flix.get().getModelManager().getModel();
+		this.model = Flix.get().getModel();
 	}
 
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
-		System.out.println("IncrementalProjectBuilder1.build(" + kind + ")");
-
+		System.out.println("FlixProjectBuilder.build(" + kind + ")");
 		if (kind == IncrementalProjectBuilder.FULL_BUILD) {
 			final IFlixProject flixProject = this.model.getFlixProject(getProject()).orElseThrow(() -> new CoreException(Status.error("Not a valid flix project")));
 			monitor.subTask("Delete build folder");
 			flixProject.deleteBuildFolder(monitor);
-			monitor.subTask("Restart language server");
-			flixProject.restart();
 			monitor.subTask("Build flix project");
 			FlixLauncher.launchBuild(flixProject);
 		}
