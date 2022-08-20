@@ -132,6 +132,9 @@
 		<runtime>
 			<run class="de.hetzge.eclipse.flix.project.FlixProjectNature"></run>
 		</runtime>
+  <builder
+        id="de.hetzge.eclipse.flix.flixBuilder">
+  </builder>
 	</extension>
 	<extension point="org.eclipse.ui.ide.projectNatureImages">
     <image
@@ -149,5 +152,19 @@
           id="de.hetzge.eclipse.flix.processLauncherDelegate"
           label="Flix Process Launch">
     </delegate>
+ </extension>
+ <extension
+       id="flixBuilder"
+       name="Flix Builder"
+       point="org.eclipse.core.resources.builders">
+    <builder
+          callOnEmptyDelta="true"
+          hasNature="true"
+          isConfigurable="true"
+          supportsConfigurations="true">
+       <run
+             class="de.hetzge.eclipse.flix.FlixProjectBuilder">
+       </run>
+    </builder>
  </extension>
 </plugin>

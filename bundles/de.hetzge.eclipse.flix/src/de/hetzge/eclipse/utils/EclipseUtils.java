@@ -4,13 +4,16 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -285,6 +288,46 @@ public final class EclipseUtils {
 			description.setNatureIds(newNatures);
 		}
 		return status;
+	}
+
+	public static void addBuilder(IProject project, String flixBuilderId) throws CoreException {
+		if (hasBuilder(project, flixBuilderId)) {
+			return;
+		}
+		final IProjectDescription description = project.getDescription();
+		addBuilder(description, flixBuilderId);
+		project.setDescription(description, null);
+	}
+
+	public static void addBuilder(final IProjectDescription description, String flixBuilderId) {
+		final ICommand buildCommand = description.newCommand();
+		buildCommand.setBuilderName(flixBuilderId);
+
+		final List<ICommand> commands = new ArrayList<>();
+		commands.addAll(Arrays.asList(description.getBuildSpec()));
+		commands.add(buildCommand);
+
+		description.setBuildSpec(commands.toArray(new ICommand[commands.size()]));
+	}
+
+	public static void removeBuilder(IProject project, String flixBuilderId) throws CoreException {
+		final IProjectDescription description = project.getDescription();
+		removeBuilder(description, flixBuilderId);
+		project.setDescription(description, null);
+	}
+
+	private static void removeBuilder(final IProjectDescription description, String flixBuilderId) {
+		final List<ICommand> commands = Arrays.asList(description.getBuildSpec()).stream().filter(command -> !flixBuilderId.equals(command.getBuilderName())).collect(Collectors.toList());
+		description.setBuildSpec(commands.toArray(new ICommand[commands.size()]));
+	}
+
+	public static final boolean hasBuilder(IProject project, String builderId) throws CoreException {
+		for (final ICommand buildSpec : project.getDescription().getBuildSpec()) {
+			if (builderId.equals(buildSpec.getBuilderName())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

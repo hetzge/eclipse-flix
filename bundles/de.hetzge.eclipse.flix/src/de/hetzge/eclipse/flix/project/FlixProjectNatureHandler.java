@@ -43,7 +43,7 @@ public class FlixProjectNatureHandler extends AbstractHandler {
 		try {
 			final IStatus status = EclipseUtils.addNature(project, FlixProjectNature.ID);
 			if (status != Status.OK_STATUS) {
-				LOG.warn("Failed to add Flix nature");
+				LOG.log(status);
 			}
 			return status;
 		} catch (final CoreException exception) {

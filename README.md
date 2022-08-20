@@ -31,6 +31,6 @@ Under the `de.hetzge.eclipse.flix` package the following packages can be found:
 
 * Use `org.eclipse.core.resources.builders` to send deltas to LSP server
 * Implement `Project` > `Clean` for Flix projects
-	* Clean build directory
-	* Reinit project lsp server
+	* Fix duplicate language tooling init when new project is created
 * Show state of project in footer 
+* Fix unpack flix.jar from project

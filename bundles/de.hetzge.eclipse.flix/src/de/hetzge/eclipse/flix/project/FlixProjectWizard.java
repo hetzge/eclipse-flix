@@ -15,19 +15,15 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.ide.undo.CreateProjectOperation;
 import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
 
+import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 public class FlixProjectWizard extends Wizard implements INewWizard {
 
-	private IWorkbench workbench;
-	private IStructuredSelection selection;
-
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		this.workbench = workbench;
-		this.selection = selection;
 		setWindowTitle("Flix Project Wizard");
 		setNeedsProgressMonitor(true);
 	}
@@ -65,6 +61,7 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 
 				try {
 					EclipseUtils.addNature(description, FlixProjectNature.ID);
+					EclipseUtils.addBuilder(description, FlixConstants.FLIX_BUILDER_ID);
 					final CreateProjectOperation projectOperation = new CreateProjectOperation(description, "Create flix project");
 					projectOperation.execute(monitor, WorkspaceUndoUtil.getUIInfoAdapter(getShell()));
 				} catch (final ExecutionException | CoreException exception) {
