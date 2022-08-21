@@ -79,6 +79,7 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 		for (final Rollback rollback : this.rollbacks) {
 			rollback.run();
 		}
+		interrupt();
 	}
 
 	public static FlixLanguageServerSocketThread createAndStart(IFlixProject flixProject, int port) {

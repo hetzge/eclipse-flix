@@ -25,7 +25,7 @@ import org.eclipse.lsp4j.services.WorkspaceService;
 import org.lxtk.util.SafeRun;
 
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
-import de.hetzge.eclipse.flix.compiler.FlixCompilerProcess;
+import de.hetzge.eclipse.flix.launch.FlixLauncher;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.utils.Utils;
 
@@ -121,20 +121,22 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 		this.flixService.close();
 	}
 
+	public void setClient(LanguageClient client) {
+		this.flixService.setClient(client);
+	}
+
 	public static FlixLanguageServer start(IFlixProject flixProject) {
 		System.out.println("FlixLanguageServer.start()");
 		return SafeRun.runWithResult(rollback -> {
 			final int compilerPort = Utils.queryPort();
-			final FlixCompilerProcess compilerProcess = FlixCompilerProcess.start(flixProject.getFlixCompilerJarFile(), compilerPort);
-			rollback.add(compilerProcess::close);
+
+			FlixLauncher.launchCompiler(flixProject, compilerPort);
+			rollback.add(() -> FlixLauncher.closeCompiler(flixProject, compilerPort));
+
 			final FlixCompilerClient compilerClient = FlixCompilerClient.connect(compilerPort);
 			rollback.add(compilerClient::close);
 
-			return new FlixLanguageServer(new FlixServerService(flixProject, compilerClient, compilerProcess));
+			return new FlixLanguageServer(new FlixServerService(flixProject, compilerClient, rollback));
 		});
-	}
-
-	public void setClient(LanguageClient client) {
-		this.flixService.setClient(client);
 	}
 }

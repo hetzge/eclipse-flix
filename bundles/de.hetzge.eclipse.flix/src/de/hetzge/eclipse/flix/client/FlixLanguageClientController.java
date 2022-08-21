@@ -120,13 +120,11 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 	public static FlixLanguageClientController connect(IFlixProject flixProject, int port) {
 		System.out.println("FlixLanguageClient.connect()");
 		return SafeRun.runWithResult(rollback -> {
-			final FlixLanguageClientController flixLanguageClient = new FlixLanguageClientController(flixProject, port);
-			rollback.add(flixLanguageClient::dispose);
-			flixLanguageClient.connect();
-
+			final FlixLanguageClientController flixLanguageClientController = new FlixLanguageClientController(flixProject, port);
+			rollback.add(flixLanguageClientController::dispose);
+			flixLanguageClientController.connect();
 			System.out.println("Connected language client on port " + port);
-
-			return flixLanguageClient;
+			return flixLanguageClientController;
 		});
 	}
 }

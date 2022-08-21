@@ -27,13 +27,13 @@ import org.eclipse.lsp4j.WorkspaceSymbolLocation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
+import org.lxtk.util.SafeRun.Rollback;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
-import de.hetzge.eclipse.flix.compiler.FlixCompilerProcess;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.flix.utils.GsonUtils;
@@ -45,22 +45,21 @@ public final class FlixServerService implements AutoCloseable {
 
 	private final IFlixProject flixProject;
 	private final FlixCompilerClient compilerClient;
-	private final FlixCompilerProcess compilerProcess;
 	private final Map<String, PublishDiagnosticsParams> diagnosticsParamsByUri;
+	private final Rollback rollback;
 	private LanguageClient client;
 
-	public FlixServerService(IFlixProject flixProject, FlixCompilerClient compilerClient, FlixCompilerProcess compilerProcess) {
+	FlixServerService(IFlixProject flixProject, FlixCompilerClient compilerClient, Rollback rollback) {
 		this.flixProject = flixProject;
 		this.compilerClient = compilerClient;
-		this.compilerProcess = compilerProcess;
+		this.rollback = rollback;
 		this.diagnosticsParamsByUri = new HashMap<>();
 	}
 
 	@Override
 	public void close() {
 		System.out.println("FlixServerService.close()");
-		this.compilerClient.close();
-		this.compilerProcess.close();
+		this.rollback.run();
 	}
 
 	public void addWorkspaceUris() {
