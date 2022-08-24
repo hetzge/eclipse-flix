@@ -28,7 +28,7 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 		super("LSP Server Socket");
 		this.flixProject = flixProject;
 		this.port = port;
-		this.executorService = Executors.newSingleThreadExecutor();
+		this.executorService = Executors.newWorkStealingPool();
 		this.rollbacks = new ArrayList<>();
 		this.done = false;
 		setDaemon(true);
