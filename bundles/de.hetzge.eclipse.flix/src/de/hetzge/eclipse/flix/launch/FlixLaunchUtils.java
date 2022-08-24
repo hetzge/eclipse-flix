@@ -1,5 +1,7 @@
 package de.hetzge.eclipse.flix.launch;
 
+import java.io.File;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -52,7 +54,7 @@ class FlixLaunchUtils {
 				DebugUITools.launch(launchConfiguration, mode);
 			} else {
 				// Create new launch configuration
-				final ILaunchConfigurationWorkingCopy copy = type.newInstance(null, String.format(label + " '%s' in '%s'", file.getProjectRelativePath().toOSString().replaceAll("\\/", " "), project.getName()));
+				final ILaunchConfigurationWorkingCopy copy = type.newInstance(null, String.format(label + " '%s' in '%s'", file.getProjectRelativePath().toOSString(), project.getName()).replace(File.separatorChar, ' '));
 				copy.setMappedResources(new IResource[] { file });
 				copy.doSave();
 
