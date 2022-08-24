@@ -6,7 +6,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Status;
 
 import de.hetzge.eclipse.flix.launch.FlixLauncher;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
@@ -24,13 +23,12 @@ public class FlixProjectBuilder extends IncrementalProjectBuilder {
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
 		System.out.println("FlixProjectBuilder.build(" + kind + ")");
 		if (kind == IncrementalProjectBuilder.FULL_BUILD) {
-			final IFlixProject flixProject = this.model.getFlixProject(getProject()).orElseThrow(() -> new CoreException(Status.error("Not a valid flix project")));
+			final IFlixProject flixProject = this.model.getFlixProjectOrThrow(getProject());
 			monitor.subTask("Delete build folder");
 			flixProject.deleteBuildFolder(monitor);
 			monitor.subTask("Build flix project");
 			FlixLauncher.launchBuild(flixProject);
 		}
-
 		return null;
 	}
 

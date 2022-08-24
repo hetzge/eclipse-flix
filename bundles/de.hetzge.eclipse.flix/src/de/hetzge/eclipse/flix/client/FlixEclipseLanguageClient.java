@@ -41,4 +41,8 @@ class FlixEclipseLanguageClient extends EclipseLanguageClient<LanguageServer> {
 		super.fillInitializeParams(params);
 		params.setRootUri(DocumentUri.convert(this.flixProject.getProject().getLocationURI()));
 	}
+
+	public LanguageServer getLanguageServerApi() {
+		return super.getLanguageServer();
+	}
 }

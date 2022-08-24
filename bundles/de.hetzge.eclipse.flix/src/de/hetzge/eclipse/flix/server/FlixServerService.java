@@ -117,7 +117,7 @@ public final class FlixServerService implements AutoCloseable {
 	}
 
 	public void addJar(URI uri) {
-		this.compilerClient.sendJar(uri, Utils.readUriBase64Encoded(uri));
+		this.compilerClient.sendJar(uri);
 	}
 
 	public void removeJar(URI uri) {
@@ -161,7 +161,7 @@ public final class FlixServerService implements AutoCloseable {
 			if (response.isLeft()) {
 				return GsonUtils.getGson().fromJson(response.getLeft(), Hover.class);
 			} else {
-				throw new RuntimeException("Unexpected hover response");
+				throw new RuntimeException(response.getRight().toString());
 			}
 		});
 	}
@@ -170,21 +170,21 @@ public final class FlixServerService implements AutoCloseable {
 		return this.compilerClient.sendCheck().thenApply(response -> {
 			synchronized (this.diagnosticsParamsByUri) {
 				if (response.isLeft()) {
-					System.out.println(response.getLeft() + " !!!");
 					for (final PublishDiagnosticsParams diagnosticsParams : this.diagnosticsParamsByUri.values()) {
 						this.client.publishDiagnostics(new PublishDiagnosticsParams(diagnosticsParams.getUri(), List.of()));
 					}
 					return null;
 				} else {
-					System.out.println(response.getRight() + " ???");
 					final JsonArray jsonArray = response.getRight().getAsJsonArray();
 					final Map<String, PublishDiagnosticsParams> diffMap = new HashMap<>(this.diagnosticsParamsByUri);
+					// Set all new diagnostics
 					for (final JsonElement jsonElement : jsonArray) {
 						final PublishDiagnosticsParams publishDiagnosticsParams = GsonUtils.getGson().fromJson(jsonElement, PublishDiagnosticsParams.class);
 						this.diagnosticsParamsByUri.put(publishDiagnosticsParams.getUri(), publishDiagnosticsParams);
 						diffMap.remove(publishDiagnosticsParams.getUri());
 						this.client.publishDiagnostics(publishDiagnosticsParams);
 					}
+					// Unset all other diagnostics
 					for (final PublishDiagnosticsParams diagnosticsParams : diffMap.values()) {
 						this.client.publishDiagnostics(new PublishDiagnosticsParams(diagnosticsParams.getUri(), List.of()));
 					}
@@ -204,7 +204,7 @@ public final class FlixServerService implements AutoCloseable {
 				}
 				return result;
 			} else {
-				throw new RuntimeException();
+				throw new RuntimeException(response.getRight().toString());
 			}
 		});
 	}
@@ -234,7 +234,7 @@ public final class FlixServerService implements AutoCloseable {
 				}
 				return Either.forRight(result);
 			} else {
-				throw new RuntimeException();
+				throw new RuntimeException(response.getRight().toString());
 			}
 		});
 	}
@@ -244,7 +244,7 @@ public final class FlixServerService implements AutoCloseable {
 			if (response.isLeft()) {
 				return GsonUtils.getGson().fromJson(response.getLeft(), WorkspaceEdit.class);
 			} else {
-				throw new RuntimeException();
+				throw new RuntimeException(response.getRight().toString());
 			}
 		});
 	}
@@ -256,7 +256,7 @@ public final class FlixServerService implements AutoCloseable {
 				return GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<Location>>() {
 				}.getType());
 			} else {
-				throw new RuntimeException();
+				throw new RuntimeException(response.getRight().toString());
 			}
 		});
 	}

@@ -46,39 +46,39 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 	private final EclipseLog log;
 	private final BufferingDiagnosticConsumer diagnosticConsumer;
 	private final DocumentFilter documentFilter;
-	private final LanguageService languageService;
-	private final DocumentService documentService;
+	private final FlixEclipseLanguageClient flixEclipseLanguageClient;
 
-	public FlixLanguageClientController(IFlixProject flixProject, int port) {
+	FlixLanguageClientController(IFlixProject flixProject, int port) {
 		this.flixProject = flixProject;
 		this.port = port;
 		this.log = new EclipseLog(FlixActivator.getDefault().getBundle(), "flix-language-client:" + flixProject.getProject().getName()); //$NON-NLS-1$
 		this.diagnosticConsumer = new BufferingDiagnosticConsumer(new DiagnosticMarkers(FlixMarkerResolutionGenerator.MARKER_TYPE));
 		this.documentFilter = new DocumentFilter(FlixConstants.LANGUAGE_ID, "file", this.flixProject.getProject().getLocation().append("**").toString()); //$NON-NLS-1$ //$NON-NLS-2$
-		this.languageService = Flix.get().getLanguageService();
-		this.documentService = Flix.get().getDocumentService();
+
+		final LanguageService languageService = Flix.get().getLanguageService();
+		final DocumentService documentService = Flix.get().getDocumentService();
+		final TextDocumentSyncFeature textDocumentSyncFeature = new TextDocumentSyncFeature(documentService);
+		textDocumentSyncFeature.setChangeEventMergeStrategy(new EclipseTextDocumentChangeEventMergeStrategy());
+		final List<Feature<? super LanguageServer>> features = new ArrayList<>();
+		features.add(new CompletionFeature(languageService));
+		features.add(FileOperationsFeature.newInstance(Flix.get().getResourceMonitor()));
+		features.add(textDocumentSyncFeature);
+		features.add(new ReferencesFeature(languageService));
+		features.add(new DeclarationFeature(languageService));
+		features.add(new HoverFeature(languageService));
+		features.add(new DocumentSymbolFeature(languageService));
+		features.add(new WorkspaceSymbolFeature(languageService, this.flixProject));
+		features.add(new RenameFeature(languageService));
+		this.flixEclipseLanguageClient = new FlixEclipseLanguageClient(this.log, this.flixProject, this.diagnosticConsumer, features);
 	}
 
 	@Override
 	protected AbstractLanguageClient<LanguageServer> getLanguageClient() {
-		return new FlixEclipseLanguageClient(this.log, this.flixProject, this.diagnosticConsumer, createFeatureList());
+		return this.flixEclipseLanguageClient;
 	}
 
-	private List<Feature<? super LanguageServer>> createFeatureList() {
-		final TextDocumentSyncFeature textDocumentSyncFeature = new TextDocumentSyncFeature(this.documentService);
-		textDocumentSyncFeature.setChangeEventMergeStrategy(new EclipseTextDocumentChangeEventMergeStrategy());
-
-		final List<Feature<? super LanguageServer>> features = new ArrayList<>();
-		features.add(new CompletionFeature(this.languageService));
-		features.add(FileOperationsFeature.newInstance(Flix.get().getResourceMonitor()));
-		features.add(textDocumentSyncFeature);
-		features.add(new ReferencesFeature(this.languageService));
-		features.add(new DeclarationFeature(this.languageService));
-		features.add(new HoverFeature(this.languageService));
-		features.add(new DocumentSymbolFeature(this.languageService));
-		features.add(new WorkspaceSymbolFeature(this.languageService, this.flixProject));
-		features.add(new RenameFeature(this.languageService));
-		return features;
+	public LanguageServer getLanguageServerApi() {
+		return this.flixEclipseLanguageClient.getLanguageServerApi();
 	}
 
 	@Override

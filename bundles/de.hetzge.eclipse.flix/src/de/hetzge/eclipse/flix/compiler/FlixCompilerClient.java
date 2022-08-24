@@ -72,12 +72,11 @@ public class FlixCompilerClient implements AutoCloseable {
 		return send(jsonObject);
 	}
 
-	public CompletableFuture<Void> sendJar(URI uri, String base64String) {
+	public CompletableFuture<Void> sendJar(URI uri) {
 		final JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("request", "api/addJar");
 		jsonObject.addProperty("id", UUID.randomUUID().toString());
 		jsonObject.addProperty("uri", uri.toString());
-		jsonObject.addProperty("base64", base64String);
 		return send(jsonObject);
 	}
 
