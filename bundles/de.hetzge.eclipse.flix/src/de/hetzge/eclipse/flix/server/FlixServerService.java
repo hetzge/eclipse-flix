@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
@@ -251,9 +253,19 @@ public final class FlixServerService implements AutoCloseable {
 
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
 		return this.compilerClient.sendUses(params).thenApply(response -> {
-			System.out.println(response.getLeft());
 			if (response.isLeft()) {
 				return GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<Location>>() {
+				}.getType());
+			} else {
+				throw new RuntimeException(response.getRight().toString());
+			}
+		});
+	}
+
+	public CompletableFuture<List<? extends CodeLens>> resolveCodeLens(CodeLensParams params) {
+		return this.compilerClient.sendCodeLens(params).thenApply(response -> {
+			if (response.isLeft()) {
+				return GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<CodeLens>>() {
 				}.getType());
 			} else {
 				throw new RuntimeException(response.getRight().toString());

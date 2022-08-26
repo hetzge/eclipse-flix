@@ -8,10 +8,13 @@ import java.util.List;
 
 import org.eclipse.lsp4j.DocumentFilter;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.lxtk.CommandService;
 import org.lxtk.DocumentService;
 import org.lxtk.LanguageService;
 import org.lxtk.client.AbstractLanguageClient;
 import org.lxtk.client.BufferingDiagnosticConsumer;
+import org.lxtk.client.CodeActionFeature;
+import org.lxtk.client.CodeLensFeature;
 import org.lxtk.client.CompletionFeature;
 import org.lxtk.client.DeclarationFeature;
 import org.lxtk.client.DocumentSymbolFeature;
@@ -57,6 +60,7 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 
 		final LanguageService languageService = Flix.get().getLanguageService();
 		final DocumentService documentService = Flix.get().getDocumentService();
+		final CommandService commandService = Flix.get().getCommandService();
 		final TextDocumentSyncFeature textDocumentSyncFeature = new TextDocumentSyncFeature(documentService);
 		textDocumentSyncFeature.setChangeEventMergeStrategy(new EclipseTextDocumentChangeEventMergeStrategy());
 		final List<Feature<? super LanguageServer>> features = new ArrayList<>();
@@ -69,6 +73,8 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		features.add(new DocumentSymbolFeature(languageService));
 		features.add(new WorkspaceSymbolFeature(languageService, this.flixProject));
 		features.add(new RenameFeature(languageService));
+		features.add(new CodeLensFeature(languageService, commandService));
+		features.add(new CodeActionFeature(languageService, commandService));
 		this.flixEclipseLanguageClient = new FlixEclipseLanguageClient(this.log, this.flixProject, this.diagnosticConsumer, features);
 	}
 

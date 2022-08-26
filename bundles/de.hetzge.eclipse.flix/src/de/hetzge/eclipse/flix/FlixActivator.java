@@ -19,6 +19,7 @@ import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
+import de.hetzge.eclipse.flix.launch.FlixRunMainCommandHandler;
 import de.hetzge.eclipse.flix.model.api.FlixModelManager;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
@@ -60,7 +61,11 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 				this.flix.close();
 				this.flix = null;
 			});
-			final FlixLanguageToolingManager projectManager = this.flix.getLanguageToolingManager();
+
+			/*
+			 * Register commands ...
+			 */
+			rollback.add(this.flix.getCommandService().addCommand("flix.runMain", new FlixRunMainCommandHandler())::dispose);
 
 			/*
 			 * Init model and projects ...
@@ -69,7 +74,7 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 			final IFlixModel model = modelManager.getModel();
 			model.getFlixProjects().forEach(flixProject -> {
 				System.out.println(">>> " + flixProject);
-				projectManager.connectProject(flixProject);
+				this.flix.getLanguageToolingManager().connectProject(flixProject);
 			});
 
 			final IWorkspace workspace = ResourcesPlugin.getWorkspace();

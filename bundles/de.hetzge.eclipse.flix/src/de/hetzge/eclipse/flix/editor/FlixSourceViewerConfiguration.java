@@ -61,21 +61,8 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 	@Override
 	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
 		System.out.println("FlixSourceViewerConfiguration.getHyperlinkDetectors()");
-		final IAdaptable context = new IAdaptable() {
-			@Override
-			public <T> T getAdapter(Class<T> adapter) {
-				if (adapter == LanguageOperationTarget.class) {
-					return adapter.cast(getLanguageOperationTarget());
-				} else if (adapter == DocumentService.class) {
-					return adapter.cast(Flix.get().getDocumentService());
-				} else {
-					return null;
-				}
-			}
-		};
-
 		final DeclarationHyperlinkDetector declarationHyperlinkDetector = new DeclarationHyperlinkDetector();
-		declarationHyperlinkDetector.setContext(context);
+		declarationHyperlinkDetector.setContext(new HyperlinkDetectorContextAdaptable());
 		return new IHyperlinkDetector[] { declarationHyperlinkDetector };
 	}
 
@@ -84,7 +71,6 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 		if (this.editor == null || !this.editor.isEditable()) {
 			return null;
 		}
-
 		final ContentAssistant assistant = new ContentAssistant(true);
 		assistant.setContentAssistProcessor(new ContentAssistProcessor(this::getLanguageOperationTarget), IDocument.DEFAULT_CONTENT_TYPE);
 		assistant.setSorter(new CompletionProposalSorter());
@@ -95,5 +81,18 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 
 	private LanguageOperationTarget getLanguageOperationTarget() {
 		return FlixOperationTargetProvider.getOperationTarget(this.editor);
+	}
+
+	private final class HyperlinkDetectorContextAdaptable implements IAdaptable {
+		@Override
+		public <T> T getAdapter(Class<T> adapter) {
+			if (adapter == LanguageOperationTarget.class) {
+				return adapter.cast(getLanguageOperationTarget());
+			} else if (adapter == DocumentService.class) {
+				return adapter.cast(Flix.get().getDocumentService());
+			} else {
+				return null;
+			}
+		}
 	}
 }

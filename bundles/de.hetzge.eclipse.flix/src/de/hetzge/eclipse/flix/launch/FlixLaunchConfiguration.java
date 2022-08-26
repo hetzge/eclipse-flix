@@ -22,5 +22,4 @@ public class FlixLaunchConfiguration {
 	public Optional<String> getEntrypoint() {
 		return SafeRunner.run(() -> Optional.ofNullable(this.configuration.getAttribute(ENTRYPOINT_FIELD, (String) null)));
 	}
-
 }

@@ -17,6 +17,7 @@ public class EditableFlixLaunchConfiguration extends FlixLaunchConfiguration {
 	}
 
 	public void setEntrypoint(String entrypoint) {
+		System.out.println("EditableFlixLaunchConfiguration.setEntrypoint(" + entrypoint + ")");
 		this.configuration.setAttribute(ENTRYPOINT_FIELD, entrypoint != null && !entrypoint.isBlank() ? entrypoint : null);
 	}
 }

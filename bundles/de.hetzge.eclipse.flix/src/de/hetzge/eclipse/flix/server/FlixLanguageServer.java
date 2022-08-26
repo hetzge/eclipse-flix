@@ -3,6 +3,7 @@ package de.hetzge.eclipse.flix.server;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.FileOperationFilter;
 import org.eclipse.lsp4j.FileOperationOptions;
@@ -76,6 +77,7 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 			capabilities.setDocumentSymbolProvider(true);
 			capabilities.setWorkspaceSymbolProvider(true);
 			capabilities.setRenameProvider(true);
+			capabilities.setCodeLensProvider(new CodeLensOptions(true));
 			final InitializeResult initializeResult = new InitializeResult();
 			initializeResult.setCapabilities(capabilities);
 			initializeResult.setServerInfo(new ServerInfo("Flix Eclipse Language Server", "0.1"));

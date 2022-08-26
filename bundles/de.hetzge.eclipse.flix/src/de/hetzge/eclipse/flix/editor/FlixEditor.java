@@ -5,10 +5,12 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
+import org.lxtk.LanguageOperationTarget;
 
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixDocumentProvider;
+import de.hetzge.eclipse.flix.FlixOperationTargetProvider;
 
 public class FlixEditor extends AbstractDecoratedTextEditor {
 
@@ -45,8 +47,11 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 				this.outlinePage = new FlixOutlinePage(this);
 			}
 			return adapter.cast(this.outlinePage);
+		} else if (adapter == LanguageOperationTarget.class) {
+			return adapter.cast(FlixOperationTargetProvider.getOperationTarget(this));
+		} else {
+			return super.getAdapter(adapter);
 		}
-		return super.getAdapter(adapter);
 	}
 
 	public void closeOutlinePage() {

@@ -1,8 +1,10 @@
 package de.hetzge.eclipse.flix;
 
+import org.lxtk.CommandService;
 import org.lxtk.DocumentService;
 import org.lxtk.LanguageService;
 import org.lxtk.WorkspaceService;
+import org.lxtk.lx4e.EclipseCommandService;
 import org.lxtk.lx4e.EclipseDocumentService;
 import org.lxtk.lx4e.EclipseLanguageService;
 import org.lxtk.lx4e.EclipseWorkspaceService;
@@ -28,6 +30,7 @@ public final class Flix implements AutoCloseable {
 	private final ResourceMonitor resourceMonitor;
 	private final FlixModelManager modelManager;
 	private final FlixLanguageToolingManager languageToolingManager;
+	private final CommandService commandService;
 
 	Flix() {
 		this.documentService = new EclipseDocumentService();
@@ -40,6 +43,7 @@ public final class Flix implements AutoCloseable {
 		this.resourceMonitor = new ResourceMonitor();
 		this.modelManager = FlixModelManager.create();
 		this.languageToolingManager = new FlixLanguageToolingManager();
+		this.commandService = new EclipseCommandService();
 	}
 
 	public DocumentService getDocumentService() {
@@ -80,6 +84,10 @@ public final class Flix implements AutoCloseable {
 
 	public FlixLanguageToolingManager getLanguageToolingManager() {
 		return this.languageToolingManager;
+	}
+
+	public CommandService getCommandService() {
+		return this.commandService;
 	}
 
 	@Override

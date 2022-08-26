@@ -6,6 +6,7 @@ import java.net.http.WebSocket;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
 import org.eclipse.lsp4j.HoverParams;
@@ -139,6 +140,10 @@ public class FlixCompilerClient implements AutoCloseable {
 
 	public CompletableFuture<Either<JsonElement, JsonElement>> sendUses(ReferenceParams params) {
 		return send("lsp/uses", params);
+	}
+
+	public CompletableFuture<Either<JsonElement, JsonElement>> sendCodeLens(CodeLensParams params) {
+		return send("lsp/codelens", params);
 	}
 
 	public CompletableFuture<Either<JsonElement, JsonElement>> send(String request, Object params) {

@@ -4,6 +4,8 @@ import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
@@ -48,6 +50,12 @@ public final class FlixTextDocumentService implements TextDocumentService {
 		return this.flixService.decleration(params).thenApply(completionList -> {
 			return Either.forRight(completionList);
 		});
+	}
+
+	@Override
+	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
+		System.out.println("FlixTextDocumentService.codeLens()");
+		return this.flixService.resolveCodeLens(params);
 	}
 
 	@Override

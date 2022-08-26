@@ -5,6 +5,7 @@ import org.eclipse.debug.ui.ILaunchShortcut;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.IEditorPart;
 
+import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.utils.EclipseUtils;
 
 public class FlixTestLaunchShortcut implements ILaunchShortcut {
@@ -22,6 +23,6 @@ public class FlixTestLaunchShortcut implements ILaunchShortcut {
 	}
 
 	private void launch(String mode, final IFile file) {
-		FlixLaunchUtils.launchProject(file, mode, "de.hetzge.eclipse.flix.testLaunchConfigurationType", "Test");
+		FlixLaunchUtils.launchProject(file, mode, FlixConstants.TEST_LAUNCH_CONFIGURATION_TYPE_ID, "Test", null);
 	}
 }
