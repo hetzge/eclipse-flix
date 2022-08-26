@@ -20,6 +20,7 @@ import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
 import de.hetzge.eclipse.flix.launch.FlixRunMainCommandHandler;
+import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
 import de.hetzge.eclipse.flix.model.api.FlixModelManager;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
@@ -66,6 +67,7 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 			 * Register commands ...
 			 */
 			rollback.add(this.flix.getCommandService().addCommand("flix.runMain", new FlixRunMainCommandHandler())::dispose);
+			rollback.add(this.flix.getCommandService().addCommand("flix.cmdRepl", new FlixRunReplCommandHandler())::dispose);
 
 			/*
 			 * Init model and projects ...

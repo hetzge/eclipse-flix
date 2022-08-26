@@ -17,6 +17,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.DebugUITools;
 
+import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.utils.PlatformUIUtils;
 import de.hetzge.eclipse.utils.StatusUtils;
 
@@ -27,7 +28,7 @@ class FlixLaunchUtils {
 	private FlixLaunchUtils() {
 	}
 
-	public static void launchProject(IFile file, String mode, String launchConfigurationTypeId, String label, String entrypoint) {
+	public static void launchProject(IFile file, String mode, String launchConfigurationTypeId, String entrypoint) {
 		if (file == null) {
 			PlatformUIUtils.showError("Can't launch", "No launchable file selected");
 			return;
@@ -48,7 +49,7 @@ class FlixLaunchUtils {
 
 			if (launchConfiguration == null) {
 				// Create new launch configuration
-				final ILaunchConfigurationWorkingCopy newLaunchConfiguration = type.newInstance(null, String.format(label + " '%s' in '%s'", file.getProjectRelativePath().toOSString(), project.getName()).replace(File.separatorChar, ' '));
+				final ILaunchConfigurationWorkingCopy newLaunchConfiguration = type.newInstance(null, String.format(getLabel(launchConfigurationTypeId) + " '%s' in '%s'", file.getProjectRelativePath().toOSString(), project.getName()).replace(File.separatorChar, ' '));
 				final EditableFlixLaunchConfiguration flixLaunchConfiguration = new EditableFlixLaunchConfiguration(newLaunchConfiguration);
 				flixLaunchConfiguration.setEntrypoint(entrypoint);
 				newLaunchConfiguration.setMappedResources(new IResource[] { file });
@@ -75,4 +76,15 @@ class FlixLaunchUtils {
 		});
 	}
 
+	private static String getLabel(String launchConfigurationTypeId) {
+		final String label;
+		if (launchConfigurationTypeId.equals(FlixConstants.LAUNCH_CONFIGURATION_TYPE_ID)) {
+			label = "Run";
+		} else if (launchConfigurationTypeId.equals(FlixConstants.TEST_LAUNCH_CONFIGURATION_TYPE_ID)) {
+			label = "Test";
+		} else {
+			label = "Execute";
+		}
+		return label;
+	}
 }

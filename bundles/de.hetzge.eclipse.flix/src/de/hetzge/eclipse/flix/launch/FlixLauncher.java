@@ -32,6 +32,10 @@ public final class FlixLauncher {
 		launch(createTerminalRunProperties(launchConfiguration, flixProject));
 	}
 
+	public static void launchRepl(IFlixProject flixProject) {
+		launch(createTerminalReplProperties(flixProject));
+	}
+
 	public static void launchTest(IFlixProject flixProject) {
 		launch(createTerminalTestProperties(flixProject));
 	}
@@ -94,6 +98,11 @@ public final class FlixLauncher {
 			arguments.add(libraryFile.getFullPath().toFile().getAbsolutePath());
 		}
 		return createBasicTerminalLaunchProperties(name, flixProject, arguments);
+	}
+
+	private static Map<String, Object> createTerminalReplProperties(IFlixProject flixProject) {
+		final String name = "Repl " + flixProject.getProject().getName();
+		return createBasicTerminalLaunchProperties(name, flixProject, List.of());
 	}
 
 	private static Map<String, Object> createTerminalTestProperties(IFlixProject flixProject) {

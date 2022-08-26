@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.lsp4j.CodeLens;
@@ -265,8 +267,9 @@ public final class FlixServerService implements AutoCloseable {
 	public CompletableFuture<List<? extends CodeLens>> resolveCodeLens(CodeLensParams params) {
 		return this.compilerClient.sendCodeLens(params).thenApply(response -> {
 			if (response.isLeft()) {
-				return GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<CodeLens>>() {
+				final List<? extends CodeLens> codeLenses = GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<CodeLens>>() {
 				}.getType());
+				return codeLenses.stream().filter(codeLens -> Set.of("flix.runMain", "flix.cmdRepl").contains(codeLens.getCommand().getCommand())).collect(Collectors.toList());
 			} else {
 				throw new RuntimeException(response.getRight().toString());
 			}

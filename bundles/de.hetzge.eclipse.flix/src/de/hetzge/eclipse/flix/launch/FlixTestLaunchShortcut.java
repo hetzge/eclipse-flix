@@ -23,6 +23,6 @@ public class FlixTestLaunchShortcut implements ILaunchShortcut {
 	}
 
 	private void launch(String mode, final IFile file) {
-		FlixLaunchUtils.launchProject(file, mode, FlixConstants.TEST_LAUNCH_CONFIGURATION_TYPE_ID, "Test", null);
+		FlixLaunchUtils.launchProject(file, mode, FlixConstants.TEST_LAUNCH_CONFIGURATION_TYPE_ID, null);
 	}
 }
