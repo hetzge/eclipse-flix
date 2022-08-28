@@ -68,6 +68,10 @@ public final class FlixLauncher {
 	}
 
 	private static void launch(Map<String, Object> properties) {
+		if (properties.get(ITerminalsConnectorConstants.PROP_PROCESS_PATH) != null) {
+			System.out.println(String.format("Launch '%s %s'", properties.get(ITerminalsConnectorConstants.PROP_PROCESS_PATH), properties.get(ITerminalsConnectorConstants.PROP_PROCESS_ARGS)));
+		}
+
 		final ITerminalService terminalService = TerminalServiceFactory.getService();
 		terminalService.terminateConsole(properties, LOG::log);
 		terminalService.closeConsole(properties, LOG::log);
@@ -97,6 +101,10 @@ public final class FlixLauncher {
 		for (final IFile libraryFile : flixProject.getFlixJarLibraryFiles()) {
 			arguments.add(libraryFile.getFullPath().toFile().getAbsolutePath());
 		}
+		launchConfiguration.getArguments().ifPresent(launchArguments -> {
+			arguments.add("--args");
+			arguments.add(String.format("'%s'", launchArguments));
+		});
 		return createBasicTerminalLaunchProperties(name, flixProject, arguments);
 	}
 

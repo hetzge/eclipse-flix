@@ -68,6 +68,7 @@ public class FlixLaunchConfigTab extends AbstractLaunchConfigurationTab {
 	private class FlixLaunchConfigurationControl extends Composite {
 
 		private final Text entrypointText;
+		private final Text argumentsText;
 
 		public FlixLaunchConfigurationControl(Composite parent) {
 			super(parent, SWT.NONE);
@@ -84,16 +85,31 @@ public class FlixLaunchConfigTab extends AbstractLaunchConfigurationTab {
 				this.entrypointText.addModifyListener(FlixLaunchConfigTab.this::modified);
 				GridDataFactory.fillDefaults().grab(true, false).applyTo(this.entrypointText);
 			}
+
+			// Arguments
+			{
+				final Label argumentsLabel = new Label(group, SWT.NONE);
+				argumentsLabel.setText("Arguments");
+				GridDataFactory.swtDefaults().applyTo(argumentsLabel);
+
+				this.argumentsText = new Text(group, SWT.NONE);
+				this.argumentsText.addModifyListener(FlixLaunchConfigTab.this::modified);
+				GridDataFactory.fillDefaults().grab(true, false).applyTo(this.argumentsText);
+			}
 		}
 
 		public void setConfiguration(FlixLaunchConfiguration configuration) {
 			configuration.getEntrypoint().ifPresent(entrypoint -> {
 				this.entrypointText.setText(entrypoint);
 			});
+			configuration.getArguments().ifPresent(arguments -> {
+				this.argumentsText.setText(arguments);
+			});
 		}
 
 		public void updateConfiguration(EditableFlixLaunchConfiguration configuration) {
 			configuration.setEntrypoint(this.entrypointText.getText());
+			configuration.setArguments(this.argumentsText.getText());
 		}
 	}
 
