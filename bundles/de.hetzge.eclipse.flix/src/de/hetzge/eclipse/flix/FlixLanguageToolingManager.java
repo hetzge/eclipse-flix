@@ -22,13 +22,16 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 	}
 
 	public synchronized void connectProject(IFlixProject flixProject) {
-		System.out.println("FlixLanguageToolingManager.initializeFlixProject(" + flixProject.getProject().getName() + ")");
+		System.out.println(
+				"FlixLanguageToolingManager.initializeFlixProject(" + flixProject.getProject().getName() + ")");
 		this.connectedProjects.computeIfAbsent(flixProject, key -> {
 			FlixLogger.logInfo("Initialize flix for project under " + flixProject.getProject().getLocationURI());
 			return SafeRun.runWithResult(rollback -> {
+				rollback.setLogger(FlixLogger::logError);
 
 				final int lspPort = Utils.queryPort();
-				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(flixProject, lspPort);
+				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread
+						.createAndStart(flixProject, lspPort);
 				rollback.add(socketThread::close);
 
 				final FlixLanguageClientController client = FlixLanguageClientController.connect(flixProject, lspPort);

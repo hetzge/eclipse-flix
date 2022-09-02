@@ -42,7 +42,7 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 
 		final FlixProjectPage page = (FlixProjectPage) getStartingPage();
 		final File jreExecutableFile = Utils.getJreExecutable();
-		final File flixJarFile = FlixUtils.loadFlixJarFile();
+		final File flixJarFile = FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION);
 		final String projectName = page.getProjectName();
 		final File newProjectFolder = new File(page.getLocationPath().toFile(), projectName);
 		final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);

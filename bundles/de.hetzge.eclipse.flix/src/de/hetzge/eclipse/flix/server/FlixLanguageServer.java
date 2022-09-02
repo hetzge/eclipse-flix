@@ -25,6 +25,7 @@ import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 import org.lxtk.util.SafeRun;
 
+import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
 import de.hetzge.eclipse.flix.launch.FlixLauncher;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
@@ -35,9 +36,13 @@ import de.hetzge.eclipse.utils.Utils;
 public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 
 	private final FlixServerService flixService;
+	private final FlixTextDocumentService flixTextDocumentService;
+	private final FlixWorkspaceService flixWorkspaceService;
 
 	public FlixLanguageServer(FlixServerService flixService) {
 		this.flixService = flixService;
+		this.flixTextDocumentService = new FlixTextDocumentService(this.flixService);
+		this.flixWorkspaceService = new FlixWorkspaceService(this.flixService);
 	}
 
 	@Override
@@ -109,12 +114,12 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 
 	@Override
 	public TextDocumentService getTextDocumentService() {
-		return new FlixTextDocumentService(this.flixService);
+		return this.flixTextDocumentService;
 	}
 
 	@Override
 	public WorkspaceService getWorkspaceService() {
-		return new FlixWorkspaceService(this.flixService);
+		return this.flixWorkspaceService;
 	}
 
 	@Override
@@ -130,6 +135,8 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 	public static FlixLanguageServer start(IFlixProject flixProject) {
 		System.out.println("FlixLanguageServer.start()");
 		return SafeRun.runWithResult(rollback -> {
+			rollback.setLogger(FlixLogger::logError);
+
 			final int compilerPort = Utils.queryPort();
 
 			FlixLauncher.launchCompiler(flixProject, compilerPort);

@@ -53,7 +53,7 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 
 	@Override
 	public void onOpen(WebSocket webSocket) {
-		System.out.println("onOpen using subprotocol " + webSocket.getSubprotocol());
+		System.out.println("onOpen using subprotocol '" + webSocket.getSubprotocol() + "'");
 		WebSocket.Listener.super.onOpen(webSocket);
 	}
 

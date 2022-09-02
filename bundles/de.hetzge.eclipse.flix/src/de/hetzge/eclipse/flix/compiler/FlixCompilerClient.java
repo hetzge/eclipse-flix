@@ -20,6 +20,7 @@ import org.lxtk.util.SafeRun.Rollback;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.utils.GsonUtils;
 
 public class FlixCompilerClient implements AutoCloseable {
@@ -170,6 +171,8 @@ public class FlixCompilerClient implements AutoCloseable {
 	public static synchronized FlixCompilerClient connect(int port) {
 		System.out.println("FlixCompilerClient.connect()");
 		return SafeRun.runWithResult(rollback -> {
+			rollback.setLogger(FlixLogger::logError);
+			
 			final FlixCompilerProcessSocketListener listener = new FlixCompilerProcessSocketListener();
 			final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:" + port), listener).join();
 			rollback.add(webSocket::abort);

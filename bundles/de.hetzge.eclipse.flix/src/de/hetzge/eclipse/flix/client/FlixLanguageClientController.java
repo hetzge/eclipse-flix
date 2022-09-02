@@ -39,6 +39,7 @@ import org.lxtk.util.connect.StreamBasedConnection;
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixConstants;
+import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 
@@ -126,6 +127,7 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 	public static FlixLanguageClientController connect(IFlixProject flixProject, int port) {
 		System.out.println("FlixLanguageClient.connect()");
 		return SafeRun.runWithResult(rollback -> {
+			rollback.setLogger(FlixLogger::logError);
 			final FlixLanguageClientController flixLanguageClientController = new FlixLanguageClientController(flixProject, port);
 			rollback.add(flixLanguageClientController::dispose);
 			flixLanguageClientController.connect();

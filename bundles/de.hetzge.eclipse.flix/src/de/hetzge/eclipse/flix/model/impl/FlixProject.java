@@ -15,6 +15,7 @@ import org.eclipse.handly.model.impl.support.Element;
 import org.eclipse.handly.model.impl.support.IModelManager;
 
 import de.hetzge.eclipse.flix.Flix;
+import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
@@ -66,7 +67,7 @@ public class FlixProject extends Element implements IFlixProject {
 		if (flixJarInProjectFile.exists()) {
 			return flixJarInProjectFile.getRawLocation().toFile();
 		} else {
-			return FlixUtils.loadFlixJarFile();
+			return FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION);
 		}
 	}
 

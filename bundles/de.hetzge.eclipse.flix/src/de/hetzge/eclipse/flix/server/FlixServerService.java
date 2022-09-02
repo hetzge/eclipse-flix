@@ -37,6 +37,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
+import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
@@ -152,7 +153,7 @@ public final class FlixServerService implements AutoCloseable {
 
 	private String fixLibraryUri(String targetUriValue) {
 		if (targetUriValue.endsWith(".flix") && !targetUriValue.startsWith("file:")) {
-			final File sourceFolder = FlixUtils.loadFlixFolder();
+			final File sourceFolder = FlixUtils.loadFlixFolder(FlixConstants.FLIX_DEFAULT_VERSION);
 			final File sourceFile = new File(sourceFolder, "src/library/" + targetUriValue);
 			return sourceFile.toURI().toASCIIString();
 		} else {
@@ -267,6 +268,7 @@ public final class FlixServerService implements AutoCloseable {
 	public CompletableFuture<List<? extends CodeLens>> resolveCodeLens(CodeLensParams params) {
 		return this.compilerClient.sendCodeLens(params).thenApply(response -> {
 			if (response.isLeft()) {
+				// TODO No longer list
 				final List<? extends CodeLens> codeLenses = GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<CodeLens>>() {
 				}.getType());
 				return codeLenses.stream().filter(codeLens -> Set.of("flix.runMain", "flix.cmdRepl").contains(codeLens.getCommand().getCommand())).collect(Collectors.toList());

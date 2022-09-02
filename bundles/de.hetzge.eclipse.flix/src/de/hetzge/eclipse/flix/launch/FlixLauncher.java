@@ -12,12 +12,16 @@ import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.tm.terminal.view.core.TerminalServiceFactory;
 import org.eclipse.tm.terminal.view.core.interfaces.ITerminalService;
+import org.eclipse.tm.terminal.view.core.interfaces.ITerminalService.Done;
 import org.eclipse.tm.terminal.view.core.interfaces.ITerminalServiceOutputStreamMonitorListener;
 import org.eclipse.tm.terminal.view.core.interfaces.constants.ITerminalsConnectorConstants;
 
+import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.utils.Utils;
 
@@ -47,14 +51,15 @@ public final class FlixLauncher {
 	public static void launchCompiler(IFlixProject flixProject, int port) {
 		final CountDownLatch latch = new CountDownLatch(1);
 		final Map<String, Object> properties = createTerminalCompilerProperties(flixProject, port);
-		properties.put(ITerminalsConnectorConstants.PROP_STDOUT_LISTENERS, new ITerminalServiceOutputStreamMonitorListener[] { new ITerminalServiceOutputStreamMonitorListener() {
-			@Override
-			public void onContentReadFromStream(byte[] byteBuffer, int bytesRead) {
-				if (new String(byteBuffer).startsWith("LSP listening on")) {
-					latch.countDown();
-				}
-			}
-		} });
+		properties.put(ITerminalsConnectorConstants.PROP_STDOUT_LISTENERS,
+				new ITerminalServiceOutputStreamMonitorListener[] { new ITerminalServiceOutputStreamMonitorListener() {
+					@Override
+					public void onContentReadFromStream(byte[] byteBuffer, int bytesRead) {
+						if (new String(byteBuffer).startsWith("LSP listening on")) {
+							latch.countDown();
+						}
+					}
+				} });
 		launch(properties);
 		try {
 			latch.await(10L, TimeUnit.SECONDS);
@@ -64,27 +69,31 @@ public final class FlixLauncher {
 	}
 
 	public static void closeCompiler(IFlixProject flixProject, int port) {
+		System.out.println("FlixLauncher.closeCompiler(!!!)");
 		closeConsole(createTerminalCompilerProperties(flixProject, port));
 	}
 
 	private static void launch(Map<String, Object> properties) {
 		if (properties.get(ITerminalsConnectorConstants.PROP_PROCESS_PATH) != null) {
-			System.out.println(String.format("Launch '%s %s'", properties.get(ITerminalsConnectorConstants.PROP_PROCESS_PATH), properties.get(ITerminalsConnectorConstants.PROP_PROCESS_ARGS)));
+			System.out.println(
+					String.format("Launch '%s %s'", properties.get(ITerminalsConnectorConstants.PROP_PROCESS_PATH),
+							properties.get(ITerminalsConnectorConstants.PROP_PROCESS_ARGS)));
 		}
 
 		final ITerminalService terminalService = TerminalServiceFactory.getService();
-		terminalService.terminateConsole(properties, LOG::log);
-		terminalService.closeConsole(properties, LOG::log);
-		terminalService.openConsole(properties, LOG::log);
+		terminalService.terminateConsole(properties, createDoneLogger("terminateConsole"));
+		terminalService.closeConsole(properties, createDoneLogger("closeConsole"));
+		terminalService.openConsole(properties, createDoneLogger("openConsole"));
 	}
 
 	private static void closeConsole(Map<String, Object> properties) {
 		final ITerminalService terminalService = TerminalServiceFactory.getService();
-		terminalService.terminateConsole(properties, LOG::log);
-		terminalService.closeConsole(properties, LOG::log);
+		terminalService.terminateConsole(properties, createDoneLogger("terminateConsole"));
+		terminalService.closeConsole(properties, createDoneLogger("closeConsole"));
 	}
 
-	private static Map<String, Object> createTerminalRunProperties(FlixLaunchConfiguration launchConfiguration, final IFlixProject flixProject) {
+	private static Map<String, Object> createTerminalRunProperties(FlixLaunchConfiguration launchConfiguration,
+			final IFlixProject flixProject) {
 		final String name = "Run " + flixProject.getProject().getName();
 		final List<String> arguments = new ArrayList<>();
 		arguments.add("run");
@@ -125,12 +134,14 @@ public final class FlixLauncher {
 
 	private static Map<String, Object> createTerminalCompilerProperties(IFlixProject flixProject, int port) {
 		final String name = "Compiler " + flixProject.getProject().getName();
-		final Map<String, Object> properties = createBasicTerminalLaunchProperties(name, flixProject, List.of("--lsp", String.valueOf(port)));
+		final Map<String, Object> properties = createBasicTerminalLaunchProperties(name, flixProject,
+				List.of("--lsp", String.valueOf(port)));
 		properties.put(ITerminalsConnectorConstants.PROP_SECONDARY_ID, "Flix");
 		return properties;
 	}
 
-	private static Map<String, Object> createBasicTerminalLaunchProperties(String name, IFlixProject flixProject, List<String> arguments) {
+	private static Map<String, Object> createBasicTerminalLaunchProperties(String name, IFlixProject flixProject,
+			List<String> arguments) {
 		final File jreExecutableFile = Utils.getJreExecutable();
 		final File flixJarFile = flixProject.getFlixCompilerJarFile();
 
@@ -139,10 +150,20 @@ public final class FlixLauncher {
 		properties.put(ITerminalsConnectorConstants.PROP_TITLE, name);
 		properties.put(ITerminalsConnectorConstants.PROP_SECONDARY_ID, null);
 		properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, jreExecutableFile.getAbsolutePath());
-		properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS, Stream.concat(Stream.of("-jar", flixJarFile.getAbsolutePath()), arguments.stream()).collect(Collectors.joining(" ")));
+		properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS,
+				Stream.concat(Stream.of("-jar", flixJarFile.getAbsolutePath()), arguments.stream())
+						.collect(Collectors.joining(" ")));
 		if (flixProject.getProject().getLocation() != null && flixProject.getProject().getLocation().toFile() != null) {
-			properties.put(ITerminalsConnectorConstants.PROP_PROCESS_WORKING_DIR, flixProject.getProject().getLocation().toFile().getAbsolutePath());
+			properties.put(ITerminalsConnectorConstants.PROP_PROCESS_WORKING_DIR,
+					flixProject.getProject().getLocation().toFile().getAbsolutePath());
 		}
 		return properties;
+	}
+
+	private static Done createDoneLogger(String key) {
+		return (status) -> {
+			LOG.log(new Status(status.getSeverity(), FlixConstants.PLUGIN_ID, key + ": " + status.getMessage(),
+					status.getException()));
+		};
 	}
 }
