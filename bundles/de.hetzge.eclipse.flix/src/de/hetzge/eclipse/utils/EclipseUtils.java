@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Image;
@@ -328,6 +329,18 @@ public final class EclipseUtils {
 			}
 		}
 		return false;
+	}
+
+	public static Optional<String> getActiveEditorSelectionText() {
+		return EclipseUtils.activeTextEditor().flatMap(editor -> {
+			final ISelection selection = editor.getSelectionProvider().getSelection();
+			if (selection instanceof ITextSelection) {
+				final ITextSelection textSelection = (ITextSelection) selection;
+				return Optional.ofNullable(textSelection.getText());
+			} else {
+				return Optional.empty();
+			}
+		});
 	}
 
 }

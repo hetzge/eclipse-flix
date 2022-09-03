@@ -11,6 +11,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.WorkspaceSymbolLocation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.dialogs.FilteredItemsSelectionDialog;
 import org.eclipse.ui.dialogs.SelectionDialog;
 import org.lxtk.LanguageService;
 import org.lxtk.WorkspaceSymbolProvider;
@@ -45,6 +46,9 @@ public class FlixSymbolSelectionHandler extends AbstractItemsSelectionHandler {
 
 		final WorkspaceSymbolSelectionDialog dialog = new WorkspaceSymbolSelectionDialog(shell, providers.toArray(WorkspaceSymbolProvider[]::new), true);
 		dialog.setTitle("Open symbol in workspace");
+		EclipseUtils.getActiveEditorSelectionText().ifPresent(selectionText -> {
+			dialog.setInitialPattern(selectionText, FilteredItemsSelectionDialog.FULL_SELECTION);
+		});
 		return dialog;
 	}
 
