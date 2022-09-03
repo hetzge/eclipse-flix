@@ -5,6 +5,7 @@ import java.util.Objects;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.handly.model.ElementDeltas;
 import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.IElementChangeEvent;
@@ -24,6 +25,7 @@ import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
 import de.hetzge.eclipse.flix.model.api.FlixModelManager;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.utils.FlixUtils;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -63,33 +65,40 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 				this.flix = null;
 			});
 
-			/*
-			 * Register commands ...
-			 */
-			rollback.add(this.flix.getCommandService().addCommand("flix.runMain", new FlixRunMainCommandHandler())::dispose);
-			rollback.add(this.flix.getCommandService().addCommand("flix.cmdRepl", new FlixRunReplCommandHandler())::dispose);
+			Job.create("Initialize flix tooling", monitor -> {
+				/*
+				 * Preload flix with monitor
+				 */
+				FlixUtils.loadFlixFolder(FlixConstants.FLIX_DEFAULT_VERSION, monitor);
 
-			/*
-			 * Init model and projects ...
-			 */
-			final FlixModelManager modelManager = this.flix.getModelManager();
-			final IFlixModel model = modelManager.getModel();
-			model.getFlixProjects().forEach(flixProject -> {
-				System.out.println(">>> " + flixProject);
-				this.flix.getLanguageToolingManager().connectProject(flixProject);
-			});
+				/*
+				 * Register commands ...
+				 */
+				rollback.add(this.flix.getCommandService().addCommand("flix.runMain", new FlixRunMainCommandHandler())::dispose);
+				rollback.add(this.flix.getCommandService().addCommand("flix.cmdRepl", new FlixRunReplCommandHandler())::dispose);
 
-			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-			workspace.addResourceChangeListener(this.flix.getResourceMonitor(), IResourceChangeEvent.POST_CHANGE);
-			rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getResourceMonitor()));
-			workspace.addResourceChangeListener(modelManager, IResourceChangeEvent.POST_CHANGE);
-			rollback.add(() -> workspace.removeResourceChangeListener(modelManager));
+				/*
+				 * Init model and projects ...
+				 */
+				final FlixModelManager modelManager = this.flix.getModelManager();
+				final IFlixModel model = modelManager.getModel();
+				model.getFlixProjects().forEach(flixProject -> {
+					System.out.println(">>> " + flixProject);
+					this.flix.getLanguageToolingManager().connectProject(flixProject);
+				});
 
-			final NotificationManager notificationManager = modelManager.getNotificationManager();
-			notificationManager.addElementChangeListener(this);
-			rollback.add(() -> notificationManager.removeElementChangeListener(this));
+				final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+				workspace.addResourceChangeListener(this.flix.getResourceMonitor(), IResourceChangeEvent.POST_CHANGE);
+				rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getResourceMonitor()));
+				workspace.addResourceChangeListener(modelManager, IResourceChangeEvent.POST_CHANGE);
+				rollback.add(() -> workspace.removeResourceChangeListener(modelManager));
 
-			this.rollback = rollback;
+				final NotificationManager notificationManager = modelManager.getNotificationManager();
+				notificationManager.addElementChangeListener(this);
+				rollback.add(() -> notificationManager.removeElementChangeListener(this));
+
+				this.rollback = rollback;
+			}).schedule();
 		});
 	}
 

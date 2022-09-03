@@ -6,24 +6,48 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
+import java.nio.file.Files;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.jar.JarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 
 public final class FlixUtils {
 	private FlixUtils() {
 	}
 
-	public synchronized static File loadFlixJarFile(String version) {
+	public synchronized static File loadFlixJarFile(String version, IProgressMonitor monitor) {
 		final String flixJarName = "flix." + version + ".jar";
 		final File flixJarFile = new File(flixJarName);
 		if (!flixJarFile.exists()) {
 			System.out.println("Download " + flixJarName);
-			try (FileOutputStream outputStream = new FileOutputStream(flixJarFile)) {
-				URI.create("https://github.com/flix/flix/releases/download/" + version + "/flix.jar").toURL().openStream().transferTo(outputStream);
+			try (final FileOutputStream outputStream = new FileOutputStream(flixJarFile)) {
+				final URL url = URI.create("https://github.com/flix/flix/releases/download/" + version + "/flix.jar").toURL();
+				final HttpURLConnection httpConnection = (HttpURLConnection) (url.openConnection());
+				final long completeFileSize = httpConnection.getContentLength();
+				final SubMonitor subMonitor;
+				if (monitor != null) {
+					subMonitor = SubMonitor.convert(monitor, (int) completeFileSize);
+					subMonitor.setTaskName("Download " + flixJarName);
+				} else {
+					subMonitor = null;
+				}
+				final BufferedInputStream inputStream = new BufferedInputStream(httpConnection.getInputStream());
+				int read = 0;
+				final byte[] buffer = new byte[1024];
+				while ((read = inputStream.read(buffer)) >= 0) {
+					outputStream.write(buffer, 0, read);
+					if (subMonitor != null) {
+						subMonitor.worked(read);
+					}
+				}
+				httpConnection.getInputStream().transferTo(outputStream);
 			} catch (final IOException exception) {
 				throw new RuntimeException(exception);
 			}
@@ -31,12 +55,12 @@ public final class FlixUtils {
 		return flixJarFile;
 	}
 
-	public synchronized static File loadFlixFolder(String version) {
+	public synchronized static File loadFlixFolder(String version, IProgressMonitor monitor) {
 		final File flixSourceFolder = new File("flix." + version);
-		final File flixJarFile = loadFlixJarFile(version);
+		final File flixJarFile = loadFlixJarFile(version, monitor);
 		if (!flixSourceFolder.exists()) {
 			try {
-				extract(flixJarFile, flixSourceFolder);
+				extract(flixJarFile, flixSourceFolder, monitor);
 			} catch (final IOException exception) {
 				throw new RuntimeException(exception);
 			}
@@ -44,16 +68,24 @@ public final class FlixUtils {
 		return flixSourceFolder;
 	}
 
-	public static void main(String[] args) throws IOException {
-		FlixUtils.extract(new File("/home/hetzge/apps/eclipsepde/flix.v0.30.0.jar"), new File("/home/hetzge/apps/eclipsepde/flix.v0.30.0"));
-	}
-
-	private static void extract(File archiveFile, File flixSourceFolder) throws IOException {
+	private static void extract(File archiveFile, File flixSourceFolder, IProgressMonitor monitor) throws IOException {
 		System.out.println("FlixUtils.extract(" + archiveFile.getAbsolutePath() + ", " + flixSourceFolder.getAbsolutePath() + ")");
 		try (ArchiveInputStream inputStream = new JarArchiveInputStream(new BufferedInputStream(new FileInputStream(archiveFile)))) {
+			SubMonitor subMonitor;
+			if (monitor != null) {
+				subMonitor = SubMonitor.convert(monitor, IProgressMonitor.UNKNOWN);
+				subMonitor.setTaskName("Extract " + archiveFile.getAbsolutePath());
+			} else {
+				subMonitor = null;
+			}
 			ArchiveEntry entry = null;
 			while ((entry = inputStream.getNextEntry()) != null) {
 				if (inputStream.canReadEntryData(entry)) {
+					if (subMonitor != null) {
+						final SubMonitor subSubMonitor = subMonitor.setWorkRemaining(100).split(1);
+						subSubMonitor.setTaskName("Extract " + entry.getName());
+						subSubMonitor.worked(1);
+					}
 					if (entry.isDirectory()) {
 						final File file = new File(flixSourceFolder, entry.getName());
 						if (!file.isDirectory() && !file.mkdirs()) {
@@ -73,6 +105,22 @@ public final class FlixUtils {
 					throw new RuntimeException("Unreadable entry: " + entry);
 				}
 			}
+		} catch (final Exception exception) {
+			// Rollback already created files
+			deleteFolder(flixSourceFolder);
+			throw exception;
 		}
+	}
+
+	private static void deleteFolder(File file) {
+		final File[] contents = file.listFiles();
+		if (contents != null) {
+			for (final File f : contents) {
+				if (!Files.isSymbolicLink(f.toPath())) {
+					deleteFolder(f);
+				}
+			}
+		}
+		file.delete();
 	}
 }

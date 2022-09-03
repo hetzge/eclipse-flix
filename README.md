@@ -36,4 +36,5 @@ Under the `de.hetzge.eclipse.flix` package the following packages can be found:
 * Fix unpack flix.jar from project
 * Progress while downloading flix
 * Paramter description in run configuration
+* Use FlixLauncher in FlixProjectWizard
 

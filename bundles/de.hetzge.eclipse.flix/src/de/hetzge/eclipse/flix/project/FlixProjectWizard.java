@@ -40,15 +40,15 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 	public boolean performFinish() {
 		System.out.println("FlixProjectWizard.performFinish()");
 
-		final FlixProjectPage page = (FlixProjectPage) getStartingPage();
-		final File jreExecutableFile = Utils.getJreExecutable();
-		final File flixJarFile = FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION);
-		final String projectName = page.getProjectName();
-		final File newProjectFolder = new File(page.getLocationPath().toFile(), projectName);
-		final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
-
 		try {
 			getContainer().run(true, true, monitor -> {
+				final FlixProjectPage page = (FlixProjectPage) getStartingPage();
+				final File jreExecutableFile = Utils.getJreExecutable();
+				final File flixJarFile = FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION, monitor);
+				final String projectName = page.getProjectName();
+				final File newProjectFolder = new File(page.getLocationPath().toFile(), projectName);
+				final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
+
 				newProjectFolder.mkdirs();
 				final ProcessBuilder processBuilder = new ProcessBuilder(jreExecutableFile.getAbsolutePath(), "-jar", flixJarFile.getAbsolutePath(), "init");
 				processBuilder.directory(newProjectFolder);

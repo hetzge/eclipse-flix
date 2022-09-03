@@ -67,7 +67,7 @@ public class FlixProject extends Element implements IFlixProject {
 		if (flixJarInProjectFile.exists()) {
 			return flixJarInProjectFile.getRawLocation().toFile();
 		} else {
-			return FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION);
+			return FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION, null);
 		}
 	}
 
