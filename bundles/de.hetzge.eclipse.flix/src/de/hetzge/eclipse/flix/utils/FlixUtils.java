@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.Files;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
@@ -17,6 +16,8 @@ import org.apache.commons.compress.archivers.jar.JarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
+
+import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixUtils {
 	private FlixUtils() {
@@ -107,20 +108,9 @@ public final class FlixUtils {
 			}
 		} catch (final Exception exception) {
 			// Rollback already created files
-			deleteFolder(flixSourceFolder);
+			Utils.deleteFolder(flixSourceFolder);
 			throw exception;
 		}
 	}
 
-	private static void deleteFolder(File file) {
-		final File[] contents = file.listFiles();
-		if (contents != null) {
-			for (final File f : contents) {
-				if (!Files.isSymbolicLink(f.toPath())) {
-					deleteFolder(f);
-				}
-			}
-		}
-		file.delete();
-	}
 }

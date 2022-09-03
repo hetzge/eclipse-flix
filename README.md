@@ -37,4 +37,5 @@ Under the `de.hetzge.eclipse.flix` package the following packages can be found:
 * Progress while downloading flix
 * Paramter description in run configuration
 * Use FlixLauncher in FlixProjectWizard
+* Cmd + , / .
 

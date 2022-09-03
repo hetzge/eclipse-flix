@@ -1,7 +1,6 @@
 package de.hetzge.eclipse.flix.project;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -16,7 +15,7 @@ import org.eclipse.ui.ide.undo.CreateProjectOperation;
 import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
 
 import de.hetzge.eclipse.flix.FlixConstants;
-import de.hetzge.eclipse.flix.utils.FlixUtils;
+import de.hetzge.eclipse.flix.launch.FlixLauncher;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
@@ -41,30 +40,23 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 		System.out.println("FlixProjectWizard.performFinish()");
 
 		try {
+			final FlixProjectPage page = (FlixProjectPage) getStartingPage();
+			final String projectName = page.getProjectName();
+			final File newProjectFolder = new File(page.getLocationPath().toFile(), projectName);
 			getContainer().run(true, true, monitor -> {
-				final FlixProjectPage page = (FlixProjectPage) getStartingPage();
-				final File jreExecutableFile = Utils.getJreExecutable();
-				final File flixJarFile = FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION, monitor);
-				final String projectName = page.getProjectName();
-				final File newProjectFolder = new File(page.getLocationPath().toFile(), projectName);
-				final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
-
-				newProjectFolder.mkdirs();
-				final ProcessBuilder processBuilder = new ProcessBuilder(jreExecutableFile.getAbsolutePath(), "-jar", flixJarFile.getAbsolutePath(), "init");
-				processBuilder.directory(newProjectFolder);
 				try {
-					final Process process = processBuilder.start();
-					process.waitFor();
-				} catch (final IOException exception) {
-					throw new RuntimeException(exception);
-				}
+					final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
 
-				try {
+					newProjectFolder.mkdirs();
+					FlixLauncher.launchInit(newProjectFolder);
+
 					EclipseUtils.addNature(description, FlixProjectNature.ID);
 					EclipseUtils.addBuilder(description, FlixConstants.FLIX_BUILDER_ID);
 					final CreateProjectOperation projectOperation = new CreateProjectOperation(description, "Create flix project");
 					projectOperation.execute(monitor, WorkspaceUndoUtil.getUIInfoAdapter(getShell()));
 				} catch (final ExecutionException | CoreException exception) {
+					// Rollback already created files
+					Utils.deleteFolder(newProjectFolder);
 					throw new InvocationTargetException(exception);
 				}
 			});

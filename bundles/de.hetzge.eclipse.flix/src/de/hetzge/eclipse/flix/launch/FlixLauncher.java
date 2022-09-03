@@ -1,6 +1,7 @@
 package de.hetzge.eclipse.flix.launch;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.eclipse.tm.terminal.view.core.interfaces.constants.ITerminalsConnecto
 
 import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixLauncher {
@@ -62,6 +64,23 @@ public final class FlixLauncher {
 		try {
 			latch.await(10L, TimeUnit.SECONDS);
 		} catch (final InterruptedException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	public static void launchInit(File folder) {
+		final File jreExecutableFile = Utils.getJreExecutable();
+		final File flixJarFile = FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION, null);
+		final ProcessBuilder processBuilder = new ProcessBuilder(jreExecutableFile.getAbsolutePath(), "-jar", flixJarFile.getAbsolutePath(), "init");
+		processBuilder.directory(folder);
+		try {
+			final Process process = processBuilder.start();
+			final Map<String, Object> properties = createTerminalInitProperties(folder);
+			properties.remove(ITerminalsConnectorConstants.PROP_PROCESS_PATH);
+			properties.put(ITerminalsConnectorConstants.PROP_PROCESS_OBJ, process);
+			launch(properties);
+			process.waitFor();
+		} catch (final IOException | InterruptedException exception) {
 			throw new RuntimeException(exception);
 		}
 	}
@@ -133,18 +152,24 @@ public final class FlixLauncher {
 		return properties;
 	}
 
-	private static Map<String, Object> createBasicTerminalLaunchProperties(String name, IFlixProject flixProject, List<String> arguments) {
-		final File jreExecutableFile = Utils.getJreExecutable();
-		final File flixJarFile = flixProject.getFlixCompilerJarFile();
+	private static Map<String, Object> createTerminalInitProperties(File folder) {
+		final String name = "Init " + folder.getName();
+		return createBasicTerminalLaunchProperties(name, folder, FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION, null), List.of("init"));
+	}
 
+	private static Map<String, Object> createBasicTerminalLaunchProperties(String name, IFlixProject flixProject, List<String> arguments) {
+		return createBasicTerminalLaunchProperties(name, flixProject.getProject().getLocation() != null ? flixProject.getProject().getLocation().toFile() : null, flixProject.getFlixCompilerJarFile(), arguments);
+	}
+
+	private static Map<String, Object> createBasicTerminalLaunchProperties(String name, File folder, File flixJarFile, List<String> arguments) {
 		final Map<String, Object> properties = new HashMap<>();
 		properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID, "de.hetzge.eclipse.flix.processLauncherDelegate");
 		properties.put(ITerminalsConnectorConstants.PROP_TITLE, name);
 		properties.put(ITerminalsConnectorConstants.PROP_SECONDARY_ID, null);
-		properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, jreExecutableFile.getAbsolutePath());
+		properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, Utils.getJreExecutable().getAbsolutePath());
 		properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS, Stream.concat(Stream.of("-jar", flixJarFile.getAbsolutePath()), arguments.stream()).collect(Collectors.joining(" ")));
-		if (flixProject.getProject().getLocation() != null && flixProject.getProject().getLocation().toFile() != null) {
-			properties.put(ITerminalsConnectorConstants.PROP_PROCESS_WORKING_DIR, flixProject.getProject().getLocation().toFile().getAbsolutePath());
+		if (folder != null) {
+			properties.put(ITerminalsConnectorConstants.PROP_PROCESS_WORKING_DIR, folder.getAbsolutePath());
 		}
 		return properties;
 	}

@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -70,6 +71,18 @@ public final class Utils {
 		} catch (final IOException exception) {
 			throw new RuntimeException(exception);
 		}
+	}
+
+	public static void deleteFolder(File file) {
+		final File[] contents = file.listFiles();
+		if (contents != null) {
+			for (final File f : contents) {
+				if (!Files.isSymbolicLink(f.toPath())) {
+					deleteFolder(f);
+				}
+			}
+		}
+		file.delete();
 	}
 
 }
