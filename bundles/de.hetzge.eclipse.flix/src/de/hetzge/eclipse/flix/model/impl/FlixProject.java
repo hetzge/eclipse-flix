@@ -16,6 +16,7 @@ import org.eclipse.handly.model.impl.support.IModelManager;
 
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixConstants;
+import de.hetzge.eclipse.flix.model.api.FlixVersion;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
@@ -57,6 +58,11 @@ public class FlixProject extends Element implements IFlixProject {
 	}
 
 	@Override
+	public FlixVersion getFlixVersion() {
+		return FlixConstants.FLIX_DEFAULT_VERSION;
+	}
+
+	@Override
 	public boolean isActive() {
 		return isActiveFlixProject(this.project);
 	}
@@ -67,7 +73,17 @@ public class FlixProject extends Element implements IFlixProject {
 		if (flixJarInProjectFile.exists()) {
 			return flixJarInProjectFile.getRawLocation().toFile();
 		} else {
-			return FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION, null);
+			return FlixUtils.loadFlixJarFile(getFlixVersion(), null);
+		}
+	}
+
+	@Override
+	public File getFlixFolder() {
+		final IFile flixJarInProjectFile = this.project.getFile("flix.jar");
+		if (flixJarInProjectFile.exists()) {
+			throw new UnsupportedOperationException("TODO");
+		} else {
+			return FlixUtils.loadFlixFolder(getFlixVersion(), null);
 		}
 	}
 

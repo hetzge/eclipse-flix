@@ -48,7 +48,7 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 					final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
 
 					newProjectFolder.mkdirs();
-					FlixLauncher.launchInit(newProjectFolder);
+					FlixLauncher.launchInit(newProjectFolder, FlixConstants.FLIX_DEFAULT_VERSION);
 
 					EclipseUtils.addNature(description, FlixProjectNature.ID);
 					EclipseUtils.addBuilder(description, FlixConstants.FLIX_BUILDER_ID);

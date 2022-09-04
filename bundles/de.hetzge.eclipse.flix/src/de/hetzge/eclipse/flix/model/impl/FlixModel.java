@@ -22,6 +22,7 @@ import org.eclipse.handly.model.impl.support.IElementImplSupport;
 import org.eclipse.handly.model.impl.support.IModelManager;
 
 import de.hetzge.eclipse.flix.Flix;
+import de.hetzge.eclipse.flix.model.api.FlixVersion;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 
@@ -78,6 +79,14 @@ public class FlixModel extends Element implements IFlixModel, IModelImpl {
 		final Body body = new Body();
 		body.setChildren(flixProjects.toArray(Elements.EMPTY_ARRAY));
 		context.get(IElementImplSupport.NEW_ELEMENTS).put(this, body);
+	}
+
+	@Override
+	public List<FlixVersion> getUsedFlixVersions() {
+		return getFlixProjects().stream() //
+				.map(flixProject -> flixProject.getFlixVersion()) //
+				.distinct() //
+				.collect(Collectors.toList());
 	}
 
 	@Override

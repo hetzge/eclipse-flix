@@ -22,6 +22,7 @@ import org.eclipse.tm.terminal.view.core.interfaces.ITerminalServiceOutputStream
 import org.eclipse.tm.terminal.view.core.interfaces.constants.ITerminalsConnectorConstants;
 
 import de.hetzge.eclipse.flix.FlixConstants;
+import de.hetzge.eclipse.flix.model.api.FlixVersion;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.Utils;
@@ -68,9 +69,9 @@ public final class FlixLauncher {
 		}
 	}
 
-	public static void launchInit(File folder) {
+	public static void launchInit(File folder, FlixVersion flixVersion) {
 		final File jreExecutableFile = Utils.getJreExecutable();
-		final File flixJarFile = FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION, null);
+		final File flixJarFile = FlixUtils.loadFlixJarFile(flixVersion, null);
 		final ProcessBuilder processBuilder = new ProcessBuilder(jreExecutableFile.getAbsolutePath(), "-jar", flixJarFile.getAbsolutePath(), "init");
 		processBuilder.directory(folder);
 		try {

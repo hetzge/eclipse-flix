@@ -17,19 +17,20 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
+import de.hetzge.eclipse.flix.model.api.FlixVersion;
 import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixUtils {
 	private FlixUtils() {
 	}
 
-	public synchronized static File loadFlixJarFile(String version, IProgressMonitor monitor) {
-		final String flixJarName = "flix." + version + ".jar";
+	public synchronized static File loadFlixJarFile(FlixVersion version, IProgressMonitor monitor) {
+		final String flixJarName = "flix." + version.getKey() + ".jar";
 		final File flixJarFile = new File(flixJarName);
 		if (!flixJarFile.exists()) {
 			System.out.println("Download " + flixJarName);
 			try (final FileOutputStream outputStream = new FileOutputStream(flixJarFile)) {
-				final URL url = URI.create("https://github.com/flix/flix/releases/download/" + version + "/flix.jar").toURL();
+				final URL url = URI.create("https://github.com/flix/flix/releases/download/" + version.getKey() + "/flix.jar").toURL();
 				final HttpURLConnection httpConnection = (HttpURLConnection) (url.openConnection());
 				final long completeFileSize = httpConnection.getContentLength();
 				final SubMonitor subMonitor;
@@ -56,7 +57,7 @@ public final class FlixUtils {
 		return flixJarFile;
 	}
 
-	public synchronized static File loadFlixFolder(String version, IProgressMonitor monitor) {
+	public synchronized static File loadFlixFolder(FlixVersion version, IProgressMonitor monitor) {
 		final File flixSourceFolder = new File("flix." + version);
 		final File flixJarFile = loadFlixJarFile(version, monitor);
 		if (!flixSourceFolder.exists()) {

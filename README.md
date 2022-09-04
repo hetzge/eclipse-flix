@@ -26,6 +26,7 @@ Under the `de.hetzge.eclipse.flix` package the following packages can be found:
 * **model**: The [Eclipse Handly](https://projects.eclipse.org/projects/technology.handly) language model
 * **project**: Extends Eclipse with functions to manage Flix projects (create projects and files)
 * **utils**: Collection of useful functions
+* **compiler**: Provide client to interact with the Flix compiler
   
 ## Ideas and TODOs
 
@@ -36,6 +37,6 @@ Under the `de.hetzge.eclipse.flix` package the following packages can be found:
 * Fix unpack flix.jar from project
 * Progress while downloading flix
 * Paramter description in run configuration
-* Use FlixLauncher in FlixProjectWizard
 * Cmd + , / .
+* Different icons for src/lib/build/test
 

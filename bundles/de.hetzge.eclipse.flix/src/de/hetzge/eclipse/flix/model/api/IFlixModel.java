@@ -11,6 +11,8 @@ import org.eclipse.handly.model.IModel;
 
 public interface IFlixModel extends IElementExtension, IModel {
 
+	List<FlixVersion> getUsedFlixVersions();
+
 	List<IFlixProject> getFlixProjects();
 
 	Optional<IFlixProject> getFlixProject(IProject project);

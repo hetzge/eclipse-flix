@@ -26,6 +26,7 @@ import de.hetzge.eclipse.flix.model.api.FlixModelManager;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
+import de.hetzge.eclipse.utils.Utils;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -140,7 +141,8 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 	@Override
 	protected void initializeImageRegistry(ImageRegistry reg) {
 		super.initializeImageRegistry(reg);
-		reg.put(FlixConstants.ICON_IMAGE_KEY, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "assets/icons/icon.png"));
+		reg.put(FlixConstants.FLIX_ICON_IMAGE_KEY, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "assets/icons/icon.png"));
+		reg.put(FlixConstants.FOLDER_ICON_IMAGE_KEY, ImageDescriptor.createFromURL(Utils.createUrl("platform:/plugin/org.eclipse.ui.ide/icons/full/obj16/folder.png")));
 	}
 
 	public static Image getImage(String symbolicName) {

@@ -166,7 +166,7 @@ public final class EclipseUtils {
 		}
 
 		// no console found, so create a new one
-		final MessageConsole newConsole = new MessageConsole(name, "de.hetzge.eclipse.flix.consoleType", FlixActivator.getImageDescriptor(FlixConstants.ICON_IMAGE_KEY), true);
+		final MessageConsole newConsole = new MessageConsole(name, "de.hetzge.eclipse.flix.consoleType", FlixActivator.getImageDescriptor(FlixConstants.FLIX_ICON_IMAGE_KEY), true);
 		consoleManager.addConsoles(new IConsole[] { newConsole });
 		return newConsole;
 	}

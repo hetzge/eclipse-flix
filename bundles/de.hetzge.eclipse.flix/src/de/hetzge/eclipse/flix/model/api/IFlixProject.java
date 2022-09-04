@@ -13,9 +13,13 @@ public interface IFlixProject {
 
 	IProject getProject();
 
+	FlixVersion getFlixVersion();
+
 	boolean isActive();
 
 	File getFlixCompilerJarFile();
+
+	File getFlixFolder();
 
 	List<IFile> getFlixSourceFiles();
 

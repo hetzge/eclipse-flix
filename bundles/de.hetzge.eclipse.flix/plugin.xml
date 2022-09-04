@@ -124,7 +124,7 @@
 		<menuContribution locationURI="popup:#FlixEditorContext?after=group.find">
 			<command commandId="de.hetzge.eclipse.flix.editor.findReferences" style="push"></command>
 		</menuContribution>
-		<menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+		<menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions"><!-- https://blogs.itemis.com/auf-einen-blick-eclipse-actions-f%C3%BCr-project-und-package-explorer -->
 			<menu icon="assets/icons/icon.png" label="Flix">
 				<command commandId="de.hetzge.eclipse.flix.reconnectLanguageTooling" icon="assets/icons/icon.png" label="Reconnect Flix language tooling" style="push" tooltip="Reconnect Flix language tooling">
 					<visibleWhen checkEnabled="false">
@@ -174,4 +174,40 @@
            </enabledWhen>
       </codeMiningProvider>
    </extension>
+    <extension
+          point="org.eclipse.ui.navigator.navigatorContent">
+       <navigatorContent
+             activeByDefault="true"
+             contentProvider="de.hetzge.eclipse.flix.FlixStandardLibraryTreeContentProvider"
+             icon="assets/icons/icon.png"
+             id="de.hetzge.eclipse.flix.standardLibraryNavigatorContent"
+             labelProvider="de.hetzge.eclipse.flix.FlixStandardLibraryTreeLabelProvider"
+             name="Flix Standard Library"
+             priority="lowest">
+          <enablement>
+          	<instanceof
+                 value="org.eclipse.core.resources.IWorkspaceRoot">
+          	</instanceof>
+<!--             <adapt type="org.eclipse.core.resources.IWorkspace">-->
+<!--			 	<and>-->
+<!--			 		<test property="org.eclipse.core.resources.projectNature" value="de.hetzge.eclipse.flix.nature"></test>-->
+<!--			 	</and>-->
+<!--			 </adapt>-->
+          </enablement>
+          <actionProvider
+                class="de.hetzge.eclipse.flix.CommonActionProvider6">
+          </actionProvider>
+       </navigatorContent>
+    </extension>
+    <extension
+          point="org.eclipse.ui.navigator.viewer">
+       <viewerContentBinding
+             viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+          <includes>
+             <contentExtension
+                   pattern="de.hetzge.eclipse.flix.standardLibraryNavigatorContent">
+             </contentExtension>
+          </includes>
+       </viewerContentBinding>
+    </extension>
 </plugin>

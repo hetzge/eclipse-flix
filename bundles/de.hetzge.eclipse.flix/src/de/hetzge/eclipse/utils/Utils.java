@@ -3,8 +3,10 @@ package de.hetzge.eclipse.utils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Base64;
@@ -83,6 +85,14 @@ public final class Utils {
 			}
 		}
 		file.delete();
+	}
+
+	public static URL createUrl(String value) {
+		try {
+			return new URL(value);
+		} catch (final MalformedURLException exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 
 }
