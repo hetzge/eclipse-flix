@@ -58,7 +58,7 @@ public final class FlixUtils {
 	}
 
 	public synchronized static File loadFlixFolder(FlixVersion version, IProgressMonitor monitor) {
-		final File flixSourceFolder = new File("flix." + version);
+		final File flixSourceFolder = new File("flix." + version.getKey());
 		final File flixJarFile = loadFlixJarFile(version, monitor);
 		if (!flixSourceFolder.exists()) {
 			try {

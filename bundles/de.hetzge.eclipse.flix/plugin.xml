@@ -194,10 +194,16 @@
 <!--			 	</and>-->
 <!--			 </adapt>-->
           </enablement>
-          <actionProvider
-                class="de.hetzge.eclipse.flix.CommonActionProvider6">
-          </actionProvider>
        </navigatorContent>
+       <actionProvider
+             class="de.hetzge.eclipse.flix.CommonActionProvider6"
+             id="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">
+          <enablement>
+             <instanceof
+                   value="java.io.File">
+             </instanceof>
+          </enablement>
+       </actionProvider>
     </extension>
     <extension
           point="org.eclipse.ui.navigator.viewer">
@@ -209,5 +215,21 @@
              </contentExtension>
           </includes>
        </viewerContentBinding>
+       <viewerActionBinding
+             viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+          <includes>
+             <actionExtension
+                   pattern="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">
+             </actionExtension>
+          </includes>
+       </viewerActionBinding>
+    </extension>
+    <extension
+          point="org.eclipse.ui.navigator.linkHelper">
+       <linkHelper
+             class="de.hetzge.eclipse.flix.LinkHelper1"
+             id="de.hetzge.eclipse.flix.linkHelper1">
+          <editorInputEnablement></editorInputEnablement>
+       </linkHelper>
     </extension>
 </plugin>
