@@ -3,7 +3,6 @@ package de.hetzge.eclipse.flix.explorer;
 import java.io.File;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
@@ -20,13 +19,6 @@ public class FlixStandardLibraryTreeLinkHelper implements ILinkHelper {
 			// TODO what if file is not a standard library file ?!
 			final FileStoreEditorInput fileStoreEditorInput = (FileStoreEditorInput) anInput;
 			final FlixStandardLibraryFile standardLibraryFile = new FlixStandardLibraryFile(new File(fileStoreEditorInput.getURI()));
-			System.out.println(standardLibraryFile.getTreePath());
-
-			final TreePath treePath = standardLibraryFile.getTreePath();
-			for (int i = 0; i < treePath.getSegmentCount(); i++) {
-				System.out.println("> " + treePath.getSegment(i));
-
-			}
 			return new TreeSelection(standardLibraryFile.getTreePath());
 		}
 

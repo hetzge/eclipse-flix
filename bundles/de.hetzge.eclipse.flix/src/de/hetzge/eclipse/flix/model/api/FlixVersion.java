@@ -6,7 +6,8 @@ import java.util.Objects;
 public final class FlixVersion {
 
 	public final static FlixVersion VERSION_0_30_0 = new FlixVersion("v0.30.0");
-	public final static List<FlixVersion> VERSIONS = List.of(VERSION_0_30_0);
+	public final static FlixVersion VERSION_0_31_0 = new FlixVersion("v0.31.0");
+	public final static List<FlixVersion> VERSIONS = List.of(VERSION_0_30_0, VERSION_0_31_0);
 
 	private final String key;
 

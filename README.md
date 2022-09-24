@@ -27,6 +27,7 @@ Under the `de.hetzge.eclipse.flix` package the following packages can be found:
 * **project**: Extends Eclipse with functions to manage Flix projects (create projects and files)
 * **utils**: Collection of useful functions
 * **compiler**: Provide client to interact with the Flix compiler
+* **explorer**: Extensions to the Eclipse "Project Explorer"
   
 ## Ideas and TODOs
 

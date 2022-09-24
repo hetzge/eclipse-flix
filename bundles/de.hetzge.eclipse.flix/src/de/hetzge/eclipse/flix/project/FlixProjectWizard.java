@@ -52,6 +52,7 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 
 					EclipseUtils.addNature(description, FlixProjectNature.ID);
 					EclipseUtils.addBuilder(description, FlixConstants.FLIX_BUILDER_ID);
+
 					final CreateProjectOperation projectOperation = new CreateProjectOperation(description, "Create flix project");
 					projectOperation.execute(monitor, WorkspaceUndoUtil.getUIInfoAdapter(getShell()));
 				} catch (final ExecutionException | CoreException exception) {

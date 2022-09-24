@@ -15,13 +15,7 @@
 	<!--      </initializer>-->
 	<!--   </extension>-->
 	<extension point="org.eclipse.ui.editors">
-		<editor
-        class="de.hetzge.eclipse.flix.editor.FlixEditor"
-        contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
-        default="false"
-        icon="assets/icons/icon.png"
-        id="de.hetzge.eclipse.flix.editor"
-        name="Flix Editor">
+		<editor class="de.hetzge.eclipse.flix.editor.FlixEditor" contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor" default="false" icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix.editor" name="Flix Editor">
 			<contentTypeBinding contentTypeId="de.hetzge.eclipse.flix"></contentTypeBinding>
 		</editor>
 	</extension>
@@ -130,7 +124,8 @@
 		<menuContribution locationURI="popup:#FlixEditorContext?after=group.find">
 			<command commandId="de.hetzge.eclipse.flix.editor.findReferences" style="push"></command>
 		</menuContribution>
-		<menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions"><!-- https://blogs.itemis.com/auf-einen-blick-eclipse-actions-f%C3%BCr-project-und-package-explorer -->
+		<menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+			<!-- https://blogs.itemis.com/auf-einen-blick-eclipse-actions-f%C3%BCr-project-und-package-explorer -->
 			<menu icon="assets/icons/icon.png" label="Flix">
 				<command commandId="de.hetzge.eclipse.flix.reconnectLanguageTooling" icon="assets/icons/icon.png" label="Reconnect Flix language tooling" style="push" tooltip="Reconnect Flix language tooling">
 					<visibleWhen checkEnabled="false">
@@ -165,85 +160,67 @@
 			<run class="de.hetzge.eclipse.flix.FlixProjectBuilder"></run>
 		</builder>
 	</extension>
-	   <extension
-      point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
-      <codeMiningProvider
-           class="org.lxtk.lx4e.ui.codeaction.CodeMiningProvider"
-           id="de.hetzge.eclipse.flix.editor"
-           label="Flix Code Mining">
-           <enabledWhen>
-           	  <with variable="editorInput">
-                 <adapt type="org.eclipse.core.resources.IFile">
-                   <test property="org.eclipse.core.resources.contentTypeId" value="de.hetzge.eclipse.flix" />
-                 </adapt>
-           	  </with>
-           </enabledWhen>
-      </codeMiningProvider>
-   </extension>
-    <extension
-          point="org.eclipse.ui.navigator.navigatorContent">
-       <navigatorContent
-             activeByDefault="true"
-             contentProvider="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeContentProvider"
-             icon="assets/icons/icon.png"
-             id="de.hetzge.eclipse.flix.standardLibraryNavigatorContent"
-             labelProvider="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeLabelProvider"
-             name="Flix Standard Library"
-             priority="lowest">
-          <enablement>
-          	<instanceof
-                 value="org.eclipse.core.resources.IWorkspaceRoot">
-          	</instanceof>
-<!--             <adapt type="org.eclipse.core.resources.IWorkspace">-->
-<!--			 	<and>-->
-<!--			 		<test property="org.eclipse.core.resources.projectNature" value="de.hetzge.eclipse.flix.nature"></test>-->
-<!--			 	</and>-->
-<!--			 </adapt>-->
-          </enablement>
-       </navigatorContent>
-       <actionProvider
-             class="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeActionProvider"
-             id="de.hetzge.eclipse.flix.explorerTreeActionProvider">
-          <enablement>
-             <instanceof
-                   value="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryFile">
-             </instanceof>
-          </enablement>
-       </actionProvider>
-    </extension>
-    <extension
-          point="org.eclipse.ui.navigator.viewer">
-       <viewerContentBinding
-             viewerId="org.eclipse.ui.navigator.ProjectExplorer">
-          <includes>
-             <contentExtension
-                   pattern="de.hetzge.eclipse.flix.standardLibraryNavigatorContent">
-             </contentExtension>
-             <contentExtension
-                   pattern="de.hetzge.eclipse.flix.linkHelper1">
-             </contentExtension>
-          </includes>
-       </viewerContentBinding>
-       <viewerActionBinding
-             viewerId="org.eclipse.ui.navigator.ProjectExplorer">
-          <includes>
-             <actionExtension
-                   pattern="de.hetzge.eclipse.flix.explorerTreeActionProvider">
-             </actionExtension>
-          </includes>
-       </viewerActionBinding>
-    </extension>
-    <extension
-          point="org.eclipse.ui.navigator.linkHelper">
-       <linkHelper
-             class="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeLinkHelper"
-             id="de.hetzge.eclipse.flix.linkHelper1">
-          <editorInputEnablement>
-             <instanceof value="org.eclipse.ui.ide.FileStoreEditorInput"></instanceof>
-          </editorInputEnablement>
-          <selectionEnablement>
-             <instanceof value="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryFile"></instanceof>
-          </selectionEnablement>
-       </linkHelper>
-    </extension>
+	<extension point="org.eclipse.ui.workbench.texteditor.codeMiningProviders">
+		<codeMiningProvider class="org.lxtk.lx4e.ui.codeaction.CodeMiningProvider" id="de.hetzge.eclipse.flix.editor" label="Flix Code Mining">
+			<enabledWhen>
+				<with variable="editorInput">
+					<adapt type="org.eclipse.core.resources.IFile">
+						<test property="org.eclipse.core.resources.contentTypeId" value="de.hetzge.eclipse.flix" />
+					</adapt>
+				</with>
+			</enabledWhen>
+		</codeMiningProvider>
+	</extension>
+	<extension point="org.eclipse.ui.navigator.navigatorContent">
+		<navigatorContent activeByDefault="true" contentProvider="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeContentProvider" icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix.standardLibraryNavigatorContent" labelProvider="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeLabelProvider" name="Flix Standard Library" priority="lowest">
+			<enablement>
+				<instanceof value="org.eclipse.core.resources.IWorkspaceRoot"></instanceof>
+				<!--             <adapt type="org.eclipse.core.resources.IWorkspace">-->
+				<!--			 	<and>-->
+				<!--			 		<test property="org.eclipse.core.resources.projectNature" value="de.hetzge.eclipse.flix.nature"></test>-->
+				<!--			 	</and>-->
+				<!--			 </adapt>-->
+			</enablement>
+		</navigatorContent>
+		<actionProvider class="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeActionProvider" id="de.hetzge.eclipse.flix.explorerTreeActionProvider">
+			<enablement>
+				<instanceof value="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryFile"></instanceof>
+			</enablement>
+		</actionProvider>
+	</extension>
+	<extension point="org.eclipse.ui.navigator.viewer">
+		<viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+			<includes>
+				<contentExtension pattern="de.hetzge.eclipse.flix.standardLibraryNavigatorContent"></contentExtension>
+				<contentExtension pattern="de.hetzge.eclipse.flix.linkHelper1"></contentExtension>
+			</includes>
+		</viewerContentBinding>
+		<viewerActionBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+			<includes>
+				<actionExtension pattern="de.hetzge.eclipse.flix.explorerTreeActionProvider"></actionExtension>
+			</includes>
+		</viewerActionBinding>
+	</extension>
+	<extension point="org.eclipse.ui.navigator.linkHelper">
+		<linkHelper class="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeLinkHelper" id="de.hetzge.eclipse.flix.linkHelper1">
+			<editorInputEnablement>
+				<instanceof value="org.eclipse.ui.ide.FileStoreEditorInput"></instanceof>
+			</editorInputEnablement>
+			<selectionEnablement>
+				<instanceof value="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryFile"></instanceof>
+			</selectionEnablement>
+		</linkHelper>
+	</extension>
+ <extension
+       point="org.eclipse.ui.propertyPages">
+    <page
+          class="de.hetzge.eclipse.flix.project.FlixProjectPropertyPage"
+          icon="assets/icons/icon.png"
+          id="de.hetzge.eclipse.flix.flixProjectPropertyPage"
+          name="Flix Project">
+       <enabledWhen>
+       	 <test property="org.eclipse.core.resources.projectNature" value="de.hetzge.eclipse.flix.nature"></test>
+       </enabledWhen>
+    </page>
+ </extension>
 </plugin>

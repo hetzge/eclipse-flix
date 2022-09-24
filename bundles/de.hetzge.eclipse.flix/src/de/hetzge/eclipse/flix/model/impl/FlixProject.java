@@ -19,16 +19,19 @@ import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.model.api.FlixVersion;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
+import de.hetzge.eclipse.flix.project.FlixProjectPreferences;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
 
 public class FlixProject extends Element implements IFlixProject {
 
 	private final IProject project;
+	private final FlixProjectPreferences projectPreferences;
 
 	public FlixProject(FlixModel parent, IProject project) {
 		super(parent, project.getName());
 		this.project = project;
+		this.projectPreferences = new FlixProjectPreferences(project);
 	}
 
 	@Override
@@ -59,7 +62,7 @@ public class FlixProject extends Element implements IFlixProject {
 
 	@Override
 	public FlixVersion getFlixVersion() {
-		return FlixConstants.FLIX_DEFAULT_VERSION;
+		return this.projectPreferences.getFlixVersion();
 	}
 
 	@Override
@@ -81,7 +84,7 @@ public class FlixProject extends Element implements IFlixProject {
 	public File getFlixFolder() {
 		final IFile flixJarInProjectFile = this.project.getFile("flix.jar");
 		if (flixJarInProjectFile.exists()) {
-			throw new UnsupportedOperationException("TODO");
+			return FlixUtils.loadFlixFolder(FlixConstants.FLIX_DEFAULT_VERSION, null); // TODO unpack flix jar from project
 		} else {
 			return FlixUtils.loadFlixFolder(getFlixVersion(), null);
 		}
