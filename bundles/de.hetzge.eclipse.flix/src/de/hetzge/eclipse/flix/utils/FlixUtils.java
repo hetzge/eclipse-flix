@@ -102,6 +102,7 @@ public final class FlixUtils {
 						try (OutputStream outputStream = new FileOutputStream(file)) {
 							IOUtils.copy(inputStream, outputStream);
 						}
+						file.setReadOnly();
 					}
 				} else {
 					throw new RuntimeException("Unreadable entry: " + entry);

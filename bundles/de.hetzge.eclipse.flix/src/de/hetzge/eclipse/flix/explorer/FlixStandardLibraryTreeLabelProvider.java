@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix;
+package de.hetzge.eclipse.flix.explorer;
 
 import java.io.File;
 
@@ -6,7 +6,8 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
-import de.hetzge.eclipse.flix.FlixStandardLibraryTreeContentProvider.FlixStandardLibraryRoot;
+import de.hetzge.eclipse.flix.FlixActivator;
+import de.hetzge.eclipse.flix.FlixConstants;
 
 public class FlixStandardLibraryTreeLabelProvider implements ILabelProvider {
 
@@ -31,8 +32,9 @@ public class FlixStandardLibraryTreeLabelProvider implements ILabelProvider {
 	public Image getImage(Object element) {
 		if (element instanceof FlixStandardLibraryRoot) {
 			return FlixActivator.getImage(FlixConstants.FLIX_ICON_IMAGE_KEY);
-		} else if (element instanceof File) {
-			final File file = (File) element;
+		} else if (element instanceof FlixStandardLibraryFile) {
+			final FlixStandardLibraryFile standardLibraryFile = (FlixStandardLibraryFile) element;
+			final File file = standardLibraryFile.getFile();
 			if (file.isDirectory()) {
 				return FlixActivator.getImage(FlixConstants.FOLDER_ICON_IMAGE_KEY);
 			} else {
@@ -48,9 +50,9 @@ public class FlixStandardLibraryTreeLabelProvider implements ILabelProvider {
 		if (element instanceof FlixStandardLibraryRoot) {
 			final FlixStandardLibraryRoot libraryRoot = (FlixStandardLibraryRoot) element;
 			return libraryRoot.getName();
-		} else if (element instanceof File) {
-			final File file = (File) element;
-			return file.getName();
+		} else if (element instanceof FlixStandardLibraryFile) {
+			final FlixStandardLibraryFile standardLibraryFile = (FlixStandardLibraryFile) element;
+			return standardLibraryFile.getName();
 		} else {
 			return "???";
 		}

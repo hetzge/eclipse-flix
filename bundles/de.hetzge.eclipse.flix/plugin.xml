@@ -15,7 +15,13 @@
 	<!--      </initializer>-->
 	<!--   </extension>-->
 	<extension point="org.eclipse.ui.editors">
-		<editor class="de.hetzge.eclipse.flix.editor.FlixEditor" contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor" default="false" icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix.editor" name="Flix Editor">
+		<editor
+        class="de.hetzge.eclipse.flix.editor.FlixEditor"
+        contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+        default="false"
+        icon="assets/icons/icon.png"
+        id="de.hetzge.eclipse.flix.editor"
+        name="Flix Editor">
 			<contentTypeBinding contentTypeId="de.hetzge.eclipse.flix"></contentTypeBinding>
 		</editor>
 	</extension>
@@ -178,10 +184,10 @@
           point="org.eclipse.ui.navigator.navigatorContent">
        <navigatorContent
              activeByDefault="true"
-             contentProvider="de.hetzge.eclipse.flix.FlixStandardLibraryTreeContentProvider"
+             contentProvider="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeContentProvider"
              icon="assets/icons/icon.png"
              id="de.hetzge.eclipse.flix.standardLibraryNavigatorContent"
-             labelProvider="de.hetzge.eclipse.flix.FlixStandardLibraryTreeLabelProvider"
+             labelProvider="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeLabelProvider"
              name="Flix Standard Library"
              priority="lowest">
           <enablement>
@@ -196,11 +202,11 @@
           </enablement>
        </navigatorContent>
        <actionProvider
-             class="de.hetzge.eclipse.flix.CommonActionProvider6"
-             id="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">
+             class="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeActionProvider"
+             id="de.hetzge.eclipse.flix.explorerTreeActionProvider">
           <enablement>
              <instanceof
-                   value="java.io.File">
+                   value="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryFile">
              </instanceof>
           </enablement>
        </actionProvider>
@@ -213,13 +219,16 @@
              <contentExtension
                    pattern="de.hetzge.eclipse.flix.standardLibraryNavigatorContent">
              </contentExtension>
+             <contentExtension
+                   pattern="de.hetzge.eclipse.flix.linkHelper1">
+             </contentExtension>
           </includes>
        </viewerContentBinding>
        <viewerActionBinding
              viewerId="org.eclipse.ui.navigator.ProjectExplorer">
           <includes>
              <actionExtension
-                   pattern="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa">
+                   pattern="de.hetzge.eclipse.flix.explorerTreeActionProvider">
              </actionExtension>
           </includes>
        </viewerActionBinding>
@@ -227,9 +236,14 @@
     <extension
           point="org.eclipse.ui.navigator.linkHelper">
        <linkHelper
-             class="de.hetzge.eclipse.flix.LinkHelper1"
+             class="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeLinkHelper"
              id="de.hetzge.eclipse.flix.linkHelper1">
-          <editorInputEnablement></editorInputEnablement>
+          <editorInputEnablement>
+             <instanceof value="org.eclipse.ui.ide.FileStoreEditorInput"></instanceof>
+          </editorInputEnablement>
+          <selectionEnablement>
+             <instanceof value="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryFile"></instanceof>
+          </selectionEnablement>
        </linkHelper>
     </extension>
 </plugin>
