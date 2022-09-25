@@ -26,7 +26,8 @@ public final class FlixUtils {
 
 	public synchronized static File loadFlixJarFile(FlixVersion version, IProgressMonitor monitor) {
 		final String flixJarName = "flix." + version.getKey() + ".jar";
-		final File flixJarFile = new File(flixJarName);
+		final File flixJarFile = new File("_flix", flixJarName);
+		flixJarFile.getParentFile().mkdirs();
 		if (!flixJarFile.exists()) {
 			System.out.println("Download " + flixJarName);
 			try (final FileOutputStream outputStream = new FileOutputStream(flixJarFile)) {
@@ -57,8 +58,12 @@ public final class FlixUtils {
 		return flixJarFile;
 	}
 
+	public synchronized static File loadFlixLibraryFolder(FlixVersion version, IProgressMonitor monitor) {
+		return new File(loadFlixFolder(version, monitor), "src/library");
+	}
+
 	public synchronized static File loadFlixFolder(FlixVersion version, IProgressMonitor monitor) {
-		final File flixSourceFolder = new File("flix." + version.getKey());
+		final File flixSourceFolder = new File("_flix/flix." + version.getKey());
 		final File flixJarFile = loadFlixJarFile(version, monitor);
 		if (!flixSourceFolder.exists()) {
 			try {

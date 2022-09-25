@@ -12,6 +12,7 @@ import java.util.Objects;
 import org.eclipse.jface.viewers.TreePath;
 
 import de.hetzge.eclipse.flix.Flix;
+import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.model.api.FlixVersion;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 
@@ -43,9 +44,12 @@ public final class FlixStandardLibraryFile {
 	public Object getParent() {
 		try {
 			final Path parentPath = this.file.getParentFile().toPath();
+			if (!Files.exists(parentPath)) {
+				return null;
+			}
 			final List<FlixVersion> usedFlixVersions = Flix.get().getModel().getUsedFlixVersions();
 			for (final FlixVersion version : usedFlixVersions) {
-				if (Files.isSameFile(new File(FlixUtils.loadFlixFolder(version, null), "src/library").toPath(), parentPath)) {
+				if (Files.isSameFile(FlixUtils.loadFlixLibraryFolder(version, null).toPath(), parentPath)) {
 					return new FlixStandardLibraryRoot(version);
 				}
 			}
@@ -66,6 +70,8 @@ public final class FlixStandardLibraryFile {
 			}
 		} else if (parent instanceof FlixStandardLibraryRoot) {
 			segments.add(parent);
+		} else if (parent == null) {
+			FlixLogger.logInfo("Skip standard library entry that no longer exists.");
 		} else {
 			throw new IllegalStateException("Unknown flix standard library tree element: " + parent);
 		}

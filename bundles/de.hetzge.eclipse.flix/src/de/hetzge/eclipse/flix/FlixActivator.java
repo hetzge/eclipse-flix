@@ -67,10 +67,6 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 			});
 
 			Job.create("Initialize flix tooling", monitor -> {
-				/*
-				 * Preload flix with monitor
-				 */
-				FlixUtils.loadFlixFolder(FlixConstants.FLIX_DEFAULT_VERSION, monitor);
 
 				/*
 				 * Register commands ...
@@ -83,10 +79,11 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 				 */
 				final FlixModelManager modelManager = this.flix.getModelManager();
 				final IFlixModel model = modelManager.getModel();
-				model.getFlixProjects().forEach(flixProject -> {
+				for (final IFlixProject flixProject : model.getFlixProjects()) {
 					System.out.println(">>> " + flixProject);
+					FlixUtils.loadFlixFolder(flixProject.getFlixVersion(), monitor);
 					this.flix.getLanguageToolingManager().connectProject(flixProject);
-				});
+				}
 
 				final IWorkspace workspace = ResourcesPlugin.getWorkspace();
 				workspace.addResourceChangeListener(this.flix.getResourceMonitor(), IResourceChangeEvent.POST_CHANGE);

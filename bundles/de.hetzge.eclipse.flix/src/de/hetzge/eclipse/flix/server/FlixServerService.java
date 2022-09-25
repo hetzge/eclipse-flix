@@ -152,9 +152,8 @@ public final class FlixServerService implements AutoCloseable {
 
 	private String fixLibraryUri(String targetUriValue) {
 		if (targetUriValue.endsWith(".flix") && !targetUriValue.startsWith("file:")) {
-			final File sourceFolder = FlixUtils.loadFlixFolder(this.flixProject.getFlixVersion(), null);
-			System.out.println("FIX >> " + sourceFolder);
-			final File sourceFile = new File(sourceFolder, "src/library/" + targetUriValue);
+			final File libraryFolder = FlixUtils.loadFlixLibraryFolder(this.flixProject.getFlixVersion(), null);
+			final File sourceFile = new File(libraryFolder, targetUriValue);
 			return sourceFile.toURI().toASCIIString();
 		} else {
 			return targetUriValue;

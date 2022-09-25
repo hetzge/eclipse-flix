@@ -19,11 +19,7 @@ public final class FlixStandardLibraryRoot {
 	}
 
 	public Object[] getChildren() {
-		final File flixFolder = FlixUtils.loadFlixFolder(this.version, null);
-		if (!flixFolder.exists() || !flixFolder.isDirectory()) {
-			return null;
-		}
-		final File libraryFolder = new File(flixFolder, "src/library");
+		final File libraryFolder = FlixUtils.loadFlixLibraryFolder(this.version, null);
 		if (!libraryFolder.exists() || !libraryFolder.isDirectory()) {
 			return null;
 		}
