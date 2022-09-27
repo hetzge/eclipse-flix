@@ -1,6 +1,7 @@
 package de.hetzge.eclipse.flix.explorer;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
@@ -15,11 +16,11 @@ public final class FlixStandardLibraryTreeEditorUtils extends EditorUtility {
 		if (element instanceof FlixStandardLibraryFile) {
 			final FlixStandardLibraryFile standardLibraryFile = (FlixStandardLibraryFile) element;
 			try {
-				final File file = standardLibraryFile.getFile();
-				if (file.isDirectory()) {
+				final Path path = standardLibraryFile.getPath();
+				if (Files.isDirectory(path)) {
 					return null;
 				}
-				final IFileStore fileStore = EFS.getStore(file.toURI());
+				final IFileStore fileStore = EFS.getStore(path.toUri());
 				return new FileStoreEditorInput(fileStore);
 			} catch (final CoreException exception) {
 				throw new RuntimeException(exception);

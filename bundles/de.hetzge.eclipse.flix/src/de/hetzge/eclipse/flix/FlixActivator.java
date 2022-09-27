@@ -81,7 +81,7 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 				final IFlixModel model = modelManager.getModel();
 				for (final IFlixProject flixProject : model.getFlixProjects()) {
 					System.out.println(">>> " + flixProject);
-					FlixUtils.loadFlixFolder(flixProject.getFlixVersion(), monitor);
+					Flix.get().getJarFileSystemManager().enableFileSystem(FlixUtils.loadFlixJarUri(flixProject.getFlixVersion(), monitor));
 					this.flix.getLanguageToolingManager().connectProject(flixProject);
 				}
 

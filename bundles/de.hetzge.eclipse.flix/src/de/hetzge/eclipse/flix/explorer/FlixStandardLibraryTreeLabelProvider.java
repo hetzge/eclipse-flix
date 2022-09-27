@@ -1,6 +1,7 @@
 package de.hetzge.eclipse.flix.explorer;
 
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -34,8 +35,8 @@ public class FlixStandardLibraryTreeLabelProvider implements ILabelProvider {
 			return FlixActivator.getImage(FlixConstants.FLIX_ICON_IMAGE_KEY);
 		} else if (element instanceof FlixStandardLibraryFile) {
 			final FlixStandardLibraryFile standardLibraryFile = (FlixStandardLibraryFile) element;
-			final File file = standardLibraryFile.getFile();
-			if (file.isDirectory()) {
+			final Path path = standardLibraryFile.getPath();
+			if (Files.isDirectory(path)) {
 				return FlixActivator.getImage(FlixConstants.FOLDER_ICON_IMAGE_KEY);
 			} else {
 				return FlixActivator.getImage(FlixConstants.FLIX_ICON_IMAGE_KEY);

@@ -223,4 +223,13 @@
        </enabledWhen>
     </page>
  </extension>
+ <extension
+       point="org.eclipse.core.filesystem.filesystems">
+    <filesystem
+          scheme="jar">
+       <run
+             class="de.hetzge.eclipse.flix.FileSystem2">
+       </run>
+    </filesystem>
+ </extension>
 </plugin>

@@ -1,7 +1,8 @@
 package de.hetzge.eclipse.flix.explorer;
 
-import java.io.File;
-import java.util.Arrays;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 
 import de.hetzge.eclipse.flix.model.api.FlixVersion;
@@ -19,11 +20,15 @@ public final class FlixStandardLibraryRoot {
 	}
 
 	public Object[] getChildren() {
-		final File libraryFolder = FlixUtils.loadFlixLibraryFolder(this.version, null);
-		if (!libraryFolder.exists() || !libraryFolder.isDirectory()) {
+		final Path libraryFolderPath = FlixUtils.loadFlixLibraryFolderPath(this.version, null);
+		if (!Files.exists(libraryFolderPath) || !Files.isDirectory(libraryFolderPath)) {
 			return null;
 		}
-		return Arrays.asList(libraryFolder.listFiles()).stream().map(FlixStandardLibraryFile::new).toArray();
+		try {
+			return Files.list(libraryFolderPath).map(FlixStandardLibraryFile::new).toArray();
+		} catch (final IOException exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 
 	public String getName() {

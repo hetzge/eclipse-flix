@@ -1,13 +1,12 @@
 package de.hetzge.eclipse.flix.explorer;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.eclipse.jface.viewers.TreePath;
 
@@ -18,42 +17,41 @@ import de.hetzge.eclipse.flix.utils.FlixUtils;
 
 public final class FlixStandardLibraryFile {
 
-	private final File file;
+	private final Path path;
 
-	public FlixStandardLibraryFile(File file) {
-		this.file = file;
+	public FlixStandardLibraryFile(Path path) {
+		this.path = path;
 	}
 
 	public boolean hasChildren() {
-		if (this.file.isDirectory()) {
-			final File[] files = this.file.listFiles();
-			return files != null && files.length > 0;
-		} else {
-			return false;
+		try {
+			return Files.isDirectory(this.path) && Files.list(this.path).findFirst().isPresent();
+		} catch (final IOException exception) {
+			throw new RuntimeException(exception);
 		}
 	}
 
 	public Object[] getChildren() {
-		if (!this.file.isDirectory()) {
-			return null;
-		} else {
-			return Arrays.asList(this.file.listFiles()).stream().map(FlixStandardLibraryFile::new).toArray();
+		try {
+			return Files.isDirectory(this.path) ? Files.list(this.path).map(FlixStandardLibraryFile::new).collect(Collectors.toList()).toArray() : null;
+		} catch (final IOException exception) {
+			throw new RuntimeException(exception);
 		}
 	}
 
 	public Object getParent() {
 		try {
-			final Path parentPath = this.file.getParentFile().toPath();
-			if (!Files.exists(parentPath)) {
+			final Path parentPath = this.path.getParent();
+			if (parentPath == null || !Files.exists(parentPath)) {
 				return null;
 			}
 			final List<FlixVersion> usedFlixVersions = Flix.get().getModel().getUsedFlixVersions();
 			for (final FlixVersion version : usedFlixVersions) {
-				if (Files.isSameFile(FlixUtils.loadFlixLibraryFolder(version, null).toPath(), parentPath)) {
+				if (Files.isSameFile(FlixUtils.loadFlixLibraryFolderPath(version, null), parentPath)) {
 					return new FlixStandardLibraryRoot(version);
 				}
 			}
-			return new FlixStandardLibraryFile(this.file.getParentFile());
+			return new FlixStandardLibraryFile(parentPath);
 		} catch (final IOException exception) {
 			throw new RuntimeException(exception);
 		}
@@ -80,16 +78,16 @@ public final class FlixStandardLibraryFile {
 	}
 
 	public String getName() {
-		return this.file.getName();
+		return this.path.getFileName().toString();
 	}
 
-	public File getFile() {
-		return this.file;
+	public Path getPath() {
+		return this.path;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.file);
+		return Objects.hash(this.path);
 	}
 
 	@Override
@@ -105,7 +103,7 @@ public final class FlixStandardLibraryFile {
 		}
 		final FlixStandardLibraryFile other = (FlixStandardLibraryFile) obj;
 		try {
-			return Files.isSameFile(this.file.toPath(), other.file.toPath());
+			return Files.isSameFile(this.path, other.path);
 		} catch (final IOException exception) {
 			throw new RuntimeException(exception);
 		}
@@ -113,6 +111,6 @@ public final class FlixStandardLibraryFile {
 
 	@Override
 	public String toString() {
-		return "FlixStandardLibraryFile [file=" + this.file + "]";
+		return "FlixStandardLibraryFile [path=" + this.path + "]";
 	}
 }

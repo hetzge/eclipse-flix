@@ -1,6 +1,6 @@
 package de.hetzge.eclipse.flix.explorer;
 
-import java.io.File;
+import java.nio.file.Path;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeSelection;
@@ -13,12 +13,12 @@ public class FlixStandardLibraryTreeLinkHelper implements ILinkHelper {
 
 	@Override
 	public IStructuredSelection findSelection(IEditorInput anInput) {
-		System.out.println("LinkHelper1.findSelection(" + anInput + ")");
+		System.out.println("FlixStandardLibraryTreeLinkHelper.findSelection(" + anInput + ")");
 
 		if (anInput instanceof FileStoreEditorInput) {
 			// TODO what if file is not a standard library file ?!
 			final FileStoreEditorInput fileStoreEditorInput = (FileStoreEditorInput) anInput;
-			final FlixStandardLibraryFile standardLibraryFile = new FlixStandardLibraryFile(new File(fileStoreEditorInput.getURI()));
+			final FlixStandardLibraryFile standardLibraryFile = new FlixStandardLibraryFile(Path.of(fileStoreEditorInput.getURI()));
 			return new TreeSelection(standardLibraryFile.getTreePath());
 		}
 
@@ -27,7 +27,7 @@ public class FlixStandardLibraryTreeLinkHelper implements ILinkHelper {
 
 	@Override
 	public void activateEditor(IWorkbenchPage aPage, IStructuredSelection aSelection) {
-		System.out.println("LinkHelper1.activateEditor(" + aSelection + ")");
+		System.out.println("FlixStandardLibraryTreeLinkHelper.activateEditor(" + aSelection + ")");
 		// TODO Auto-generated method stub
 
 	}
