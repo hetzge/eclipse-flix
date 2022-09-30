@@ -1,19 +1,24 @@
 package de.hetzge.eclipse.flix.explorer;
 
-import java.util.stream.Collectors;
-
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.handly.ui.viewer.ElementTreeContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 
 import de.hetzge.eclipse.flix.Flix;
 
 public class FlixStandardLibraryTreeContentProvider implements ITreeContentProvider {
 
+	private final ElementTreeContentProvider contentProvider;
+
+	public FlixStandardLibraryTreeContentProvider() {
+		this.contentProvider = new ElementTreeContentProvider();
+	}
+
 	@Override
 	public Object[] getElements(Object inputElement) {
 		System.out.println("FlixStandardLibraryTreeContentProvider.getElements(" + inputElement + ")");
 		if (inputElement instanceof IWorkspaceRoot) {
-			return Flix.get().getModel().getUsedFlixVersions().stream().map(FlixStandardLibraryRoot::new).collect(Collectors.toList()).toArray(new Object[0]);
+			return Flix.get().getModel().getActiveFlixJars().toArray();
 		} else {
 			return null;
 		}
@@ -21,35 +26,16 @@ public class FlixStandardLibraryTreeContentProvider implements ITreeContentProvi
 
 	@Override
 	public boolean hasChildren(Object element) {
-		System.out.println("FlixStandardLibraryTreeContentProvider.hasChildren(" + element + ")");
-		if (element instanceof FlixStandardLibraryRoot) {
-			final FlixStandardLibraryRoot libraryRoot = (FlixStandardLibraryRoot) element;
-			return libraryRoot.hasChildren();
-		} else if (element instanceof FlixStandardLibraryFile) {
-			final FlixStandardLibraryFile standardLibraryFile = (FlixStandardLibraryFile) element;
-			return standardLibraryFile.hasChildren();
-		} else {
-			return false;
-		}
+		return this.contentProvider.hasChildren(element);
 	}
 
 	@Override
 	public Object[] getChildren(Object parentElement) {
-		System.out.println("FlixStandardLibraryTreeContentProvider.getChildren(" + parentElement + ")");
-		if (parentElement instanceof FlixStandardLibraryRoot) {
-			final FlixStandardLibraryRoot libraryRoot = (FlixStandardLibraryRoot) parentElement;
-			return libraryRoot.getChildren();
-		} else if (parentElement instanceof FlixStandardLibraryFile) {
-			final FlixStandardLibraryFile standardLibraryFile = (FlixStandardLibraryFile) parentElement;
-			return standardLibraryFile.getChildren();
-		} else {
-			return null;
-		}
+		return this.contentProvider.getChildren(parentElement);
 	}
 
 	@Override
 	public Object getParent(Object element) {
-		System.out.println("FlixStandardLibraryTreeContentProvider.getParent(" + element + ")");
-		return null;
+		return this.contentProvider.getParent(element);
 	}
 }

@@ -10,8 +10,9 @@ import org.lxtk.lx4e.model.impl.LanguageSourceFile;
 
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixConstants;
+import de.hetzge.eclipse.flix.model.api.IFlixSourceFile;
 
-public class FlixSourceFile extends LanguageSourceFile {
+public class FlixSourceFile extends LanguageSourceFile implements IFlixSourceFile {
 
 	public FlixSourceFile(URI uri) {
 		this(null, uri);

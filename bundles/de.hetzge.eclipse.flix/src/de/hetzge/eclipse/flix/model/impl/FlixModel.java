@@ -1,9 +1,13 @@
 package de.hetzge.eclipse.flix.model.impl;
 
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -23,6 +27,8 @@ import org.eclipse.handly.model.impl.support.IModelManager;
 
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.model.api.FlixVersion;
+import de.hetzge.eclipse.flix.model.api.IFlixJar;
+import de.hetzge.eclipse.flix.model.api.IFlixJarNode;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 
@@ -75,10 +81,40 @@ public class FlixModel extends Element implements IFlixModel, IModelImpl {
 				.map(this::createFlixProject) //
 				.filter(IFlixProject::isActive) //
 				.collect(Collectors.toList());
+		final List<FlixJar> flixJars = FlixVersion.VERSIONS.stream() //
+				.map(version -> new FlixJar(this, version)) //
+				.collect(Collectors.toList());
 
+		final List<Object> bodyList = new ArrayList<>(flixProjects.size() + FlixVersion.VERSIONS.size());
+		bodyList.addAll(flixProjects);
+		bodyList.addAll(flixJars);
 		final Body body = new Body();
-		body.setChildren(flixProjects.toArray(Elements.EMPTY_ARRAY));
+		body.setChildren(bodyList.toArray(Elements.EMPTY_ARRAY));
 		context.get(IElementImplSupport.NEW_ELEMENTS).put(this, body);
+	}
+
+	@Override
+	public Optional<IFlixJarNode> getFlixJarNode(URI uri) {
+		return getActiveFlixJars().stream().filter(jar -> Path.of(uri).startsWith(Path.of(jar.getUri()))).findFirst().flatMap(node -> {
+			return visit(node, uri);
+		});
+	}
+
+	private Optional<IFlixJarNode> visit(IFlixJarNode node, URI uri) {
+		if (!uri.toString().startsWith(node.getUri().toString())) {
+			return Optional.empty();
+		} else if (node.getUri().equals(uri)) {
+			return Optional.of(node);
+		} else {
+			final List<IFlixJarNode> childrenNodes = node.getChildrenNodes();
+			for (final IFlixJarNode childNode : childrenNodes) {
+				final Optional<IFlixJarNode> optionalNode = visit(childNode, uri);
+				if (optionalNode.isPresent()) {
+					return optionalNode;
+				}
+			}
+			return Optional.empty();
+		}
 	}
 
 	@Override
@@ -92,7 +128,7 @@ public class FlixModel extends Element implements IFlixModel, IModelImpl {
 	@Override
 	public List<IFlixProject> getFlixProjects() {
 		try {
-			return Arrays.asList(getChildren()).stream().map(IFlixProject.class::cast).collect(Collectors.toList());
+			return Arrays.asList(getChildren(IFlixProject.class)).stream().map(IFlixProject.class::cast).collect(Collectors.toList());
 		} catch (final CoreException exception) {
 			throw new RuntimeException(exception);
 		}
@@ -108,5 +144,19 @@ public class FlixModel extends Element implements IFlixModel, IModelImpl {
 
 	private FlixProject createFlixProject(IProject project) {
 		return new FlixProject(this, project);
+	}
+
+	@Override
+	public IFlixJar getFlixJar(FlixVersion version) {
+		try {
+			return Stream.of(getChildren(FlixJar.class)).filter(jar -> jar.getVersion().equals(version)).findFirst().orElseThrow();
+		} catch (final CoreException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	@Override
+	public List<IFlixJar> getActiveFlixJars() {
+		return getFlixProjects().stream().map(IFlixProject::getFlixVersion).map(this::getFlixJar).collect(Collectors.toList());
 	}
 }

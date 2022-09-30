@@ -184,7 +184,7 @@
 		</navigatorContent>
 		<actionProvider class="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeActionProvider" id="de.hetzge.eclipse.flix.explorerTreeActionProvider">
 			<enablement>
-				<instanceof value="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryFile"></instanceof>
+				<instanceof value="de.hetzge.eclipse.flix.model.api.IFlixSourceFile"></instanceof>
 			</enablement>
 		</actionProvider>
 	</extension>
@@ -207,7 +207,7 @@
 				<instanceof value="org.eclipse.ui.ide.FileStoreEditorInput"></instanceof>
 			</editorInputEnablement>
 			<selectionEnablement>
-				<instanceof value="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryFile"></instanceof>
+				<instanceof value="de.hetzge.eclipse.flix.model.api.IFlixSourceFile"></instanceof>
 			</selectionEnablement>
 		</linkHelper>
 	</extension>

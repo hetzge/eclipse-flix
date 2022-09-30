@@ -25,7 +25,6 @@ import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
 import de.hetzge.eclipse.flix.model.api.FlixModelManager;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
-import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 /**
@@ -81,7 +80,7 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 				final IFlixModel model = modelManager.getModel();
 				for (final IFlixProject flixProject : model.getFlixProjects()) {
 					System.out.println(">>> " + flixProject);
-					Flix.get().getJarFileSystemManager().enableFileSystem(FlixUtils.loadFlixJarUri(flixProject.getFlixVersion(), monitor));
+//					Flix.get().getJarFileSystemManager().enableFileSystem(FlixUtils.loadFlixJarUri(flixProject.getFlixVersion(), monitor));
 					this.flix.getLanguageToolingManager().connectProject(flixProject);
 				}
 

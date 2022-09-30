@@ -23,7 +23,7 @@ public class FlixProjectBuilder extends IncrementalProjectBuilder {
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
 		System.out.println("FlixProjectBuilder.build(" + kind + ")");
 		if (kind == IncrementalProjectBuilder.FULL_BUILD) {
-			final IFlixProject flixProject = this.model.getFlixProjectOrThrow(getProject());
+			final IFlixProject flixProject = this.model.getFlixProjectOrThrowCoreException(getProject());
 			monitor.subTask("Delete build folder");
 			flixProject.deleteBuildFolder(monitor);
 			monitor.subTask("Build flix project");

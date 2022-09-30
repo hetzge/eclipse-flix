@@ -52,7 +52,7 @@ public class FlixProjectPropertyPage extends PropertyPage implements IWorkbenchP
 		final FlixVersion newFlixVersion = this.control.getFlixVersion();
 		if (!this.previousFlixVersion.equals(newFlixVersion)) {
 			try {
-				Flix.get().getLanguageToolingManager().disconnectProject(Flix.get().getModel().getFlixProjectOrThrow(this.project));
+				Flix.get().getLanguageToolingManager().disconnectProject(Flix.get().getModel().getFlixProjectOrThrowCoreException(this.project));
 			} catch (final CoreException exception) {
 				throw new RuntimeException(exception);
 			}
@@ -61,7 +61,7 @@ public class FlixProjectPropertyPage extends PropertyPage implements IWorkbenchP
 		this.flixProjectPreferences.save();
 		if (!this.previousFlixVersion.equals(newFlixVersion)) {
 			try {
-				Flix.get().getLanguageToolingManager().connectProject(Flix.get().getModel().getFlixProjectOrThrow(this.project));
+				Flix.get().getLanguageToolingManager().connectProject(Flix.get().getModel().getFlixProjectOrThrowCoreException(this.project));
 			} catch (final CoreException exception) {
 				throw new RuntimeException(exception);
 			}

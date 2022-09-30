@@ -6,7 +6,6 @@ import org.eclipse.handly.model.IElement;
 import org.eclipse.handly.model.impl.support.ElementCache;
 import org.eclipse.handly.model.impl.support.IBodyCache;
 import org.lxtk.lx4e.model.ILanguageSourceFile;
-import org.lxtk.lx4e.model.ILanguageSymbol;
 
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
 
@@ -19,7 +18,8 @@ public class FlixModelCache implements IBodyCache {
 	private final HashMap<IElement, Object> symbolCache;
 
 	public FlixModelCache() {
-		// set the size of the caches as a function of the maximum amount of memory available
+		// set the size of the caches as a function of the maximum amount of memory
+		// available
 		final double memoryRatio = getMemoryRatio();
 		this.fileCache = new ElementCache((int) (DEFAULT_FILE_SIZE * memoryRatio));
 		this.symbolCache = new HashMap<>((int) (DEFAULT_CHILDREN_SIZE * memoryRatio));
@@ -53,10 +53,8 @@ public class FlixModelCache implements IBodyCache {
 			this.model = body;
 		} else if (element instanceof ILanguageSourceFile) {
 			this.fileCache.put(element, body);
-		} else if (element instanceof ILanguageSymbol) {
-			this.symbolCache.put(element, body);
 		} else {
-			System.out.println("Skip put element");
+			this.symbolCache.put(element, body);
 		}
 	}
 

@@ -1,5 +1,6 @@
 package de.hetzge.eclipse.flix.model.api;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,8 +18,13 @@ public interface IFlixModel extends IElementExtension, IModel {
 
 	Optional<IFlixProject> getFlixProject(IProject project);
 
-	default IFlixProject getFlixProjectOrThrow(IProject project) throws CoreException {
+	IFlixJar getFlixJar(FlixVersion version);
+
+	List<IFlixJar> getActiveFlixJars();
+
+	Optional<IFlixJarNode> getFlixJarNode(URI uri);
+
+	default IFlixProject getFlixProjectOrThrowCoreException(IProject project) throws CoreException {
 		return getFlixProject(project).orElseThrow(() -> new CoreException(Status.error("Not a valid flix project")));
 	}
-
 }
