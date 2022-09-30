@@ -1,7 +1,6 @@
 package de.hetzge.eclipse.flix.server;
 
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -152,9 +151,7 @@ public final class FlixServerService implements AutoCloseable {
 
 	private String fixLibraryUri(String targetUriValue) {
 		if (targetUriValue.endsWith(".flix") && !targetUriValue.startsWith("file:")) {
-			final Path libraryFolderPath = FlixUtils.loadFlixLibraryFolderPath(this.flixProject.getFlixVersion(), null);
-			final Path sourcePath = libraryFolderPath.resolve(targetUriValue);
-			return sourcePath.toUri().toASCIIString();
+			return FlixUtils.loadFlixJarUri(this.flixProject.getFlixVersion(), null).toString() + "!/src/library/" + targetUriValue;
 		} else {
 			return targetUriValue;
 		}

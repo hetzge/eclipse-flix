@@ -9,7 +9,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.Path;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
@@ -62,14 +61,6 @@ public final class FlixUtils {
 	@Deprecated
 	public synchronized static File loadFlixLibraryFolder(FlixVersion version, IProgressMonitor monitor) {
 		return new File(loadFlixFolder(version, monitor), "src/library");
-	}
-
-	public synchronized static Path loadFlixLibraryFolderPath(FlixVersion version, IProgressMonitor monitor) {
-		return loadFlixJarPath(version, monitor).resolve("src/library");
-	}
-
-	public synchronized static Path loadFlixJarPath(FlixVersion version, IProgressMonitor monitor) {
-		return Path.of(loadFlixJarUri(version, monitor).toString() + "!/");
 	}
 
 	public synchronized static URI loadFlixJarUri(FlixVersion version, IProgressMonitor monitor) {

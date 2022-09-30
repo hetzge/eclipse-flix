@@ -31,7 +31,6 @@ public final class Flix implements AutoCloseable {
 	private final FlixModelManager modelManager;
 	private final FlixLanguageToolingManager languageToolingManager;
 	private final CommandService commandService;
-	private final JarFileSystemManager jarFileSystemManager;
 
 	Flix() {
 		this.documentService = new EclipseDocumentService();
@@ -45,7 +44,6 @@ public final class Flix implements AutoCloseable {
 		this.modelManager = FlixModelManager.create();
 		this.languageToolingManager = new FlixLanguageToolingManager();
 		this.commandService = new EclipseCommandService();
-		this.jarFileSystemManager = new JarFileSystemManager();
 	}
 
 	public DocumentService getDocumentService() {
@@ -92,13 +90,8 @@ public final class Flix implements AutoCloseable {
 		return this.commandService;
 	}
 
-	public JarFileSystemManager getJarFileSystemManager() {
-		return this.jarFileSystemManager;
-	}
-
 	@Override
 	public void close() {
 		this.languageToolingManager.close();
-		this.jarFileSystemManager.close();
 	}
 }

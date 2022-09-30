@@ -8,12 +8,6 @@
 	<extension point="org.eclipse.core.contenttype.contentTypes">
 		<content-type id="de.hetzge.eclipse.flix" name="Flix" file-extensions="flix" base-type="org.eclipse.core.runtime.text" priority="normal"></content-type>
 	</extension>
-	<!--   <extension-->
-	<!--         point="org.eclipse.core.runtime.preferences">-->
-	<!--      <initializer-->
-	<!--            class="org.lxtk.lx4e.internal.examples.proto.ProtoPreferenceInitializer">-->
-	<!--      </initializer>-->
-	<!--   </extension>-->
 	<extension point="org.eclipse.ui.editors">
 		<editor class="de.hetzge.eclipse.flix.editor.FlixEditor" contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor" default="false" icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix.editor" name="Flix Editor">
 			<contentTypeBinding contentTypeId="de.hetzge.eclipse.flix"></contentTypeBinding>
@@ -171,65 +165,16 @@
 			</enabledWhen>
 		</codeMiningProvider>
 	</extension>
-	<extension point="org.eclipse.ui.navigator.navigatorContent">
-		<navigatorContent activeByDefault="true" contentProvider="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeContentProvider" icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix.standardLibraryNavigatorContent" labelProvider="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeLabelProvider" name="Flix Standard Library" priority="lowest">
-			<enablement>
-				<instanceof value="org.eclipse.core.resources.IWorkspaceRoot"></instanceof>
-				<!--             <adapt type="org.eclipse.core.resources.IWorkspace">-->
-				<!--			 	<and>-->
-				<!--			 		<test property="org.eclipse.core.resources.projectNature" value="de.hetzge.eclipse.flix.nature"></test>-->
-				<!--			 	</and>-->
-				<!--			 </adapt>-->
-			</enablement>
-		</navigatorContent>
-		<actionProvider class="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeActionProvider" id="de.hetzge.eclipse.flix.explorerTreeActionProvider">
-			<enablement>
-				<instanceof value="de.hetzge.eclipse.flix.model.api.IFlixSourceFile"></instanceof>
-			</enablement>
-		</actionProvider>
+	<extension point="org.eclipse.ui.propertyPages">
+		<page class="de.hetzge.eclipse.flix.project.FlixProjectPropertyPage" icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix.flixProjectPropertyPage" name="Flix Project">
+			<enabledWhen>
+				<test property="org.eclipse.core.resources.projectNature" value="de.hetzge.eclipse.flix.nature"></test>
+			</enabledWhen>
+		</page>
 	</extension>
-	<extension point="org.eclipse.ui.navigator.viewer">
-		<viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
-			<includes>
-				<contentExtension pattern="de.hetzge.eclipse.flix.standardLibraryNavigatorContent"></contentExtension>
-				<contentExtension pattern="de.hetzge.eclipse.flix.linkHelper1"></contentExtension>
-			</includes>
-		</viewerContentBinding>
-		<viewerActionBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
-			<includes>
-				<actionExtension pattern="de.hetzge.eclipse.flix.explorerTreeActionProvider"></actionExtension>
-			</includes>
-		</viewerActionBinding>
-	</extension>
-	<extension point="org.eclipse.ui.navigator.linkHelper">
-		<linkHelper class="de.hetzge.eclipse.flix.explorer.FlixStandardLibraryTreeLinkHelper" id="de.hetzge.eclipse.flix.linkHelper1">
-			<editorInputEnablement>
-				<instanceof value="org.eclipse.ui.ide.FileStoreEditorInput"></instanceof>
-			</editorInputEnablement>
-			<selectionEnablement>
-				<instanceof value="de.hetzge.eclipse.flix.model.api.IFlixSourceFile"></instanceof>
-			</selectionEnablement>
-		</linkHelper>
-	</extension>
- <extension
-       point="org.eclipse.ui.propertyPages">
-    <page
-          class="de.hetzge.eclipse.flix.project.FlixProjectPropertyPage"
-          icon="assets/icons/icon.png"
-          id="de.hetzge.eclipse.flix.flixProjectPropertyPage"
-          name="Flix Project">
-       <enabledWhen>
-       	 <test property="org.eclipse.core.resources.projectNature" value="de.hetzge.eclipse.flix.nature"></test>
-       </enabledWhen>
-    </page>
- </extension>
- <extension
-       point="org.eclipse.core.filesystem.filesystems">
-    <filesystem
-          scheme="jar">
-       <run
-             class="de.hetzge.eclipse.flix.FileSystem2">
-       </run>
-    </filesystem>
- </extension>
+	 <extension point="org.eclipse.core.filesystem.filesystems">
+	    <filesystem scheme="jar">
+	       <run class="de.hetzge.eclipse.flix.FlixJarFileSystem"></run>
+	    </filesystem>
+	 </extension>
 </plugin>
