@@ -22,10 +22,12 @@ import de.hetzge.eclipse.flix.FlixLogger;
 public class ResourceMonitor implements IResourceChangeListener, FileCreateEventSource, FileDeleteEventSource {
 	private final EventEmitter<FileCreateEvent> onDidCreateFiles;
 	private final EventEmitter<FileDeleteEvent> onDidDeleteFiles;
+	private final EventEmitter<FileChangeEvent> onDidChangeFiles;
 
 	public ResourceMonitor() {
 		this.onDidCreateFiles = new EventEmitter<>();
 		this.onDidDeleteFiles = new EventEmitter<>();
+		this.onDidChangeFiles = new EventEmitter<>();
 	}
 
 	@Override
@@ -44,6 +46,8 @@ public class ResourceMonitor implements IResourceChangeListener, FileCreateEvent
 					this.onDidCreateFiles.emit(new FileCreateEvent(List.of(new FileCreate(locationURI))), FlixLogger::logError);
 				} else if (kind == IResourceDelta.REMOVED) {
 					this.onDidDeleteFiles.emit(new FileDeleteEvent(List.of(new FileDelete(locationURI))), FlixLogger::logError);
+				} else if (kind == IResourceDelta.CHANGED) {
+					this.onDidChangeFiles.emit(new FileChangeEvent(List.of(locationURI)), FlixLogger::logError);
 				}
 			} else {
 				FlixLogger.logWarning(String.format("Resource delta with null uri for '%s'", file.getName()), null);
@@ -63,5 +67,9 @@ public class ResourceMonitor implements IResourceChangeListener, FileCreateEvent
 	@Override
 	public EventStream<FileDeleteEvent> onDidDeleteFiles() {
 		return this.onDidDeleteFiles;
+	}
+
+	public EventEmitter<FileChangeEvent> onDidChangeFiles() {
+		return this.onDidChangeFiles;
 	}
 }

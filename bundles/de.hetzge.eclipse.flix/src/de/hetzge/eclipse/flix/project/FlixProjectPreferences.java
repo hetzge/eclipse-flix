@@ -1,5 +1,7 @@
 package de.hetzge.eclipse.flix.project;
 
+import java.util.Optional;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -19,11 +21,13 @@ public final class FlixProjectPreferences extends BasePreferences {
 	}
 
 	public void setFlixVersion(FlixVersion version) {
-		getStore().setValue("flixVersion", version.getKey());
+		if (!version.equals(FlixVersion.CUSTOM)) {
+			getStore().setValue("flixVersion", version.getKey());
+		}
 	}
 
-	public FlixVersion getFlixVersion() {
+	public Optional<FlixVersion> getFlixVersion() {
 		final String key = getStore().getString("flixVersion");
-		return key != null && !key.isBlank() ? new FlixVersion(key) : FlixConstants.FLIX_DEFAULT_VERSION;
+		return key != null && !key.isBlank() ? Optional.of(new FlixVersion(key)) : Optional.empty();
 	}
 }

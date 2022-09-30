@@ -66,7 +66,7 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		textDocumentSyncFeature.setChangeEventMergeStrategy(new EclipseTextDocumentChangeEventMergeStrategy());
 		final List<Feature<? super LanguageServer>> features = new ArrayList<>();
 		features.add(new CompletionFeature(languageService));
-		features.add(FileOperationsFeature.newInstance(Flix.get().getResourceMonitor()));
+		features.add(FileOperationsFeature.newInstance(Flix.get().getPostResourceMonitor()));
 		features.add(textDocumentSyncFeature);
 		features.add(new ReferencesFeature(languageService));
 		features.add(new DeclarationFeature(languageService));

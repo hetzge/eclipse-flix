@@ -9,6 +9,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import de.hetzge.eclipse.flix.project.FlixProjectPreferences;
+
 public interface IFlixProject {
 
 	IProject getProject();
@@ -40,4 +42,6 @@ public interface IFlixProject {
 	IFolder getBuildFolder();
 
 	void deleteBuildFolder(IProgressMonitor progressMonitor) throws CoreException;
+
+	FlixProjectPreferences getProjectPreferences();
 }

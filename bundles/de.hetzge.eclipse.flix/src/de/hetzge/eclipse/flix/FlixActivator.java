@@ -1,10 +1,14 @@
 package de.hetzge.eclipse.flix;
 
+import java.net.URI;
 import java.util.Objects;
 
+import org.eclipse.core.filesystem.URIUtil;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.handly.model.ElementDeltas;
 import org.eclipse.handly.model.IElement;
@@ -16,6 +20,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.lxtk.FileCreate;
+import org.lxtk.FileDelete;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
@@ -25,6 +31,7 @@ import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
 import de.hetzge.eclipse.flix.model.api.FlixModelManager;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 /**
@@ -84,14 +91,51 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 				}
 
 				final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-				workspace.addResourceChangeListener(this.flix.getResourceMonitor(), IResourceChangeEvent.POST_CHANGE);
-				rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getResourceMonitor()));
+				workspace.addResourceChangeListener(this.flix.getPostResourceMonitor(), IResourceChangeEvent.POST_CHANGE);
+				rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getPostResourceMonitor()));
 				workspace.addResourceChangeListener(modelManager, IResourceChangeEvent.POST_CHANGE);
 				rollback.add(() -> workspace.removeResourceChangeListener(modelManager));
 
 				final NotificationManager notificationManager = modelManager.getNotificationManager();
 				notificationManager.addElementChangeListener(this);
 				rollback.add(() -> notificationManager.removeElementChangeListener(this));
+
+				rollback.add(this.flix.getPostResourceMonitor().onDidCreateFiles().subscribe(fileCreateEvent -> {
+					System.out.println("CREATED");
+					for (final FileCreate create : fileCreateEvent.getFiles()) {
+						final IPath deletePath = URIUtil.toPath(create.getUri());
+						final IProject project = EclipseUtils.project(deletePath).orElseThrow();
+						if (project.getFile("flix.jar").getLocation().equals(deletePath)) {
+							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
+								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+							});
+						}
+					}
+				})::dispose);
+				rollback.add(this.flix.getPostResourceMonitor().onDidDeleteFiles().subscribe(fileDeleteEvent -> {
+					System.out.println("DELETED");
+					for (final FileDelete delete : fileDeleteEvent.getFiles()) {
+						final IPath deletePath = URIUtil.toPath(delete.getUri());
+						final IProject project = EclipseUtils.project(deletePath).orElseThrow();
+						if (project.getFile("flix.jar").getLocation().equals(deletePath)) {
+							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
+								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+							});
+						}
+					}
+				})::dispose);
+				rollback.add(this.flix.getPostResourceMonitor().onDidChangeFiles().subscribe(fileChangeEvent -> {
+					System.out.println("CHANGED");
+					for (final URI uri : fileChangeEvent.getFiles()) {
+						final IPath changePath = URIUtil.toPath(uri);
+						final IProject project = EclipseUtils.project(changePath).orElseThrow();
+						if (project.getFile("flix.jar").getLocation().equals(changePath)) {
+							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
+								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+							});
+						}
+					}
+				})::dispose);
 
 				this.rollback = rollback;
 			}).schedule();
@@ -122,6 +166,7 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 					final IFlixProject flixProject = (IFlixProject) element;
 					Flix.get().getLanguageToolingManager().connectProject(flixProject);
 				}
+				System.out.println("added " + element.getClass());
 			}
 			for (final IElementDelta removedChildDelta : ElementDeltas.getRemovedChildren(delta)) {
 				final IElement element = ElementDeltas.getElement(removedChildDelta);
@@ -129,6 +174,15 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 					final IFlixProject flixProject = (IFlixProject) element;
 					Flix.get().getLanguageToolingManager().disconnectProject(flixProject);
 				}
+				System.out.println("removed " + element.getClass());
+			}
+			for (final IElementDelta changedChildDelta : ElementDeltas.getChangedChildren(delta)) {
+				final IElement element = ElementDeltas.getElement(changedChildDelta);
+				System.out.println("changed " + element.getClass());
+			}
+			for (final IElementDelta affectedChildDelta : ElementDeltas.getAffectedChildren(delta)) {
+				final IElement element = ElementDeltas.getElement(affectedChildDelta);
+				System.out.println("affected " + element.getClass());
 			}
 		}
 	}

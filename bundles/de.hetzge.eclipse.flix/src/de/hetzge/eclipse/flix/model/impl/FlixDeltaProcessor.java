@@ -66,6 +66,7 @@ public class FlixDeltaProcessor implements IResourceDeltaVisitor {
 			case IResourceDelta.CHANGED:
 				return processChangedFile(resourceDelta);
 			default:
+				System.out.println("change kind: " + resourceDelta.getKind());
 				return false;
 			}
 		default:

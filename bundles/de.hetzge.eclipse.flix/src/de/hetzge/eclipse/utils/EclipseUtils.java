@@ -36,9 +36,11 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
@@ -48,6 +50,7 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -339,6 +342,19 @@ public final class EclipseUtils {
 				return Optional.ofNullable(textSelection.getText());
 			} else {
 				return Optional.empty();
+			}
+		});
+	}
+
+	public static void refreshProjectExplorer() {
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				final IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("org.eclipse.ui.navigator.ProjectExplorer");
+				if (viewPart instanceof CommonNavigator) {
+					final CommonNavigator commonNavigator = (CommonNavigator) viewPart;
+					commonNavigator.getCommonViewer().refresh();
+				}
 			}
 		});
 	}

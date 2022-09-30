@@ -27,7 +27,7 @@ public final class Flix implements AutoCloseable {
 	private final WorkspaceEditChangeFactory changeFactory;
 	private final FileOperationParticipantSupport fileOperationParticipantSupport;
 	private final FlixDocumentProvider documentProvider;
-	private final ResourceMonitor resourceMonitor;
+	private final ResourceMonitor postResourceMonitor;
 	private final FlixModelManager modelManager;
 	private final FlixLanguageToolingManager languageToolingManager;
 	private final CommandService commandService;
@@ -40,7 +40,7 @@ public final class Flix implements AutoCloseable {
 		this.fileOperationParticipantSupport = new FileOperationParticipantSupport(this.changeFactory);
 		this.changeFactory.setFileOperationParticipantSupport(this.fileOperationParticipantSupport);
 		this.documentProvider = new FlixDocumentProvider();
-		this.resourceMonitor = new ResourceMonitor();
+		this.postResourceMonitor = new ResourceMonitor();
 		this.modelManager = FlixModelManager.create();
 		this.languageToolingManager = new FlixLanguageToolingManager();
 		this.commandService = new EclipseCommandService();
@@ -70,8 +70,8 @@ public final class Flix implements AutoCloseable {
 		return this.documentProvider;
 	}
 
-	public ResourceMonitor getResourceMonitor() {
-		return this.resourceMonitor;
+	public ResourceMonitor getPostResourceMonitor() {
+		return this.postResourceMonitor;
 	}
 
 	public FlixModelManager getModelManager() {

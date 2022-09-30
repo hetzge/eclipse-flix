@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -30,24 +32,25 @@ import de.hetzge.eclipse.utils.Utils;
 public final class FlixLauncher {
 
 	private static final ILog LOG = Platform.getLog(FlixLaunchConfigurationDelegate.class);
+	private static final Map<String, Map<String, Object>> PROPERTIES_BY_KEY = new ConcurrentHashMap<>();
 
 	private FlixLauncher() {
 	}
 
 	public static void launchRun(FlixLaunchConfiguration launchConfiguration, IFlixProject flixProject) {
-		launch(createTerminalRunProperties(launchConfiguration, flixProject));
+		launch(createTerminalRunProperties(launchConfiguration, flixProject), String.format("RUN_%s", flixProject.getProject().getFullPath().toOSString()));
 	}
 
 	public static void launchRepl(IFlixProject flixProject) {
-		launch(createTerminalReplProperties(flixProject));
+		launch(createTerminalReplProperties(flixProject), String.format("REPL_%s", flixProject.getProject().getFullPath().toOSString()));
 	}
 
 	public static void launchTest(IFlixProject flixProject) {
-		launch(createTerminalTestProperties(flixProject));
+		launch(createTerminalTestProperties(flixProject), String.format("TEST_%s", flixProject.getProject().getFullPath().toOSString()));
 	}
 
 	public static void launchBuild(IFlixProject flixProject) {
-		launch(createTerminalBuildProperties(flixProject));
+		launch(createTerminalBuildProperties(flixProject), String.format("BUILD_%s", flixProject.getProject().getFullPath().toOSString()));
 	}
 
 	public static void launchCompiler(IFlixProject flixProject, int port) {
@@ -61,7 +64,7 @@ public final class FlixLauncher {
 				}
 			}
 		} });
-		launch(properties);
+		launch(properties, String.format("COMPILER_%s", flixProject.getProject().getFullPath().toOSString()));
 		try {
 			latch.await(10L, TimeUnit.SECONDS);
 		} catch (final InterruptedException exception) {
@@ -79,7 +82,7 @@ public final class FlixLauncher {
 			final Map<String, Object> properties = createTerminalInitProperties(folder);
 			properties.remove(ITerminalsConnectorConstants.PROP_PROCESS_PATH);
 			properties.put(ITerminalsConnectorConstants.PROP_PROCESS_OBJ, process);
-			launch(properties);
+			launch(properties, UUID.randomUUID().toString());
 			process.waitFor();
 		} catch (final IOException | InterruptedException exception) {
 			throw new RuntimeException(exception);
@@ -91,15 +94,17 @@ public final class FlixLauncher {
 		closeConsole(createTerminalCompilerProperties(flixProject, port));
 	}
 
-	private static void launch(Map<String, Object> properties) {
+	private static void launch(Map<String, Object> properties, String launchKey) {
 		if (properties.get(ITerminalsConnectorConstants.PROP_PROCESS_PATH) != null) {
 			System.out.println(String.format("Launch '%s %s'", properties.get(ITerminalsConnectorConstants.PROP_PROCESS_PATH), properties.get(ITerminalsConnectorConstants.PROP_PROCESS_ARGS)));
 		}
 
+		final Map<String, Object> lastProperties = PROPERTIES_BY_KEY.getOrDefault(launchKey, properties);
 		final ITerminalService terminalService = TerminalServiceFactory.getService();
-		terminalService.terminateConsole(properties, createDoneLogger("terminateConsole"));
-		terminalService.closeConsole(properties, createDoneLogger("closeConsole"));
+		terminalService.terminateConsole(lastProperties, createDoneLogger("terminateConsole"));
+		terminalService.closeConsole(lastProperties, createDoneLogger("closeConsole"));
 		terminalService.openConsole(properties, createDoneLogger("openConsole"));
+		PROPERTIES_BY_KEY.put(launchKey, properties);
 	}
 
 	private static void closeConsole(Map<String, Object> properties) {

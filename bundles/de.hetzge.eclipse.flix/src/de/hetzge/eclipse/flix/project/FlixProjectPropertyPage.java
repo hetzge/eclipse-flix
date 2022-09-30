@@ -4,7 +4,6 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -12,30 +11,27 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.eclipse.ui.navigator.CommonNavigator;
 
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.model.api.FlixVersion;
+import de.hetzge.eclipse.flix.model.api.IFlixProject;
 
 public class FlixProjectPropertyPage extends PropertyPage implements IWorkbenchPropertyPage {
 
 	private IProject project;
+	private IFlixProject flixProject;
 	private FlixProjectPropertyPageControl control;
-	private FlixProjectPreferences flixProjectPreferences;
 	private FlixVersion previousFlixVersion;
 
 	@Override
 	protected Control createContents(Composite parent) {
 		this.project = (IProject) getElement().getAdapter(IResource.class);
-		this.flixProjectPreferences = new FlixProjectPreferences(this.project);
-		this.previousFlixVersion = this.flixProjectPreferences.getFlixVersion();
+		this.flixProject = Flix.get().getModel().getFlixProject(this.project).orElseThrow(() -> new IllegalStateException("Not a flix project"));
+		this.previousFlixVersion = this.flixProject.getFlixVersion();
 		this.control = new FlixProjectPropertyPageControl(parent);
 		return this.control;
 	}
@@ -50,32 +46,10 @@ public class FlixProjectPropertyPage extends PropertyPage implements IWorkbenchP
 	public boolean performOk() {
 		System.out.println("FlixProjectPropertyPage.performOk()");
 		final FlixVersion newFlixVersion = this.control.getFlixVersion();
+		this.flixProject.getProjectPreferences().setFlixVersion(newFlixVersion);
+		this.flixProject.getProjectPreferences().save();
 		if (!this.previousFlixVersion.equals(newFlixVersion)) {
-			try {
-				Flix.get().getLanguageToolingManager().disconnectProject(Flix.get().getModel().getFlixProjectOrThrowCoreException(this.project));
-			} catch (final CoreException exception) {
-				throw new RuntimeException(exception);
-			}
-		}
-		this.flixProjectPreferences.setFlixVersion(newFlixVersion);
-		this.flixProjectPreferences.save();
-		if (!this.previousFlixVersion.equals(newFlixVersion)) {
-			try {
-				Flix.get().getLanguageToolingManager().connectProject(Flix.get().getModel().getFlixProjectOrThrowCoreException(this.project));
-			} catch (final CoreException exception) {
-				throw new RuntimeException(exception);
-			}
-			Display.getDefault().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					final IViewPart viewPart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().findView("org.eclipse.ui.navigator.ProjectExplorer");
-					if (viewPart instanceof CommonNavigator) {
-						final CommonNavigator commonNavigator = (CommonNavigator) viewPart;
-						System.out.println("REFRESH !!!!!!!");
-						commonNavigator.getCommonViewer().refresh();
-					}
-				}
-			});
+			Flix.get().getLanguageToolingManager().reconnectProject(this.flixProject);
 			this.previousFlixVersion = newFlixVersion;
 		}
 		return true;
@@ -96,9 +70,16 @@ public class FlixProjectPropertyPage extends PropertyPage implements IWorkbenchP
 				entrypointLabel.setText("Flix version");
 				GridDataFactory.swtDefaults().applyTo(entrypointLabel);
 
+				final FlixVersion flixVersion = FlixProjectPropertyPage.this.flixProject.getFlixVersion();
 				this.entryPointCombo = new Combo(group, SWT.VERTICAL | SWT.BORDER | SWT.READ_ONLY);
-				this.entryPointCombo.setItems(FlixVersion.VERSIONS.stream().map(FlixVersion::getKey).collect(Collectors.toList()).toArray(new String[0]));
-				this.entryPointCombo.setText(FlixProjectPropertyPage.this.flixProjectPreferences.getFlixVersion().getKey());
+				if (flixVersion.equals(FlixVersion.CUSTOM)) {
+					this.entryPointCombo.setEnabled(false);
+					this.entryPointCombo.setItems(flixVersion.getKey());
+				} else {
+					this.entryPointCombo.setEnabled(true);
+					this.entryPointCombo.setItems(FlixVersion.VERSIONS.stream().map(FlixVersion::getKey).collect(Collectors.toList()).toArray(new String[0]));
+				}
+				this.entryPointCombo.setText(flixVersion.getKey());
 				GridDataFactory.fillDefaults().grab(true, false).applyTo(this.entryPointCombo);
 			}
 		}

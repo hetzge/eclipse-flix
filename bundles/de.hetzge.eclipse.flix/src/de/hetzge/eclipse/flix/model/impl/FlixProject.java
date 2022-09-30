@@ -2,6 +2,7 @@ package de.hetzge.eclipse.flix.model.impl;
 
 import java.io.File;
 import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -62,7 +63,11 @@ public class FlixProject extends Element implements IFlixProject {
 
 	@Override
 	public FlixVersion getFlixVersion() {
-		return this.projectPreferences.getFlixVersion();
+		if (getInProjectFolderFlixCompilerJarFile().isPresent()) {
+			return FlixVersion.CUSTOM;
+		} else {
+			return this.projectPreferences.getFlixVersion().orElse(FlixConstants.FLIX_DEFAULT_VERSION);
+		}
 	}
 
 	@Override
@@ -72,11 +77,20 @@ public class FlixProject extends Element implements IFlixProject {
 
 	@Override
 	public File getFlixCompilerJarFile() {
-		final IFile flixJarInProjectFile = this.project.getFile("flix.jar");
-		if (flixJarInProjectFile.exists()) {
-			return flixJarInProjectFile.getRawLocation().toFile();
+		final Optional<File> inProjectFolderFlixCompilerJarFileOptional = getInProjectFolderFlixCompilerJarFile();
+		if (inProjectFolderFlixCompilerJarFileOptional.isPresent()) {
+			return inProjectFolderFlixCompilerJarFileOptional.get();
 		} else {
 			return FlixUtils.loadFlixJarFile(getFlixVersion(), null);
+		}
+	}
+
+	private Optional<File> getInProjectFolderFlixCompilerJarFile() {
+		final IFile flixJarInProjectFile = this.project.getFile("flix.jar");
+		if (flixJarInProjectFile.exists()) {
+			return Optional.of(flixJarInProjectFile.getRawLocation().toFile());
+		} else {
+			return Optional.empty();
 		}
 	}
 
@@ -145,5 +159,10 @@ public class FlixProject extends Element implements IFlixProject {
 
 	public static boolean isActiveFlixProject(IProject project) {
 		return SafeRunner.run(() -> project.isOpen() && project.getDescription().hasNature(FlixProjectNature.ID));
+	}
+
+	@Override
+	public FlixProjectPreferences getProjectPreferences() {
+		return this.projectPreferences;
 	}
 }
