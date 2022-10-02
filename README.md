@@ -27,17 +27,4 @@ Under the `de.hetzge.eclipse.flix` package the following packages can be found:
 * **project**: Extends Eclipse with functions to manage Flix projects (create projects and files)
 * **utils**: Collection of useful functions
 * **compiler**: Provide client to interact with the Flix compiler
-* **explorer**: Extensions to the Eclipse "Project Explorer"
-  
-## Ideas and TODOs
-
-* Use `org.eclipse.core.resources.builders` to send deltas to LSP server
-* Implement `Project` > `Clean` for Flix projects
-	* Fix duplicate language tooling init when new project is created
-* Show state of project in footer 
-* Fix unpack flix.jar from project
-* Progress while downloading flix
-* Paramter description in run configuration
-* Cmd + , / .
-* Different icons for src/lib/build/test
 
