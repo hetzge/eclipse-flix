@@ -21,6 +21,7 @@ import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.WorkspaceServerCapabilities;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.eclipse.lsp4j.services.NotebookDocumentService;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 import org.lxtk.util.SafeRun;
@@ -120,6 +121,11 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 	@Override
 	public WorkspaceService getWorkspaceService() {
 		return this.flixWorkspaceService;
+	}
+
+	@Override
+	public NotebookDocumentService getNotebookDocumentService() {
+		return new FlixNotebookDocumentService();
 	}
 
 	@Override
