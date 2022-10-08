@@ -3,11 +3,6 @@
 <target name="Running Platform">
 	<locations>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository location="https://download.eclipse.org/releases/2022-06/202206151000/"/>
-			<unit id="org.eclipse.xtext.sdk.feature.group" version="2.27.0.v20220530-0508"/>
-			<unit id="org.eclipse.sdk.feature.group" version="4.24.0.v20220607-0700"/>
-		</location>
-		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 			<repository location="http://download.eclipse.org/handly/releases/1.6.2/repository"/>
 			<unit id="org.eclipse.handly.feature.group" version="1.6.2.v20220620-1600"/>
 		</location>
@@ -41,6 +36,11 @@
 			<unit id="javax.websocket" version="1.0.0.v20140310-1603"/>
 			<unit id="javax.websocket.source" version="1.0.0.v20140310-1603"/>
 			<unit id="org.eclipse.lsp4j.sdk.feature.group" version="0.14.0.v20220526-1520"/>
+		</location>
+		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/releases/2022-09/202209141001/"/>
+			<unit id="org.eclipse.sdk.feature.group" version="4.25.0.v20220831-1800"/>
+			<unit id="org.eclipse.xtext.sdk.feature.group" version="2.28.0.v20220829-0555"/>
 		</location>
 	</locations>
 	<environment>

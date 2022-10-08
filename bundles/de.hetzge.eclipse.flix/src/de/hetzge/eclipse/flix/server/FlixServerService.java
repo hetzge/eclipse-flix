@@ -264,6 +264,9 @@ public final class FlixServerService implements AutoCloseable {
 	public CompletableFuture<List<? extends CodeLens>> resolveCodeLens(CodeLensParams params) {
 		return this.compilerClient.sendCodeLens(params).thenApply(response -> {
 			if (response.isLeft()) {
+				if (response.getLeft().isJsonNull()) {
+					return List.of();
+				}
 				final List<? extends CodeLens> codeLenses = GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<CodeLens>>() {
 				}.getType());
 				return codeLenses.stream().filter(codeLens -> Set.of("flix.runMain", "flix.cmdRepl").contains(codeLens.getCommand().getCommand())).collect(Collectors.toList());

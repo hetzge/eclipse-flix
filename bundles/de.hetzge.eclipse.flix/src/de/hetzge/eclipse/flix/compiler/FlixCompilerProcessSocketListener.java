@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -36,9 +37,9 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 			final String statusValue = message.get("status").getAsString();
 			final JsonElement resultJsonElement = message.get("result");
 			if (statusValue.equals(SUCCESS_STATUS_VALUE)) {
-				return Either.forLeft(resultJsonElement != null ? resultJsonElement : new JsonObject());
+				return Either.forLeft(resultJsonElement != null ? resultJsonElement : JsonNull.INSTANCE);
 			} else if (statusValue.equals(FAILURE_STATUS_VALUE)) {
-				return Either.forRight(resultJsonElement != null ? resultJsonElement : new JsonObject());
+				return Either.forRight(resultJsonElement != null ? resultJsonElement : JsonNull.INSTANCE);
 			} else {
 				throw new IllegalStateException(String.format("Unexpected status '%s'", statusValue));
 			}
