@@ -129,8 +129,8 @@ public final class FlixServerService implements AutoCloseable {
 
 	public CompletableFuture<CompletionList> complete(CompletionParams params) {
 		return this.compilerClient.sendComplete(params).thenApply(response -> {
-			if (response.isLeft()) {
-				return GsonUtils.getGson().fromJson(response.getLeft(), CompletionList.class);
+			if (response.getSuccessJsonElement().isPresent()) {
+				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), CompletionList.class);
 			} else {
 				throw new RuntimeException();
 			}
@@ -139,8 +139,8 @@ public final class FlixServerService implements AutoCloseable {
 
 	public CompletableFuture<List<LocationLink>> decleration(DeclarationParams params) {
 		return this.compilerClient.sendGoto(params).thenApply(response -> {
-			if (response.isLeft()) {
-				final LocationLink link = GsonUtils.getGson().fromJson(response.getLeft(), LocationLink.class);
+			if (response.getSuccessJsonElement().isPresent()) {
+				final LocationLink link = GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), LocationLink.class);
 				link.setTargetUri(fixLibraryUri(link.getTargetUri()));
 				return List.of(link);
 			} else {
@@ -159,10 +159,10 @@ public final class FlixServerService implements AutoCloseable {
 
 	public CompletableFuture<Hover> hover(HoverParams params) {
 		return this.compilerClient.sendHover(params).thenApply(response -> {
-			if (response.isLeft()) {
-				return GsonUtils.getGson().fromJson(response.getLeft(), Hover.class);
+			if (response.getSuccessJsonElement().isPresent()) {
+				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), Hover.class);
 			} else {
-				throw new RuntimeException(response.getRight().toString());
+				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}
 		});
 	}
@@ -170,13 +170,13 @@ public final class FlixServerService implements AutoCloseable {
 	public CompletableFuture<Void> compile() {
 		return this.compilerClient.sendCheck().thenApply(response -> {
 			synchronized (this.diagnosticsParamsByUri) {
-				if (response.isLeft()) {
+				if (response.getSuccessJsonElement().isPresent()) {
 					for (final PublishDiagnosticsParams diagnosticsParams : this.diagnosticsParamsByUri.values()) {
 						this.client.publishDiagnostics(new PublishDiagnosticsParams(diagnosticsParams.getUri(), List.of()));
 					}
 					return null;
 				} else {
-					final JsonArray jsonArray = response.getRight().getAsJsonArray();
+					final JsonArray jsonArray = response.getFailureJsonElement().orElse(new JsonArray()).getAsJsonArray();
 					final Map<String, PublishDiagnosticsParams> diffMap = new HashMap<>(this.diagnosticsParamsByUri);
 					// Set all new diagnostics
 					for (final JsonElement jsonElement : jsonArray) {
@@ -197,24 +197,24 @@ public final class FlixServerService implements AutoCloseable {
 
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbols(URI uri) {
 		return this.compilerClient.sendDocumentSymbols(uri).thenApply(response -> {
-			if (response.isLeft()) {
+			if (response.getSuccessJsonElement().isPresent()) {
 				final List<Either<SymbolInformation, DocumentSymbol>> result = new ArrayList<>();
-				final JsonArray jsonArray = response.getLeft().getAsJsonArray();
+				final JsonArray jsonArray = response.getSuccessJsonElement().get().getAsJsonArray();
 				for (final JsonElement jsonElement : jsonArray) {
 					result.add(Either.forRight(GsonUtils.getGson().fromJson(jsonElement, DocumentSymbol.class)));
 				}
 				return result;
 			} else {
-				throw new RuntimeException(response.getRight().toString());
+				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}
 		});
 	}
 
 	public CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> workspaceSymbols(WorkspaceSymbolParams params) {
 		return this.compilerClient.sendWorkspaceSymbols(params).thenApply(response -> {
-			if (response.isLeft()) {
+			if (response.getSuccessJsonElement().isPresent()) {
 				final List<WorkspaceSymbol> result = new ArrayList<>();
-				final JsonArray jsonArray = response.getLeft().getAsJsonArray();
+				final JsonArray jsonArray = response.getSuccessJsonElement().get().getAsJsonArray();
 				loop: for (final JsonElement jsonElement : jsonArray) {
 					final WorkspaceSymbol workspaceSymbol = GsonUtils.getGson().fromJson(jsonElement, WorkspaceSymbol.class);
 					final Either<Location, WorkspaceSymbolLocation> location = workspaceSymbol.getLocation();
@@ -235,43 +235,45 @@ public final class FlixServerService implements AutoCloseable {
 				}
 				return Either.forRight(result);
 			} else {
-				throw new RuntimeException(response.getRight().toString());
+				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}
 		});
 	}
 
 	public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
 		return this.compilerClient.sendRename(params).thenApply(response -> {
-			if (response.isLeft()) {
-				return GsonUtils.getGson().fromJson(response.getLeft(), WorkspaceEdit.class);
+			if (response.getSuccessJsonElement().isPresent()) {
+				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), WorkspaceEdit.class);
 			} else {
-				throw new RuntimeException(response.getRight().toString());
+				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}
 		});
 	}
 
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
 		return this.compilerClient.sendUses(params).thenApply(response -> {
-			if (response.isLeft()) {
-				return GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<Location>>() {
+			if (response.getSuccessJsonElement().isPresent()) {
+				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<Location>>() {
 				}.getType());
 			} else {
-				throw new RuntimeException(response.getRight().toString());
+				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}
 		});
 	}
 
 	public CompletableFuture<List<? extends CodeLens>> resolveCodeLens(CodeLensParams params) {
 		return this.compilerClient.sendCodeLens(params).thenApply(response -> {
-			if (response.isLeft()) {
-				if (response.getLeft().isJsonNull()) {
-					return List.of();
+			if (response.getSuccessJsonElement().isPresent()) {
+				final List<? extends CodeLens> codeLenses;
+				if (response.getSuccessJsonElement().get().isJsonArray()) {
+					codeLenses = GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<CodeLens>>() {
+					}.getType());
+				} else {
+					codeLenses = List.of();
 				}
-				final List<? extends CodeLens> codeLenses = GsonUtils.getGson().fromJson(response.getLeft(), new TypeToken<List<CodeLens>>() {
-				}.getType());
 				return codeLenses.stream().filter(codeLens -> Set.of("flix.runMain", "flix.cmdRepl").contains(codeLens.getCommand().getCommand())).collect(Collectors.toList());
 			} else {
-				throw new RuntimeException(response.getRight().toString());
+				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}
 		});
 	}

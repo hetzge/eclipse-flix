@@ -7,10 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
-
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -29,17 +26,17 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 		this.messagesById = new ConcurrentHashMap<>();
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> startRequestResponse(String id) {
+	public CompletableFuture<FlixCompilerResponse> startRequestResponse(String id) {
 		System.out.println("Start request/response with id " + id);
 		final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-		final CompletableFuture<Either<JsonElement, JsonElement>> successFailureFuture = future.thenApply(message -> {
+		final CompletableFuture<FlixCompilerResponse> successFailureFuture = future.thenApply(message -> {
 			this.messagesById.remove(id);
 			final String statusValue = message.get("status").getAsString();
 			final JsonElement resultJsonElement = message.get("result");
 			if (statusValue.equals(SUCCESS_STATUS_VALUE)) {
-				return Either.forLeft(resultJsonElement != null ? resultJsonElement : JsonNull.INSTANCE);
+				return new FlixCompilerResponse(resultJsonElement, null);
 			} else if (statusValue.equals(FAILURE_STATUS_VALUE)) {
-				return Either.forRight(resultJsonElement != null ? resultJsonElement : JsonNull.INSTANCE);
+				return new FlixCompilerResponse(null, resultJsonElement);
 			} else {
 				throw new IllegalStateException(String.format("Unexpected status '%s'", statusValue));
 			}
