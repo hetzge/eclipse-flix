@@ -1,6 +1,6 @@
 # Eclipse Flix Language Support
 
-This project provides an plugin for the Eclipse IDE that provides language support 
+This project implements a plugin for the Eclipse IDE that provides support 
 for the [Flix programming language](https://flix.dev).
 
 ## Build
