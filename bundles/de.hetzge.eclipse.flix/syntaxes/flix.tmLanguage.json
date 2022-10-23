@@ -68,6 +68,10 @@
 					"match": "\\b(choose)\\b"
 				},
 				{
+					"name": "keyword.control.debug.flix",
+					"match": "\\b(debug)\\b"
+				},
+				{
 					"name": "keyword.control.do.flix",
 					"match": "\\b(do)\\b"
 				},
@@ -98,6 +102,10 @@
 				{
 					"name": "keyword.control.spawn.flix",
 					"match": "\\b(spawn)\\b"
+				},
+				{
+					"name": "keyword.control.par.flix",
+					"match": "\\b(par)\\b"
 				},
 				{
 					"name": "keyword.operator.bool.flix",
@@ -235,14 +243,6 @@
 			"patterns": [
 				{
 					"name": "storage.type.annotation.flix",
-					"match": "@benchmark"
-				},
-				{
-					"name": "storage.type.annotation.flix",
-					"match": "@test"
-				},
-				{
-					"name": "storage.type.annotation.flix",
 					"match": "@Deprecated"
 				},
 				{
@@ -271,7 +271,15 @@
 				},
 				{
 					"name": "storage.type.annotation.flix",
+					"match": "@Skip"
+				},
+				{
+					"name": "storage.type.annotation.flix",
 					"match": "@Space"
+				},
+				{
+					"name": "storage.type.annotation.flix",
+					"match": "@Test"
 				},
 				{
 					"name": "storage.type.annotation.flix",

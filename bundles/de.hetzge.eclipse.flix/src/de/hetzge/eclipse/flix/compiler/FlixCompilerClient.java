@@ -13,11 +13,9 @@ import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import de.hetzge.eclipse.flix.FlixLogger;
@@ -90,19 +88,19 @@ public class FlixCompilerClient implements AutoCloseable {
 		return send(jsonObject);
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> sendComplete(CompletionParams position) {
+	public CompletableFuture<FlixCompilerResponse> sendComplete(CompletionParams position) {
 		return send("lsp/complete", position);
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> sendGoto(DeclarationParams params) {
+	public CompletableFuture<FlixCompilerResponse> sendGoto(DeclarationParams params) {
 		return send("lsp/goto", params);
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> sendCheck() {
+	public CompletableFuture<FlixCompilerResponse> sendCheck() {
 		return send("lsp/check", new Object());
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> sendHover(HoverParams params) {
+	public CompletableFuture<FlixCompilerResponse> sendHover(HoverParams params) {
 		final String id = UUID.randomUUID().toString();
 
 		final JsonObject positionJsonObject = new JsonObject();
@@ -115,11 +113,11 @@ public class FlixCompilerClient implements AutoCloseable {
 		jsonObject.addProperty("uri", params.getTextDocument().getUri());
 		jsonObject.add("position", positionJsonObject);
 
-		final CompletableFuture<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
+		final CompletableFuture<FlixCompilerResponse> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> sendDocumentSymbols(URI uri) {
+	public CompletableFuture<FlixCompilerResponse> sendDocumentSymbols(URI uri) {
 		final String id = UUID.randomUUID().toString();
 
 		final JsonObject jsonObject = new JsonObject();
@@ -127,34 +125,34 @@ public class FlixCompilerClient implements AutoCloseable {
 		jsonObject.addProperty("id", id);
 		jsonObject.addProperty("uri", uri.toASCIIString());
 
-		final CompletableFuture<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
+		final CompletableFuture<FlixCompilerResponse> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> sendWorkspaceSymbols(WorkspaceSymbolParams params) {
+	public CompletableFuture<FlixCompilerResponse> sendWorkspaceSymbols(WorkspaceSymbolParams params) {
 		return send("lsp/workspaceSymbols", params);
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> sendRename(RenameParams params) {
+	public CompletableFuture<FlixCompilerResponse> sendRename(RenameParams params) {
 		return send("lsp/rename", params);
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> sendUses(ReferenceParams params) {
+	public CompletableFuture<FlixCompilerResponse> sendUses(ReferenceParams params) {
 		return send("lsp/uses", params);
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> sendCodeLens(CodeLensParams params) {
+	public CompletableFuture<FlixCompilerResponse> sendCodeLens(CodeLensParams params) {
 		return send("lsp/codelens", params);
 	}
 
-	public CompletableFuture<Either<JsonElement, JsonElement>> send(String request, Object params) {
+	public CompletableFuture<FlixCompilerResponse> send(String request, Object params) {
 		final String id = UUID.randomUUID().toString();
 
 		final JsonObject jsonObject = GsonUtils.getGson().toJsonTree(params).getAsJsonObject();
 		jsonObject.addProperty("request", request);
 		jsonObject.addProperty("id", id);
 
-		final CompletableFuture<Either<JsonElement, JsonElement>> responseFuture = this.listener.startRequestResponse(id);
+		final CompletableFuture<FlixCompilerResponse> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
 	}
 
@@ -172,7 +170,7 @@ public class FlixCompilerClient implements AutoCloseable {
 		System.out.println("FlixCompilerClient.connect()");
 		return SafeRun.runWithResult(rollback -> {
 			rollback.setLogger(FlixLogger::logError);
-			
+
 			final FlixCompilerProcessSocketListener listener = new FlixCompilerProcessSocketListener();
 			final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:" + port), listener).join();
 			rollback.add(webSocket::abort);
