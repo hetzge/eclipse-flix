@@ -1,0 +1,125 @@
+/*
+* Prefixed by https://autoprefixer.github.io
+* PostCSS: v8.4.14,
+* Autoprefixer: v10.4.7
+* Browsers: last 4 version
+*/
+body {
+	background: rgb(21, 28, 40) none repeat scroll 0% 0%;
+	font-family: inter;
+	color: rgb(235, 241, 247);
+}
+
+a {
+	color: rgb(0, 147, 255);
+}
+
+.section {
+	max-width: 1250px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.section-border {
+	padding-top: 96px;
+	padding-left: 32px;
+	padding-right: 32px;
+	padding-bottom: 96px;
+}
+
+@media ( min-width : 960px) {
+	.section-40-60-grid {
+		display: -ms-grid;
+		display: grid;
+		-ms-grid-columns: 40% 60%;
+		grid-template-columns: 40% 60%;
+	}
+}
+
+.background {
+	background: rgba(0, 0, 0, 0)
+		-webkit-gradient(linear, left top, left bottom, from(rgb(25, 35, 56)),
+		to(rgb(22, 30, 47))) repeat scroll 0% 0%;
+	background: rgba(0, 0, 0, 0) -o-linear-gradient(rgb(25, 35, 56),
+		rgb(22, 30, 47)) repeat scroll 0% 0%;
+	background: rgba(0, 0, 0, 0) linear-gradient(rgb(25, 35, 56),
+		rgb(22, 30, 47)) repeat scroll 0% 0%;
+}
+
+.image-mask {
+	-webkit-mask-image: -webkit-gradient(linear, left top, right top, color-stop(50%, rgb(0, 0,
+		0)), to(transparent));
+	-webkit-mask-image: linear-gradient(to right, rgb(0, 0, 0) 50%,
+		transparent 100%);
+	mask-image: -webkit-gradient(linear, left top, right top, color-stop(50%, rgb(0, 0,
+		0)), to(transparent));
+	mask-image: linear-gradient(to right, rgb(0, 0, 0) 50%, transparent 100%);
+}
+
+.fancy-headline {
+	background-image: -o-linear-gradient(295deg, rgb(10, 132, 255) 10%,
+		rgb(10, 240, 255) 90%);
+	background-image: linear-gradient(155deg, rgb(10, 132, 255) 10%,
+		rgb(10, 240, 255) 90%);
+	background-size: 100%;
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	font-weight: 600;
+	letter-spacing: -2px;
+	line-height: 1.1;
+}
+
+input {
+	min-height: 9px;
+	font-family: "Inter", system-ui, sans-serif;
+	font-weight: 500;
+	background-color: rgb(29, 39, 63);
+	color: rgb(235, 241, 247);
+	border: 1px solid rgb(51, 70, 112);
+	border-radius: 2px;
+	-webkit-box-shadow: rgba(0, 0, 0, 0.24) 0px 1px 1px;
+	box-shadow: rgba(0, 0, 0, 0.24) 0px 1px 1px;
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+	line-height: 1;
+	text-decoration: none;
+	-webkit-box-pack: center;
+	-ms-flex-pack: center;
+	justify-content: center;
+	cursor: pointer;
+	padding: 12px 12px;
+	font-size: 14px;
+}
+
+.bigger-text {
+	font-size: 24px;
+	line-height: 1.4;
+}
+
+svg {
+	width: 100%;
+	height: 100%;
+	fill: currentColor;
+}
+
+.feature-svg-wrapper {
+	display: inline-block;
+	width: 64px;
+	height: 64px;
+	color: black;
+}
+
+@media ( min-width : 960px) {
+	.features {
+		display: -ms-grid;
+		display: grid;
+		-ms-grid-columns: 1fr 32px 1fr 32px 1fr;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 32px;
+	}
+}
