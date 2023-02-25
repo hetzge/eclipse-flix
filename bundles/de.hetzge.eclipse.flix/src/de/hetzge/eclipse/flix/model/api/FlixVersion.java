@@ -7,8 +7,11 @@ public final class FlixVersion {
 
 	public final static FlixVersion VERSION_0_30_0 = new FlixVersion("v0.30.0");
 	public final static FlixVersion VERSION_0_31_0 = new FlixVersion("v0.31.0");
+	public final static FlixVersion VERSION_0_32_0 = new FlixVersion("v0.32.0");
+	public final static FlixVersion VERSION_0_33_0 = new FlixVersion("v0.33.0");
+	public final static FlixVersion VERSION_0_34_0 = new FlixVersion("v0.34.0");
 	public final static FlixVersion CUSTOM = new FlixVersion("<project>/flix.jar");
-	public final static List<FlixVersion> VERSIONS = List.of(VERSION_0_30_0, VERSION_0_31_0);
+	public final static List<FlixVersion> VERSIONS = List.of(VERSION_0_30_0, VERSION_0_31_0, VERSION_0_32_0, VERSION_0_33_0, VERSION_0_34_0);
 
 	private final String key;
 
