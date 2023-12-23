@@ -147,7 +147,7 @@
 		<image icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix.natureImage" natureId="de.hetzge.eclipse.flix.nature"></image>
 	</extension>
 	<extension point="org.eclipse.tm.terminal.view.ui.launcherDelegates">
-		<delegate class="org.eclipse.tm.terminal.connector.process.ProcessLauncherDelegate" hidden="true" id="de.hetzge.eclipse.flix.processLauncherDelegate" label="Flix Process Launch"></delegate>
+		<delegate class="org.eclipse.tm.terminal.connector.local.launcher.LocalLauncherDelegate" hidden="true" id="de.hetzge.eclipse.flix.processLauncherDelegate" label="Flix Process Launch"></delegate>
 	</extension>
 	<extension id="flixBuilder" name="Flix Builder" point="org.eclipse.core.resources.builders">
 		<builder callOnEmptyDelta="true" hasNature="true" isConfigurable="true" supportsConfigurations="true">
