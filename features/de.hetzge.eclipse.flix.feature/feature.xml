@@ -44,9 +44,6 @@
 
    <plugin
          id="de.hetzge.eclipse.flix"
-         download-size="0"
-         install-size="0"
-         version="0.0.1.qualifier"
-         unpack="false"/>
+         version="0.0.0"/>
 
 </feature>
