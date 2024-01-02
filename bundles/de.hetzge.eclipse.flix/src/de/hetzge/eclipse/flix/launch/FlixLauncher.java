@@ -153,7 +153,7 @@ public final class FlixLauncher {
 
 	private static Map<String, Object> createTerminalCompilerProperties(IFlixProject flixProject, int port) {
 		final String name = "Compiler (" + flixProject.getFlixVersion().getKey() + ") " + flixProject.getProject().getName();
-		final Map<String, Object> properties = createBasicTerminalLaunchProperties(name, flixProject, List.of("--lsp", String.valueOf(port)));
+		final Map<String, Object> properties = createBasicTerminalLaunchProperties(name, flixProject, List.of("lsp", String.valueOf(port)));
 		properties.put(ITerminalsConnectorConstants.PROP_SECONDARY_ID, "Flix");
 		return properties;
 	}

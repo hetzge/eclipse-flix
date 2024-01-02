@@ -2,6 +2,7 @@ package de.hetzge.eclipse.flix.client;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -116,6 +117,11 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 	@Override
 	protected Class<LanguageServer> getServerInterface() {
 		return LanguageServer.class;
+	}
+
+	@Override
+	protected Duration getInitializeTimeout() {
+		return Duration.ofSeconds(30);
 	}
 
 	@Override
