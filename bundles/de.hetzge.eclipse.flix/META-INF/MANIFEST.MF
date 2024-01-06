@@ -36,13 +36,3 @@ Require-Bundle: com.google.gson,
  org.eclipse.ui.navigator.resources
 utomatic-Module-Name: eclipse.flix
 Bundle-ActivationPolicy: lazy
-Export-Package: de.hetzge.eclipse.flix,
- de.hetzge.eclipse.flix.client,
- de.hetzge.eclipse.flix.compiler,
- de.hetzge.eclipse.flix.editor,
- de.hetzge.eclipse.flix.launch,
- de.hetzge.eclipse.flix.model.api,
- de.hetzge.eclipse.flix.project,
- de.hetzge.eclipse.flix.server,
- de.hetzge.eclipse.flix.utils,
- de.hetzge.eclipse.utils

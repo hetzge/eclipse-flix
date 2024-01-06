@@ -46,4 +46,8 @@
          id="de.hetzge.eclipse.flix"
          version="0.0.0"/>
 
+   <plugin
+         id="de.hetzge.eclipse.toml"
+         version="0.0.0"/>
+
 </feature>

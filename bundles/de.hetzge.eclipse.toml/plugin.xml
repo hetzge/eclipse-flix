@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+	<extension point="org.eclipse.core.contenttype.contentTypes">
+		<content-type id="de.hetzge.eclipse.toml" name="Toml" file-extensions="toml" base-type="org.eclipse.core.runtime.text" priority="normal"></content-type>
+	</extension>
+	<extension point="org.eclipse.ui.editors">
+		<editor class="de.hetzge.eclipse.toml.TomlEditor" contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor" default="false" icon="assets/icon.png" id="de.hetzge.eclipse.toml.editor" name="Toml Editor">
+			<contentTypeBinding contentTypeId="de.hetzge.eclipse.toml"></contentTypeBinding>
+		</editor>
+	</extension>
+	<extension point="org.eclipse.ui.contexts">
+		<context id="de.hetzge.eclipse.toml.editor.scope" parentId="org.eclipse.ui.textEditorScope" name="Editing Toml Source" description="Editing Toml Source Context"></context>
+	</extension>
+	<extension point="org.eclipse.tm4e.registry.grammars">
+		<grammar scopeName="source.toml" path="syntaxes/toml.tmLanguage.json"></grammar>
+		<scopeNameContentTypeBinding contentTypeId="de.hetzge.eclipse.toml" scopeName="source.toml"></scopeNameContentTypeBinding>
+	</extension>
+	<extension point="org.eclipse.tm4e.ui.themes">
+		<themeAssociation scopeName="source.toml" themeId="org.eclipse.tm4e.ui.themes.Light"></themeAssociation>
+	</extension>
+</plugin>

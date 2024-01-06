@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Toml
+Bundle-SymbolicName: de.hetzge.eclipse.toml;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: de.hetzge.eclipse.toml.TomlActivator
+Require-Bundle: org.eclipse.tm4e.core,
+ org.eclipse.tm4e.ui,
+ org.eclipse.jface.text,
+ org.eclipse.core.runtime,
+ org.eclipse.ui,
+ org.eclipse.ui.ide,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.workbench.texteditor
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Automatic-Module-Name: de.hetzge.eclipse.toml
+Bundle-ActivationPolicy: lazy
