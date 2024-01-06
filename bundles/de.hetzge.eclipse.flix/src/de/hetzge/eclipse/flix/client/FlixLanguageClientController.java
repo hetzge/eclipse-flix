@@ -59,7 +59,6 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		this.log = new EclipseLog(FlixActivator.getDefault().getBundle(), "flix-language-client:" + flixProject.getProject().getName()); //$NON-NLS-1$
 		this.diagnosticConsumer = new BufferingDiagnosticConsumer(new DiagnosticMarkers(FlixMarkerResolutionGenerator.MARKER_TYPE));
 		this.documentFilter = new DocumentFilter(FlixConstants.LANGUAGE_ID, "file", this.flixProject.getProject().getLocation().append("**").toString()); //$NON-NLS-1$ //$NON-NLS-2$
-
 		final LanguageService languageService = Flix.get().getLanguageService();
 		final DocumentService documentService = Flix.get().getDocumentService();
 		final CommandService commandService = Flix.get().getCommandService();

@@ -1,5 +1,6 @@
 package de.hetzge.eclipse.flix;
 
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.lxtk.CommandService;
 import org.lxtk.DocumentService;
 import org.lxtk.LanguageService;
@@ -11,8 +12,8 @@ import org.lxtk.lx4e.EclipseWorkspaceService;
 import org.lxtk.lx4e.refactoring.FileOperationParticipantSupport;
 import org.lxtk.lx4e.refactoring.WorkspaceEditChangeFactory;
 
-import de.hetzge.eclipse.flix.model.api.FlixModelManager;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
+import de.hetzge.eclipse.flix.model.impl.FlixModel;
 import de.hetzge.eclipse.flix.utils.ResourceMonitor;
 
 public final class Flix implements AutoCloseable {
@@ -28,9 +29,9 @@ public final class Flix implements AutoCloseable {
 	private final FileOperationParticipantSupport fileOperationParticipantSupport;
 	private final FlixDocumentProvider documentProvider;
 	private final ResourceMonitor postResourceMonitor;
-	private final FlixModelManager modelManager;
 	private final FlixLanguageToolingManager languageToolingManager;
 	private final CommandService commandService;
+	private final FlixModel model;
 
 	Flix() {
 		this.documentService = new EclipseDocumentService();
@@ -39,11 +40,11 @@ public final class Flix implements AutoCloseable {
 		this.changeFactory = new WorkspaceEditChangeFactory(this.documentService);
 		this.fileOperationParticipantSupport = new FileOperationParticipantSupport(this.changeFactory);
 		this.changeFactory.setFileOperationParticipantSupport(this.fileOperationParticipantSupport);
-		this.documentProvider = new FlixDocumentProvider();
+		this.documentProvider = new FlixDocumentProvider(this.documentService);
 		this.postResourceMonitor = new ResourceMonitor();
-		this.modelManager = FlixModelManager.create();
 		this.languageToolingManager = new FlixLanguageToolingManager();
 		this.commandService = new EclipseCommandService();
+		this.model = new FlixModel(ResourcesPlugin.getWorkspace());
 	}
 
 	public DocumentService getDocumentService() {
@@ -74,20 +75,16 @@ public final class Flix implements AutoCloseable {
 		return this.postResourceMonitor;
 	}
 
-	public FlixModelManager getModelManager() {
-		return this.modelManager;
-	}
-
-	public IFlixModel getModel() {
-		return this.modelManager.getModel();
-	}
-
 	public FlixLanguageToolingManager getLanguageToolingManager() {
 		return this.languageToolingManager;
 	}
 
 	public CommandService getCommandService() {
 		return this.commandService;
+	}
+
+	public IFlixModel getModel() {
+		return this.model;
 	}
 
 	@Override

@@ -38,7 +38,7 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 			} else if (statusValue.equals(FAILURE_STATUS_VALUE)) {
 				return new FlixCompilerResponse(null, resultJsonElement);
 			} else {
-				throw new IllegalStateException(String.format("Unexpected status '%s'", statusValue));
+				throw new IllegalStateException(String.format("Unexpected status '%s' with message '%s'", statusValue, message.get("message")));
 			}
 		});
 		successFailureFuture.exceptionally(throwable -> {

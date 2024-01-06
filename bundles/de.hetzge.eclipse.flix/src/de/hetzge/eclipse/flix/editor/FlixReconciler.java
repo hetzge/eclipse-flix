@@ -1,13 +1,11 @@
 package de.hetzge.eclipse.flix.editor;
 
-import org.eclipse.handly.model.IElementChangeListener;
-import org.eclipse.handly.ui.IWorkingCopyManager;
-import org.eclipse.handly.ui.text.reconciler.CompositeReconcilingStrategy;
-import org.eclipse.handly.ui.text.reconciler.EditorWorkingCopyReconciler;
-import org.eclipse.handly.ui.text.reconciler.WorkingCopyReconcilingStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.codemining.CodeMiningReconciler;
+import org.eclipse.jface.text.reconciler.AbstractReconciler;
+import org.eclipse.jface.text.reconciler.DirtyRegion;
+import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.ui.IEditorPart;
 import org.lxtk.DocumentSymbolProvider;
 import org.lxtk.util.Registry;
@@ -21,16 +19,12 @@ import de.hetzge.eclipse.flix.FlixLogger;
  *
  * @see https://wiki.eclipse.org/FAQ_How_do_I_use_a_model_reconciler%3F
  */
-public class FlixReconciler extends EditorWorkingCopyReconciler {
+public class FlixReconciler extends AbstractReconciler {
 	private final CodeMiningReconciler codeMiningReconciler;
 	private Runnable uninstallRunnable;
 
-	public FlixReconciler(IEditorPart editor, IWorkingCopyManager workingCopyManager) {
-		super(editor, workingCopyManager);
+	public FlixReconciler(IEditorPart editor) {
 		this.codeMiningReconciler = new CodeMiningReconciler();
-		setReconcilingStrategy(new CompositeReconcilingStrategy( //
-				new WorkingCopyReconcilingStrategy(workingCopyManager::getWorkingCopy), //
-				this.codeMiningReconciler.getReconcilingStrategy(IDocument.DEFAULT_CONTENT_TYPE)));
 	}
 
 	@Override
@@ -61,12 +55,15 @@ public class FlixReconciler extends EditorWorkingCopyReconciler {
 	}
 
 	@Override
-	protected void addElementChangeListener(IElementChangeListener listener) {
-		Flix.get().getModelManager().getNotificationManager().addElementChangeListener(listener);
+	public IReconcilingStrategy getReconcilingStrategy(String contentType) {
+		return this.codeMiningReconciler.getReconcilingStrategy(IDocument.DEFAULT_CONTENT_TYPE);
 	}
 
 	@Override
-	protected void removeElementChangeListener(IElementChangeListener listener) {
-		Flix.get().getModelManager().getNotificationManager().removeElementChangeListener(listener);
+	protected void process(DirtyRegion dirtyRegion) {
+	}
+
+	@Override
+	protected void reconcilerDocumentChanged(IDocument newDocument) {
 	}
 }

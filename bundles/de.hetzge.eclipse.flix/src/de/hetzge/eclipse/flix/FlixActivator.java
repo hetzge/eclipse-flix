@@ -10,12 +10,6 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.handly.model.ElementDeltas;
-import org.eclipse.handly.model.IElement;
-import org.eclipse.handly.model.IElementChangeEvent;
-import org.eclipse.handly.model.IElementChangeListener;
-import org.eclipse.handly.model.IElementDelta;
-import org.eclipse.handly.model.impl.support.NotificationManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
@@ -28,7 +22,6 @@ import org.osgi.framework.BundleContext;
 
 import de.hetzge.eclipse.flix.launch.FlixRunMainCommandHandler;
 import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
-import de.hetzge.eclipse.flix.model.api.FlixModelManager;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
 import de.hetzge.eclipse.utils.EclipseUtils;
@@ -37,7 +30,7 @@ import de.hetzge.eclipse.utils.Utils;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class FlixActivator extends AbstractUIPlugin implements IElementChangeListener {
+public class FlixActivator extends AbstractUIPlugin {
 
 	private static FlixActivator plugin;
 
@@ -83,8 +76,7 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 				/*
 				 * Init model and projects ...
 				 */
-				final FlixModelManager modelManager = this.flix.getModelManager();
-				final IFlixModel model = modelManager.getModel();
+				final IFlixModel model = Flix.get().getModel();
 				for (final IFlixProject flixProject : model.getFlixProjects()) {
 					System.out.println(">>> " + flixProject);
 					this.flix.getLanguageToolingManager().connectProject(flixProject);
@@ -93,12 +85,6 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 				final IWorkspace workspace = ResourcesPlugin.getWorkspace();
 				workspace.addResourceChangeListener(this.flix.getPostResourceMonitor(), IResourceChangeEvent.POST_CHANGE);
 				rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getPostResourceMonitor()));
-				workspace.addResourceChangeListener(modelManager, IResourceChangeEvent.POST_CHANGE);
-				rollback.add(() -> workspace.removeResourceChangeListener(modelManager));
-
-				final NotificationManager notificationManager = modelManager.getNotificationManager();
-				notificationManager.addElementChangeListener(this);
-				rollback.add(() -> notificationManager.removeElementChangeListener(this));
 
 				rollback.add(this.flix.getPostResourceMonitor().onDidCreateFiles().subscribe(fileCreateEvent -> {
 					System.out.println("CREATED");
@@ -153,37 +139,6 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 			plugin = null;
 		} finally {
 			super.stop(context);
-		}
-	}
-
-	@Override
-	public void elementChanged(IElementChangeEvent event) {
-		System.out.println("FlixActivator.elementChanged()");
-		for (final IElementDelta delta : event.getDeltas()) {
-			for (final IElementDelta addedChildDelta : ElementDeltas.getAddedChildren(delta)) {
-				final IElement element = ElementDeltas.getElement(addedChildDelta);
-				if (element instanceof IFlixProject) {
-					final IFlixProject flixProject = (IFlixProject) element;
-					Flix.get().getLanguageToolingManager().connectProject(flixProject);
-				}
-				System.out.println("added " + element.getClass());
-			}
-			for (final IElementDelta removedChildDelta : ElementDeltas.getRemovedChildren(delta)) {
-				final IElement element = ElementDeltas.getElement(removedChildDelta);
-				if (element instanceof IFlixProject) {
-					final IFlixProject flixProject = (IFlixProject) element;
-					Flix.get().getLanguageToolingManager().disconnectProject(flixProject);
-				}
-				System.out.println("removed " + element.getClass());
-			}
-			for (final IElementDelta changedChildDelta : ElementDeltas.getChangedChildren(delta)) {
-				final IElement element = ElementDeltas.getElement(changedChildDelta);
-				System.out.println("changed " + element.getClass());
-			}
-			for (final IElementDelta affectedChildDelta : ElementDeltas.getAffectedChildren(delta)) {
-				final IElement element = ElementDeltas.getElement(affectedChildDelta);
-				System.out.println("affected " + element.getClass());
-			}
 		}
 	}
 

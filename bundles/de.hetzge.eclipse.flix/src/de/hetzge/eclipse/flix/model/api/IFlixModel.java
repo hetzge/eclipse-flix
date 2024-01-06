@@ -6,10 +6,8 @@ import java.util.Optional;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.handly.model.IElementExtension;
-import org.eclipse.handly.model.IModel;
 
-public interface IFlixModel extends IElementExtension, IModel {
+public interface IFlixModel {
 
 	List<FlixVersion> getUsedFlixVersions();
 

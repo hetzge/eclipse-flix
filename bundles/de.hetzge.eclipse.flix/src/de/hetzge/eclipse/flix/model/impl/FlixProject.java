@@ -7,15 +7,10 @@ import java.util.Optional;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SafeRunner;
-import org.eclipse.handly.context.IContext;
-import org.eclipse.handly.model.impl.support.Element;
-import org.eclipse.handly.model.impl.support.IModelManager;
 
-import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.model.api.FlixVersion;
 import de.hetzge.eclipse.flix.model.api.IFlixProject;
@@ -24,36 +19,14 @@ import de.hetzge.eclipse.flix.project.FlixProjectPreferences;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
 
-public class FlixProject extends Element implements IFlixProject {
+public class FlixProject implements IFlixProject {
 
 	private final IProject project;
 	private final FlixProjectPreferences projectPreferences;
 
-	public FlixProject(FlixModel parent, IProject project) {
-		super(parent, project.getName());
+	public FlixProject(IProject project) {
 		this.project = project;
 		this.projectPreferences = new FlixProjectPreferences(project);
-	}
-
-	@Override
-	public void validateExistence_(IContext context) throws CoreException {
-		if (!isActive()) {
-			throw newDoesNotExistException_();
-		}
-	}
-
-	@Override
-	public void buildStructure_(IContext context, IProgressMonitor monitor) throws CoreException {
-	}
-
-	@Override
-	public IModelManager getModelManager_() {
-		return Flix.get().getModelManager();
-	}
-
-	@Override
-	public IResource getResource_() {
-		return this.project;
 	}
 
 	@Override

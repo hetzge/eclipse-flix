@@ -21,7 +21,7 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 		final FlixDocumentProvider documentProvider = Flix.get().getDocumentProvider();
 		setPreferenceStore(getPreferenceStores());
 		setDocumentProvider(documentProvider);
-		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(getPreferenceStores(), this, documentProvider));
+		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(getPreferenceStores(), this));
 		setEditorContextMenuId("#FlixEditorContext"); //$NON-NLS-1$
 		setRulerContextMenuId("#FlixRulerContext"); //$NON-NLS-1$
 	}
