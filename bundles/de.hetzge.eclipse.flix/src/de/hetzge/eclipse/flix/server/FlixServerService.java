@@ -169,14 +169,9 @@ public final class FlixServerService implements AutoCloseable {
 
 	public CompletableFuture<Void> compile() {
 		return this.compilerClient.sendCheck().thenApply(response -> {
-			synchronized (this.diagnosticsParamsByUri) {
-				if (response.getSuccessJsonElement().isPresent()) {
-					for (final PublishDiagnosticsParams diagnosticsParams : this.diagnosticsParamsByUri.values()) {
-						this.client.publishDiagnostics(new PublishDiagnosticsParams(diagnosticsParams.getUri(), List.of()));
-					}
-					return null;
-				} else {
-					final JsonArray jsonArray = response.getFailureJsonElement().orElse(new JsonArray()).getAsJsonArray();
+			if (response.getSuccessJsonElement().isPresent()) {
+				synchronized (this.diagnosticsParamsByUri) {
+					final JsonArray jsonArray = response.getSuccessJsonElement().orElse(new JsonArray()).getAsJsonArray();
 					final Map<String, PublishDiagnosticsParams> diffMap = new HashMap<>(this.diagnosticsParamsByUri);
 					// Set all new diagnostics
 					for (final JsonElement jsonElement : jsonArray) {
@@ -189,9 +184,9 @@ public final class FlixServerService implements AutoCloseable {
 					for (final PublishDiagnosticsParams diagnosticsParams : diffMap.values()) {
 						this.client.publishDiagnostics(new PublishDiagnosticsParams(diagnosticsParams.getUri(), List.of()));
 					}
-					return null;
 				}
 			}
+			return null;
 		});
 	}
 

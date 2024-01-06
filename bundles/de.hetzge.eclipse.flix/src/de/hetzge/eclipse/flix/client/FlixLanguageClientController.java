@@ -125,8 +125,11 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 
 	@Override
 	public void dispose() {
-		this.diagnosticConsumer.dispose();
-		super.dispose();
+		try {
+			this.diagnosticConsumer.dispose();
+		} finally {
+			super.dispose();
+		}
 	}
 
 	public static FlixLanguageClientController connect(IFlixProject flixProject, int port) {
