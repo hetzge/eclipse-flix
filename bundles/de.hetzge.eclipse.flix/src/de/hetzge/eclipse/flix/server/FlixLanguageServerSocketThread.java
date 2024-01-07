@@ -15,16 +15,16 @@ import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
 import de.hetzge.eclipse.flix.FlixLogger;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixProject;
 
 public final class FlixLanguageServerSocketThread extends Thread implements AutoCloseable {
 	private final int port;
 	private final ExecutorService executorService;
 	private final List<Rollback> rollbacks;
 	private boolean done;
-	private final IFlixProject flixProject;
+	private final FlixProject flixProject;
 
-	public FlixLanguageServerSocketThread(IFlixProject flixProject, int port) {
+	public FlixLanguageServerSocketThread(FlixProject flixProject, int port) {
 		super("LSP Server Socket");
 		this.flixProject = flixProject;
 		this.port = port;
@@ -82,7 +82,7 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 		interrupt();
 	}
 
-	public static FlixLanguageServerSocketThread createAndStart(IFlixProject flixProject, int port) {
+	public static FlixLanguageServerSocketThread createAndStart(FlixProject flixProject, int port) {
 		System.out.println("FlixLanguageServerSocketThread.createAndStart()");
 
 		final FlixLanguageServerSocketThread thread = new FlixLanguageServerSocketThread(flixProject, port);

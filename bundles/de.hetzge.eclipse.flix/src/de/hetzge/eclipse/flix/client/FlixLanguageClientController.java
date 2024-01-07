@@ -42,18 +42,18 @@ import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixProject;
 
 public class FlixLanguageClientController extends EclipseLanguageClientController<LanguageServer> {
 
-	private final IFlixProject flixProject;
+	private final FlixProject flixProject;
 	private final int port;
 	private final EclipseLog log;
 	private final BufferingDiagnosticConsumer diagnosticConsumer;
 	private final DocumentFilter documentFilter;
 	private final FlixEclipseLanguageClient flixEclipseLanguageClient;
 
-	FlixLanguageClientController(IFlixProject flixProject, int port) {
+	FlixLanguageClientController(FlixProject flixProject, int port) {
 		this.flixProject = flixProject;
 		this.port = port;
 		this.log = new EclipseLog(FlixActivator.getDefault().getBundle(), "flix-language-client:" + flixProject.getProject().getName()); //$NON-NLS-1$
@@ -132,7 +132,7 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		}
 	}
 
-	public static FlixLanguageClientController connect(IFlixProject flixProject, int port) {
+	public static FlixLanguageClientController connect(FlixProject flixProject, int port) {
 		System.out.println("FlixLanguageClient.connect()");
 		return SafeRun.runWithResult(rollback -> {
 			rollback.setLogger(FlixLogger::logError);

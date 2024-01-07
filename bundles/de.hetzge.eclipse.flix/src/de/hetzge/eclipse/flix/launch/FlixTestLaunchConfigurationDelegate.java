@@ -11,7 +11,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.ILaunchConfigurationDelegate;
 
 import de.hetzge.eclipse.flix.Flix;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixProject;
 
 public class FlixTestLaunchConfigurationDelegate implements ILaunchConfigurationDelegate {
 
@@ -23,7 +23,7 @@ public class FlixTestLaunchConfigurationDelegate implements ILaunchConfiguration
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
 		LOG.info(String.format("Launch '%s'", configuration.getName()));
 		final IProject project = configuration.getMappedResources()[0].getProject();
-		final IFlixProject flixProject = Flix.get().getModel().getFlixProject(project).orElseThrow(() -> new CoreException(Status.error("Not a valid flix project")));
+		final FlixProject flixProject = Flix.get().getModel().getFlixProject(project).orElseThrow(() -> new CoreException(Status.error("Not a valid flix project")));
 		FlixLauncher.launchTest(flixProject);
 	}
 

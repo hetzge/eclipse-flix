@@ -17,13 +17,13 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PropertyPage;
 
 import de.hetzge.eclipse.flix.Flix;
-import de.hetzge.eclipse.flix.model.api.FlixVersion;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixProject;
+import de.hetzge.eclipse.flix.model.FlixVersion;
 
 public class FlixProjectPropertyPage extends PropertyPage implements IWorkbenchPropertyPage {
 
 	private IProject project;
-	private IFlixProject flixProject;
+	private FlixProject flixProject;
 	private FlixProjectPropertyPageControl control;
 	private FlixVersion previousFlixVersion;
 

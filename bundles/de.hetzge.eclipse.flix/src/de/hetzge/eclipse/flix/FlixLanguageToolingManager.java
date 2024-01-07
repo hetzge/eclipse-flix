@@ -9,19 +9,19 @@ import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
 import de.hetzge.eclipse.flix.client.FlixLanguageClientController;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread;
 import de.hetzge.eclipse.utils.Utils;
 
 public class FlixLanguageToolingManager implements AutoCloseable {
 
-	private final Map<IFlixProject, LanguageTooling> connectedProjects;
+	private final Map<FlixProject, LanguageTooling> connectedProjects;
 
 	public FlixLanguageToolingManager() {
 		this.connectedProjects = new ConcurrentHashMap<>();
 	}
 
-	public synchronized void connectProject(IFlixProject flixProject) {
+	public synchronized void connectProject(FlixProject flixProject) {
 		System.out.println(
 				"FlixLanguageToolingManager.initializeFlixProject(" + flixProject.getProject().getName() + ")");
 		this.connectedProjects.computeIfAbsent(flixProject, key -> {
@@ -30,8 +30,7 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 				rollback.setLogger(FlixLogger::logError);
 
 				final int lspPort = Utils.queryPort();
-				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread
-						.createAndStart(flixProject, lspPort);
+				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(flixProject, lspPort);
 				rollback.add(socketThread::close);
 
 				final FlixLanguageClientController client = FlixLanguageClientController.connect(flixProject, lspPort);
@@ -42,23 +41,23 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 		});
 	}
 
-	public synchronized void disconnectProject(IFlixProject flixProject) {
+	public synchronized void disconnectProject(FlixProject flixProject) {
 		System.out.println("FlixLanguageToolingManager.closeProject(" + flixProject.getProject().getName() + ")");
 		Optional.ofNullable(this.connectedProjects.remove(flixProject)).ifPresent(LanguageTooling::close);
 	}
 
-	public synchronized void reconnectProject(IFlixProject flixProject) {
+	public synchronized void reconnectProject(FlixProject flixProject) {
 		disconnectProject(flixProject);
 		connectProject(flixProject);
 	}
 
-	public synchronized Optional<LanguageServer> getLanguageServerApi(IFlixProject flixProject) {
+	public synchronized Optional<LanguageServer> getLanguageServerApi(FlixProject flixProject) {
 		return Optional.ofNullable(this.connectedProjects.get(flixProject)).map(LanguageTooling::getLanguageServerApi);
 	}
 
 	@Override
 	public synchronized void close() {
-		for (final IFlixProject flixProject : this.connectedProjects.keySet()) {
+		for (final FlixProject flixProject : this.connectedProjects.keySet()) {
 			disconnectProject(flixProject);
 		}
 	}

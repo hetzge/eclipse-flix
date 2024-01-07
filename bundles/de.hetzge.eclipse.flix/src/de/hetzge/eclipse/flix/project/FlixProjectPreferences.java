@@ -8,7 +8,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import de.hetzge.eclipse.flix.FlixConstants;
-import de.hetzge.eclipse.flix.model.api.FlixVersion;
+import de.hetzge.eclipse.flix.model.FlixVersion;
 
 public final class FlixProjectPreferences extends BasePreferences {
 

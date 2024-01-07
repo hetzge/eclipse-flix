@@ -22,8 +22,8 @@ import org.osgi.framework.BundleContext;
 
 import de.hetzge.eclipse.flix.launch.FlixRunMainCommandHandler;
 import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
-import de.hetzge.eclipse.flix.model.api.IFlixModel;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixModel;
+import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
@@ -76,8 +76,8 @@ public class FlixActivator extends AbstractUIPlugin {
 				/*
 				 * Init model and projects ...
 				 */
-				final IFlixModel model = Flix.get().getModel();
-				for (final IFlixProject flixProject : model.getFlixProjects()) {
+				final FlixModel model = Flix.get().getModel();
+				for (final FlixProject flixProject : model.getFlixProjects()) {
 					System.out.println(">>> " + flixProject);
 					this.flix.getLanguageToolingManager().connectProject(flixProject);
 				}

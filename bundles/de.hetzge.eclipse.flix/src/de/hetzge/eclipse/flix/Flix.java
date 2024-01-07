@@ -13,8 +13,7 @@ import org.lxtk.lx4e.refactoring.FileOperationParticipantSupport;
 import org.lxtk.lx4e.refactoring.WorkspaceEditChangeFactory;
 
 import de.hetzge.eclipse.flix.editor.outline.FlixOutlineManager;
-import de.hetzge.eclipse.flix.model.api.IFlixModel;
-import de.hetzge.eclipse.flix.model.impl.FlixModel;
+import de.hetzge.eclipse.flix.model.FlixModel;
 import de.hetzge.eclipse.flix.utils.ResourceMonitor;
 
 public final class Flix implements AutoCloseable {
@@ -86,7 +85,7 @@ public final class Flix implements AutoCloseable {
 		return this.commandService;
 	}
 
-	public IFlixModel getModel() {
+	public FlixModel getModel() {
 		return this.model;
 	}
 

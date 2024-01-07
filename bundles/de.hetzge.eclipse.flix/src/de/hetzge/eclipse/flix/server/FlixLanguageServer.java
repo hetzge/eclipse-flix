@@ -29,7 +29,7 @@ import org.lxtk.util.SafeRun;
 import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
 import de.hetzge.eclipse.flix.launch.FlixLauncher;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.utils.Utils;
 
 // https://github.com/flix/flix/issues/806#issuecomment-612400296
@@ -138,7 +138,7 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 		this.flixService.setClient(client);
 	}
 
-	public static FlixLanguageServer start(IFlixProject flixProject) {
+	public static FlixLanguageServer start(FlixProject flixProject) {
 		System.out.println("FlixLanguageServer.start()");
 		return SafeRun.runWithResult(rollback -> {
 			rollback.setLogger(FlixLogger::logError);

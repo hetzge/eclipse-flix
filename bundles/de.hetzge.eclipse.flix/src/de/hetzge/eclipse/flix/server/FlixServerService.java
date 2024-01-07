@@ -37,7 +37,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.flix.utils.GsonUtils;
 import de.hetzge.eclipse.utils.Utils;
@@ -46,13 +46,13 @@ import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixServerService implements AutoCloseable {
 
-	private final IFlixProject flixProject;
+	private final FlixProject flixProject;
 	private final FlixCompilerClient compilerClient;
 	private final Map<String, PublishDiagnosticsParams> diagnosticsParamsByUri;
 	private final Rollback rollback;
 	private LanguageClient client;
 
-	FlixServerService(IFlixProject flixProject, FlixCompilerClient compilerClient, Rollback rollback) {
+	FlixServerService(FlixProject flixProject, FlixCompilerClient compilerClient, Rollback rollback) {
 		this.flixProject = flixProject;
 		this.compilerClient = compilerClient;
 		this.rollback = rollback;

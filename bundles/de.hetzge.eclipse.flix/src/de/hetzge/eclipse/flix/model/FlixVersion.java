@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.model.api;
+package de.hetzge.eclipse.flix.model;
 
 import java.util.List;
 import java.util.Objects;

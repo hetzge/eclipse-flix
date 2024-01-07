@@ -17,7 +17,7 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 
-import de.hetzge.eclipse.flix.model.api.FlixVersion;
+import de.hetzge.eclipse.flix.model.FlixVersion;
 import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixUtils {

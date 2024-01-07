@@ -24,8 +24,8 @@ import org.eclipse.tm.terminal.view.core.interfaces.ITerminalServiceOutputStream
 import org.eclipse.tm.terminal.view.core.interfaces.constants.ITerminalsConnectorConstants;
 
 import de.hetzge.eclipse.flix.FlixConstants;
-import de.hetzge.eclipse.flix.model.api.FlixVersion;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixProject;
+import de.hetzge.eclipse.flix.model.FlixVersion;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.Utils;
 
@@ -37,23 +37,23 @@ public final class FlixLauncher {
 	private FlixLauncher() {
 	}
 
-	public static void launchRun(FlixLaunchConfiguration launchConfiguration, IFlixProject flixProject) {
+	public static void launchRun(FlixLaunchConfiguration launchConfiguration, FlixProject flixProject) {
 		launch(createTerminalRunProperties(launchConfiguration, flixProject), String.format("RUN_%s", flixProject.getProject().getFullPath().toOSString()));
 	}
 
-	public static void launchRepl(IFlixProject flixProject) {
+	public static void launchRepl(FlixProject flixProject) {
 		launch(createTerminalReplProperties(flixProject), String.format("REPL_%s", flixProject.getProject().getFullPath().toOSString()));
 	}
 
-	public static void launchTest(IFlixProject flixProject) {
+	public static void launchTest(FlixProject flixProject) {
 		launch(createTerminalTestProperties(flixProject), String.format("TEST_%s", flixProject.getProject().getFullPath().toOSString()));
 	}
 
-	public static void launchBuild(IFlixProject flixProject) {
+	public static void launchBuild(FlixProject flixProject) {
 		launch(createTerminalBuildProperties(flixProject), String.format("BUILD_%s", flixProject.getProject().getFullPath().toOSString()));
 	}
 
-	public static void launchCompiler(IFlixProject flixProject, int port) {
+	public static void launchCompiler(FlixProject flixProject, int port) {
 		final CountDownLatch latch = new CountDownLatch(1);
 		final Map<String, Object> properties = createTerminalCompilerProperties(flixProject, port);
 		properties.put(ITerminalsConnectorConstants.PROP_STDOUT_LISTENERS, new ITerminalServiceOutputStreamMonitorListener[] { new ITerminalServiceOutputStreamMonitorListener() {
@@ -89,7 +89,7 @@ public final class FlixLauncher {
 		}
 	}
 
-	public static void closeCompiler(IFlixProject flixProject, int port) {
+	public static void closeCompiler(FlixProject flixProject, int port) {
 		System.out.println("FlixLauncher.closeCompiler(!!!)");
 		closeConsole(createTerminalCompilerProperties(flixProject, port));
 	}
@@ -113,7 +113,7 @@ public final class FlixLauncher {
 		terminalService.closeConsole(properties, createDoneLogger("closeConsole"));
 	}
 
-	private static Map<String, Object> createTerminalRunProperties(FlixLaunchConfiguration launchConfiguration, final IFlixProject flixProject) {
+	private static Map<String, Object> createTerminalRunProperties(FlixLaunchConfiguration launchConfiguration, final FlixProject flixProject) {
 		final String name = "Run " + flixProject.getProject().getName();
 		final List<String> arguments = new ArrayList<>();
 		launchConfiguration.getEntrypoint().ifPresent(entrypoint -> {
@@ -136,22 +136,22 @@ public final class FlixLauncher {
 		return createBasicTerminalLaunchProperties(name, flixProject, arguments);
 	}
 
-	private static Map<String, Object> createTerminalReplProperties(IFlixProject flixProject) {
+	private static Map<String, Object> createTerminalReplProperties(FlixProject flixProject) {
 		final String name = "Repl " + flixProject.getProject().getName();
 		return createBasicTerminalLaunchProperties(name, flixProject, List.of());
 	}
 
-	private static Map<String, Object> createTerminalTestProperties(IFlixProject flixProject) {
+	private static Map<String, Object> createTerminalTestProperties(FlixProject flixProject) {
 		final String name = "Test " + flixProject.getProject().getName();
 		return createBasicTerminalLaunchProperties(name, flixProject, List.of("test"));
 	}
 
-	private static Map<String, Object> createTerminalBuildProperties(IFlixProject flixProject) {
+	private static Map<String, Object> createTerminalBuildProperties(FlixProject flixProject) {
 		final String name = "Build " + flixProject.getProject().getName();
 		return createBasicTerminalLaunchProperties(name, flixProject, List.of("build"));
 	}
 
-	private static Map<String, Object> createTerminalCompilerProperties(IFlixProject flixProject, int port) {
+	private static Map<String, Object> createTerminalCompilerProperties(FlixProject flixProject, int port) {
 		final String name = "Compiler (" + flixProject.getFlixVersion().getKey() + ") " + flixProject.getProject().getName();
 		final Map<String, Object> properties = createBasicTerminalLaunchProperties(name, flixProject, List.of("lsp", String.valueOf(port)));
 		properties.put(ITerminalsConnectorConstants.PROP_SECONDARY_ID, "Flix");
@@ -163,7 +163,7 @@ public final class FlixLauncher {
 		return createBasicTerminalLaunchProperties(name, folder, FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION, null), List.of("init"));
 	}
 
-	private static Map<String, Object> createBasicTerminalLaunchProperties(String name, IFlixProject flixProject, List<String> arguments) {
+	private static Map<String, Object> createBasicTerminalLaunchProperties(String name, FlixProject flixProject, List<String> arguments) {
 		return createBasicTerminalLaunchProperties(name, flixProject.getProject().getLocation() != null ? flixProject.getProject().getLocation().toFile() : null, flixProject.getFlixCompilerJarFile(), arguments);
 	}
 
