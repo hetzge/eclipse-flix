@@ -12,6 +12,7 @@ import org.lxtk.lx4e.EclipseWorkspaceService;
 import org.lxtk.lx4e.refactoring.FileOperationParticipantSupport;
 import org.lxtk.lx4e.refactoring.WorkspaceEditChangeFactory;
 
+import de.hetzge.eclipse.flix.editor.outline.FlixOutlineManager;
 import de.hetzge.eclipse.flix.model.api.IFlixModel;
 import de.hetzge.eclipse.flix.model.impl.FlixModel;
 import de.hetzge.eclipse.flix.utils.ResourceMonitor;
@@ -32,6 +33,7 @@ public final class Flix implements AutoCloseable {
 	private final FlixLanguageToolingManager languageToolingManager;
 	private final CommandService commandService;
 	private final FlixModel model;
+	private final FlixOutlineManager outlineManager;
 
 	Flix() {
 		this.documentService = new EclipseDocumentService();
@@ -45,6 +47,7 @@ public final class Flix implements AutoCloseable {
 		this.languageToolingManager = new FlixLanguageToolingManager();
 		this.commandService = new EclipseCommandService();
 		this.model = new FlixModel(ResourcesPlugin.getWorkspace());
+		this.outlineManager = new FlixOutlineManager(this.languageService);
 	}
 
 	public DocumentService getDocumentService() {
@@ -85,6 +88,10 @@ public final class Flix implements AutoCloseable {
 
 	public IFlixModel getModel() {
 		return this.model;
+	}
+
+	public FlixOutlineManager getOutlineManager() {
+		return this.outlineManager;
 	}
 
 	@Override

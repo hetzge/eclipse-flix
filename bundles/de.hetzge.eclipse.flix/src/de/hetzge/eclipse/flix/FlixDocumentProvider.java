@@ -2,7 +2,6 @@ package de.hetzge.eclipse.flix;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -10,38 +9,30 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.handly.buffer.TextFileBuffer;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IDocumentExtension4;
-import org.eclipse.jface.text.IDocumentListener;
-import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentSaveReason;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
-import org.lxtk.DefaultTextDocumentSnapshot;
 import org.lxtk.DocumentService;
 import org.lxtk.TextDocument;
-import org.lxtk.TextDocumentChangeEvent;
 import org.lxtk.TextDocumentSaveEvent;
 import org.lxtk.TextDocumentSaveEventSource;
-import org.lxtk.TextDocumentSnapshot;
 import org.lxtk.TextDocumentWillSaveEvent;
 import org.lxtk.TextDocumentWillSaveEventSource;
 import org.lxtk.TextDocumentWillSaveWaitUntilEventSource;
 import org.lxtk.lx4e.DocumentUtil;
+import org.lxtk.lx4e.EclipseTextDocument;
 import org.lxtk.util.Disposable;
 import org.lxtk.util.EventEmitter;
 import org.lxtk.util.EventStream;
 import org.lxtk.util.SafeRun;
-import org.lxtk.util.SafeRun.Rollback;
 import org.lxtk.util.WaitUntilEvent;
 import org.lxtk.util.WaitUntilEventEmitter;
 
@@ -72,10 +63,17 @@ public class FlixDocumentProvider extends TextFileDocumentProvider implements Te
 			final IDocument document = fileInfo.fTextFileBuffer.getDocument();
 			final URI uri = fileEditorInput.getFile().getLocationURI();
 			SafeRun.run(rollback -> {
-				final EclipseTextDocument eclipseTextDocument = new EclipseTextDocument(document, uri);
-				rollback.add(eclipseTextDocument::dispose);
-				rollback.add(this.documentService.addTextDocument(eclipseTextDocument)::dispose);
-				this.openResources.put(uri, rollback::run);
+				EclipseTextDocument eclipseTextDocument;
+				try {
+					eclipseTextDocument = new EclipseTextDocument(uri, FlixConstants.LANGUAGE_ID, TextFileBuffer.forFile(fileEditorInput.getFile()), element);
+
+					rollback.add(eclipseTextDocument::dispose);
+					rollback.add(this.documentService.addTextDocument(eclipseTextDocument)::dispose);
+					this.openResources.put(uri, rollback::run);
+				} catch (final CoreException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			});
 		} else {
 			super.connect(element);
@@ -144,110 +142,110 @@ public class FlixDocumentProvider extends TextFileDocumentProvider implements Te
 		}
 	}
 
-	/**
-	 * An adapter from {@link IDocument} to {@link TextDocument}
-	 */
-	private static class EclipseTextDocument implements TextDocument, Disposable {
-
-		private final EventEmitter<TextDocumentChangeEvent> onWillChange;
-		private final EventEmitter<TextDocumentChangeEvent> onDidChange;
-		private final AtomicReference<TextDocumentChangeEvent> lastChangeAtomicReference;
-		private final IDocument document;
-		private final URI uri;
-		private TextDocumentContentChangeEvent currentChangeEvent;
-		private Rollback rollback;
-
-		public EclipseTextDocument(IDocument document, URI uri) {
-			this.onWillChange = new EventEmitter<>();
-			this.onDidChange = new EventEmitter<>();
-			this.lastChangeAtomicReference = new AtomicReference<>();
-			this.document = document;
-			this.uri = uri;
-			SafeRun.run(rollback -> {
-				final DocumentListener listener = new DocumentListener();
-				document.addDocumentListener(listener);
-				rollback.add(() -> document.removeDocumentListener(listener));
-				rollback.add(() -> this.onWillChange.dispose());
-				rollback.add(() -> this.onDidChange.dispose());
-				this.rollback = rollback;
-			});
-			this.lastChangeAtomicReference.compareAndSet(null, new TextDocumentChangeEvent(new DefaultTextDocumentSnapshot(this, 0, document.get()), Collections.emptyList()));
-		}
-
-		@Override
-		public void dispose() {
-			this.rollback.run();
-		}
-
-		@Override
-		public EventStream<TextDocumentChangeEvent> onWillChange() {
-			return this.onWillChange;
-		}
-
-		@Override
-		public EventStream<TextDocumentChangeEvent> onDidChange() {
-			return this.onDidChange;
-		}
-
-		@Override
-		public URI getUri() {
-			return this.uri;
-		}
-
-		@Override
-		public TextDocumentChangeEvent getLastChange() {
-			return this.lastChangeAtomicReference.get();
-		}
-
-		@Override
-		public String getLanguageId() {
-			return FlixConstants.LANGUAGE_ID;
-		}
-
-		private TextDocumentChangeEvent newChangeEvent(TextDocumentContentChangeEvent event, DocumentEvent originalEvent, boolean unprocessed) {
-			final TextDocumentChangeEvent lastEvent = this.lastChangeAtomicReference.get();
-			final int lastVersion = (lastEvent == null) ? 0 : lastEvent.getSnapshot().getVersion();
-			final TextDocumentSnapshot snapshot = new DefaultTextDocumentSnapshot(this, unprocessed ? lastVersion : lastVersion + 1, this.document.get());
-			if (originalEvent.getModificationStamp() != getModificationStamp()) {
-				throw new IllegalStateException("Illegal modification timestamp");
-			}
-			return new TextDocumentChangeEvent(snapshot, Collections.singletonList(event));
-		}
-
-		public long getModificationStamp() {
-			if (this.document instanceof IDocumentExtension4) {
-				return ((IDocumentExtension4) this.document).getModificationStamp();
-			}
-			return IDocumentExtension4.UNKNOWN_MODIFICATION_STAMP;
-		}
-
-		private TextDocumentContentChangeEvent newContentChangeEvent(DocumentEvent event) {
-			try {
-				final Range range = DocumentUtil.toRange(this.document, event.getOffset(), event.getLength());
-				return new TextDocumentContentChangeEvent(range, event.getText());
-			} catch (final BadLocationException exception) {
-				throw new IllegalStateException(exception);
-			}
-		}
-
-		private class DocumentListener implements IDocumentListener {
-			@Override
-			public void documentAboutToBeChanged(DocumentEvent event) {
-				EclipseTextDocument.this.currentChangeEvent = newContentChangeEvent(event);
-				final TextDocumentChangeEvent newChangeEvent = newChangeEvent(EclipseTextDocument.this.currentChangeEvent, event, true);
-				EclipseTextDocument.this.onWillChange.emit(newChangeEvent, FlixLogger::logError);
-			}
-
-			@Override
-			public void documentChanged(DocumentEvent event) {
-				try {
-					final TextDocumentChangeEvent newChangeEvent = newChangeEvent(EclipseTextDocument.this.currentChangeEvent, event, false);
-					EclipseTextDocument.this.onDidChange.emit(newChangeEvent, FlixLogger::logError);
-					EclipseTextDocument.this.lastChangeAtomicReference.set(newChangeEvent);
-				} finally {
-					EclipseTextDocument.this.currentChangeEvent = null;
-				}
-			}
-		}
-	}
+//	/**
+//	 * An adapter from {@link IDocument} to {@link TextDocument}
+//	 */
+//	private static class EclipseTextDocument implements TextDocument, Disposable {
+//
+//		private final EventEmitter<TextDocumentChangeEvent> onWillChange;
+//		private final EventEmitter<TextDocumentChangeEvent> onDidChange;
+//		private final AtomicReference<TextDocumentChangeEvent> lastChangeAtomicReference;
+//		private final IDocument document;
+//		private final URI uri;
+//		private TextDocumentContentChangeEvent currentChangeEvent;
+//		private Rollback rollback;
+//
+//		public EclipseTextDocument(IDocument document, URI uri) {
+//			this.onWillChange = new EventEmitter<>();
+//			this.onDidChange = new EventEmitter<>();
+//			this.lastChangeAtomicReference = new AtomicReference<>();
+//			this.document = document;
+//			this.uri = uri;
+//			SafeRun.run(rollback -> {
+//				final DocumentListener listener = new DocumentListener();
+//				document.addDocumentListener(listener);
+//				rollback.add(() -> document.removeDocumentListener(listener));
+//				rollback.add(() -> this.onWillChange.dispose());
+//				rollback.add(() -> this.onDidChange.dispose());
+//				this.rollback = rollback;
+//			});
+//			this.lastChangeAtomicReference.compareAndSet(null, new TextDocumentChangeEvent(new DefaultTextDocumentSnapshot(this, 0, document.get()), Collections.emptyList()));
+//		}
+//
+//		@Override
+//		public void dispose() {
+//			this.rollback.run();
+//		}
+//
+//		@Override
+//		public EventStream<TextDocumentChangeEvent> onWillChange() {
+//			return this.onWillChange;
+//		}
+//
+//		@Override
+//		public EventStream<TextDocumentChangeEvent> onDidChange() {
+//			return this.onDidChange;
+//		}
+//
+//		@Override
+//		public URI getUri() {
+//			return this.uri;
+//		}
+//
+//		@Override
+//		public TextDocumentChangeEvent getLastChange() {
+//			return this.lastChangeAtomicReference.get();
+//		}
+//
+//		@Override
+//		public String getLanguageId() {
+//			return FlixConstants.LANGUAGE_ID;
+//		}
+//
+//		private TextDocumentChangeEvent newChangeEvent(TextDocumentContentChangeEvent event, DocumentEvent originalEvent, boolean unprocessed) {
+//			final TextDocumentChangeEvent lastEvent = this.lastChangeAtomicReference.get();
+//			final int lastVersion = (lastEvent == null) ? 0 : lastEvent.getSnapshot().getVersion();
+//			final TextDocumentSnapshot snapshot = new DefaultTextDocumentSnapshot(this, unprocessed ? lastVersion : lastVersion + 1, this.document.get());
+//			if (originalEvent.getModificationStamp() != getModificationStamp()) {
+//				throw new IllegalStateException("Illegal modification timestamp");
+//			}
+//			return new TextDocumentChangeEvent(snapshot, Collections.singletonList(event));
+//		}
+//
+//		public long getModificationStamp() {
+//			if (this.document instanceof IDocumentExtension4) {
+//				return ((IDocumentExtension4) this.document).getModificationStamp();
+//			}
+//			return IDocumentExtension4.UNKNOWN_MODIFICATION_STAMP;
+//		}
+//
+//		private TextDocumentContentChangeEvent newContentChangeEvent(DocumentEvent event) {
+//			try {
+//				final Range range = DocumentUtil.toRange(this.document, event.getOffset(), event.getLength());
+//				return new TextDocumentContentChangeEvent(range, event.getText());
+//			} catch (final BadLocationException exception) {
+//				throw new IllegalStateException(exception);
+//			}
+//		}
+//
+//		private class DocumentListener implements IDocumentListener {
+//			@Override
+//			public void documentAboutToBeChanged(DocumentEvent event) {
+//				EclipseTextDocument.this.currentChangeEvent = newContentChangeEvent(event);
+//				final TextDocumentChangeEvent newChangeEvent = newChangeEvent(EclipseTextDocument.this.currentChangeEvent, event, true);
+//				EclipseTextDocument.this.onWillChange.emit(newChangeEvent, FlixLogger::logError);
+//			}
+//
+//			@Override
+//			public void documentChanged(DocumentEvent event) {
+//				try {
+//					final TextDocumentChangeEvent newChangeEvent = newChangeEvent(EclipseTextDocument.this.currentChangeEvent, event, false);
+//					EclipseTextDocument.this.onDidChange.emit(newChangeEvent, FlixLogger::logError);
+//					EclipseTextDocument.this.lastChangeAtomicReference.set(newChangeEvent);
+//				} finally {
+//					EclipseTextDocument.this.currentChangeEvent = null;
+//				}
+//			}
+//		}
+//	}
 }

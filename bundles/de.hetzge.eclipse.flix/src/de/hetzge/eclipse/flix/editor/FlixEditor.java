@@ -11,10 +11,11 @@ import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixDocumentProvider;
 import de.hetzge.eclipse.flix.FlixOperationTargetProvider;
+import de.hetzge.eclipse.flix.editor.outline.FlixOutlinePage;
 
 public class FlixEditor extends AbstractDecoratedTextEditor {
 
-	private IContentOutlinePage outlinePage;
+	private FlixOutlinePage outlinePage;
 
 	@Override
 	protected void initializeEditor() {
@@ -41,6 +42,14 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 	}
 
 	@Override
+	protected void editorSaved() {
+		super.editorSaved();
+		if (this.outlinePage != null) {
+			this.outlinePage.update();
+		}
+	}
+
+	@Override
 	public <T> T getAdapter(Class<T> adapter) {
 		if (adapter == IContentOutlinePage.class) {
 			if (this.outlinePage == null) {
@@ -51,13 +60,6 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 			return adapter.cast(FlixOperationTargetProvider.getOperationTarget(this));
 		} else {
 			return super.getAdapter(adapter);
-		}
-	}
-
-	public void closeOutlinePage() {
-		if (this.outlinePage != null) {
-			this.outlinePage = null;
-			resetHighlightRange();
 		}
 	}
 }

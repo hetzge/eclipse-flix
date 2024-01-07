@@ -248,8 +248,9 @@ public final class FlixServerService implements AutoCloseable {
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
 		return this.compilerClient.sendUses(params).thenApply(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
-				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<Location>>() {
+				final List<Location> locations = GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<Location>>() {
 				}.getType());
+				return locations.stream().filter(location -> !"<unknown>".equals(location.getUri())).collect(Collectors.toList());
 			} else {
 				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}

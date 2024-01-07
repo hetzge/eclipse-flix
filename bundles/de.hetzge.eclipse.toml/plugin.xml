@@ -17,6 +17,6 @@
 		<scopeNameContentTypeBinding contentTypeId="de.hetzge.eclipse.toml" scopeName="source.toml"></scopeNameContentTypeBinding>
 	</extension>
 	<extension point="org.eclipse.tm4e.ui.themes">
-		<themeAssociation scopeName="source.toml" themeId="org.eclipse.tm4e.ui.themes.Light"></themeAssociation>
+		<themeAssociation scopeName="source.toml" themeId="org.eclipse.tm4e.ui.themes.EclipseLight"></themeAssociation>
 	</extension>
 </plugin>
