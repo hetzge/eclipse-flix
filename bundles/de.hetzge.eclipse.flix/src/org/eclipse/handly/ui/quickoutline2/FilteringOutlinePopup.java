@@ -10,7 +10,7 @@
  * Contributors:
  *     Vladimir Piskarev (1C) - initial API and implementation
  *******************************************************************************/
-package org.eclipse.handly.ui.quickoutline;
+package org.eclipse.handly.ui.quickoutline2;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;

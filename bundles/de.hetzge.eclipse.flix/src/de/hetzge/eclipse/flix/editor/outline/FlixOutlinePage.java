@@ -1,5 +1,7 @@
 package de.hetzge.eclipse.flix.editor.outline;
 
+import java.net.URI;
+
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.ISelection;
@@ -11,6 +13,7 @@ import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.lxtk.lx4e.DocumentUtil;
 import org.lxtk.lx4e.ui.DefaultEditorHelper;
@@ -76,7 +79,8 @@ public class FlixOutlinePage extends ContentOutlinePage {
 		if (this.flixEditor == null && this.contentOutlineProvider != null) {
 			return;
 		}
-		Flix.get().getOutlineManager().get(this.flixEditor).thenAccept(outline -> {
+		final URI uri = ((IFileEditorInput) this.flixEditor.getEditorInput()).getFile().getLocationURI();
+		Flix.get().getOutlineManager().get(uri).thenAccept(outline -> {
 			Display.getDefault().asyncExec(() -> {
 				this.contentOutlineProvider.setRootSymbols(outline.getRootSymbols());
 				final TreeViewer viewer = getTreeViewer();

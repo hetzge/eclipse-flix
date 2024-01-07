@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.handly.buffer.TextFileBuffer;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.lsp4j.TextDocumentSaveReason;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.text.edits.MalformedTreeException;
@@ -59,24 +58,24 @@ public class FlixDocumentProvider extends TextFileDocumentProvider implements Te
 		if (element instanceof IFileEditorInput) {
 			final IFileEditorInput fileEditorInput = (IFileEditorInput) element;
 			super.connect(element);
-			final FileInfo fileInfo = getFileInfo(element);
-			final IDocument document = fileInfo.fTextFileBuffer.getDocument();
 			final URI uri = fileEditorInput.getFile().getLocationURI();
 			SafeRun.run(rollback -> {
-				EclipseTextDocument eclipseTextDocument;
-				try {
-					eclipseTextDocument = new EclipseTextDocument(uri, FlixConstants.LANGUAGE_ID, TextFileBuffer.forFile(fileEditorInput.getFile()), element);
-
-					rollback.add(eclipseTextDocument::dispose);
-					rollback.add(this.documentService.addTextDocument(eclipseTextDocument)::dispose);
-					this.openResources.put(uri, rollback::run);
-				} catch (final CoreException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				final TextFileBuffer buffer = createBuffer(fileEditorInput);
+				final EclipseTextDocument eclipseTextDocument = new EclipseTextDocument(uri, FlixConstants.LANGUAGE_ID, buffer, element);
+				rollback.add(eclipseTextDocument::dispose);
+				rollback.add(this.documentService.addTextDocument(eclipseTextDocument)::dispose);
+				this.openResources.put(uri, rollback::run);
 			});
 		} else {
 			super.connect(element);
+		}
+	}
+
+	private TextFileBuffer createBuffer(final IFileEditorInput fileEditorInput) {
+		try {
+			return TextFileBuffer.forFile(fileEditorInput.getFile());
+		} catch (final CoreException exception) {
+			throw new RuntimeException(exception);
 		}
 	}
 

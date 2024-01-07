@@ -9,12 +9,9 @@ import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.ui.IFileEditorInput;
 import org.lxtk.DocumentSymbolProvider;
 import org.lxtk.LanguageService;
 import org.lxtk.util.Disposable;
-
-import de.hetzge.eclipse.flix.editor.FlixEditor;
 
 public final class FlixOutlineManager {
 
@@ -24,7 +21,7 @@ public final class FlixOutlineManager {
 		this.languageService = languageService;
 	}
 
-	public CompletableFuture<Outline> get(FlixEditor flixEditor) {
+	public CompletableFuture<Outline> get(URI uri) {
 		final CompletableFuture<DocumentSymbolProvider> future = new CompletableFuture<>();
 		for (final DocumentSymbolProvider provider : this.languageService.getDocumentSymbolProviders()) {
 			future.complete(provider);
@@ -43,7 +40,6 @@ public final class FlixOutlineManager {
 			});
 		}
 		return future.thenCompose(provider -> {
-			final URI uri = ((IFileEditorInput) flixEditor.getEditorInput()).getFile().getLocationURI();
 			return provider.getDocumentSymbols(new DocumentSymbolParams(new TextDocumentIdentifier(uri.toString())));
 		}).thenApply(result -> {
 			return new Outline(result.stream().map(Either::getRight).collect(Collectors.toList()));
