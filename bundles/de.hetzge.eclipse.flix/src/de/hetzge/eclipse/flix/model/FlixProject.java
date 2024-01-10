@@ -71,15 +71,27 @@ public class FlixProject {
 	}
 
 	public List<IFile> getFlixSourceFiles() {
-		return EclipseUtils.collectFiles(getSourceFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("flix")));
+		if (getSourceFolder().exists()) {
+			return EclipseUtils.collectFiles(getSourceFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("flix")));
+		} else {
+			return List.of();
+		}
 	}
 
 	public List<IFile> getFlixJarLibraryFiles() {
-		return EclipseUtils.collectFiles(getLibraryFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("jar")));
+		if (getLibraryFolder().exists()) {
+			return EclipseUtils.collectFiles(getLibraryFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("jar")));
+		} else {
+			return List.of();
+		}
 	}
 
 	public List<IFile> getFlixFpkgLibraryFiles() {
-		return EclipseUtils.collectFiles(getLibraryFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("fpkg")));
+		if (getLibraryFolder().exists()) {
+			return EclipseUtils.collectFiles(getLibraryFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("fpkg")));
+		} else {
+			return List.of();
+		}
 	}
 
 	public boolean isFlixSourceFile(IFile file) {

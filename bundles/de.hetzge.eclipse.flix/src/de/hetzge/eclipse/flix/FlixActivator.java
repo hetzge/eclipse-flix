@@ -27,6 +27,8 @@ import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
+// TODO https://github.com/mlutze/fcwg
+
 /**
  * The activator class controls the plug-in life cycle
  */

@@ -7,7 +7,7 @@ public final class FlixConstants {
 	public static final String PLUGIN_ID = "de.hetzge.eclipse.flix"; //$NON-NLS-1$
 	public static final String LANGUAGE_ID = "flix"; //$NON-NLS-1$
 
-	public static final FlixVersion FLIX_DEFAULT_VERSION = FlixVersion.VERSION_0_42_0;
+	public static final FlixVersion FLIX_DEFAULT_VERSION = FlixVersion.VERSION_0_43_0;
 
 	public static final String FLIX_BUILDER_ID = "de.hetzge.eclipse.flix.flixBuilder"; //$NON-NLS-1$
 

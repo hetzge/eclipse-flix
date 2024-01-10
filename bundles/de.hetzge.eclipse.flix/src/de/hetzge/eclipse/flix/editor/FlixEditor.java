@@ -1,6 +1,10 @@
 package de.hetzge.eclipse.flix.editor;
 
+import java.time.Duration;
+
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.Throttler;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
@@ -16,6 +20,11 @@ import de.hetzge.eclipse.flix.editor.outline.FlixOutlinePage;
 public class FlixEditor extends AbstractDecoratedTextEditor {
 
 	private FlixOutlinePage outlinePage;
+	private final Throttler syncOutlineThrottler;
+
+	public FlixEditor() {
+		this.syncOutlineThrottler = new Throttler(PlatformUI.getWorkbench().getDisplay(), Duration.ofMillis(250), this::syncOutline);
+	}
 
 	@Override
 	protected void initializeEditor() {
@@ -25,6 +34,19 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(getPreferenceStores(), this));
 		setEditorContextMenuId("#FlixEditorContext"); //$NON-NLS-1$
 		setRulerContextMenuId("#FlixRulerContext"); //$NON-NLS-1$
+
+	}
+
+	@Override
+	protected void handleCursorPositionChanged() {
+		super.handleCursorPositionChanged();
+		this.syncOutlineThrottler.throttledExec();
+	}
+
+	private void syncOutline() {
+		if (FlixEditor.this.outlinePage != null) {
+			FlixEditor.this.outlinePage.update(getSelectionProvider().getSelection());
+		}
 	}
 
 	private ChainedPreferenceStore getPreferenceStores() {

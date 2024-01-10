@@ -1,8 +1,12 @@
 package de.hetzge.eclipse.flix.editor.outline;
 
 import java.net.URI;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.DocumentSymbol;
@@ -16,9 +20,11 @@ import org.lxtk.util.Disposable;
 public final class FlixOutlineManager {
 
 	private final LanguageService languageService;
+	private final Map<URI, Outline> cache;
 
 	public FlixOutlineManager(LanguageService languageService) {
 		this.languageService = languageService;
+		this.cache = new ConcurrentHashMap<>();
 	}
 
 	public CompletableFuture<Outline> get(URI uri) {
@@ -42,8 +48,15 @@ public final class FlixOutlineManager {
 		return future.thenCompose(provider -> {
 			return provider.getDocumentSymbols(new DocumentSymbolParams(new TextDocumentIdentifier(uri.toString())));
 		}).thenApply(result -> {
-			return new Outline(result.stream().map(Either::getRight).collect(Collectors.toList()));
+			final Outline outline = new Outline(result.stream().map(Either::getRight).collect(Collectors.toList()));
+			this.cache.put(uri, outline);
+			return outline;
 		});
+	}
+
+	public CompletableFuture<Outline> getPreferedCached(URI uri) {
+		final Outline cachedOutline = this.cache.get(uri);
+		return cachedOutline != null ? CompletableFuture.completedFuture(cachedOutline) : get(uri);
 	}
 
 	public static class Outline {
@@ -55,6 +68,25 @@ public final class FlixOutlineManager {
 
 		public List<DocumentSymbol> getRootSymbols() {
 			return this.rootSymbols;
+		}
+
+		public void visitPaths(Consumer<LinkedList<DocumentSymbol>> consumer) {
+			for (final DocumentSymbol documentSymbol : this.rootSymbols) {
+				consumer.accept(new LinkedList<>(List.of(documentSymbol)));
+				visitPaths(List.of(documentSymbol), consumer);
+			}
+		}
+
+		private void visitPaths(List<DocumentSymbol> parents, Consumer<LinkedList<DocumentSymbol>> consumer) {
+			if (parents.isEmpty()) {
+				return;
+			}
+			for (final DocumentSymbol child : parents.get(parents.size() - 1).getChildren()) {
+				final LinkedList<DocumentSymbol> newParents = new LinkedList<>();
+				newParents.addAll(parents);
+				newParents.add(child);
+				visitPaths(newParents, consumer);
+			}
 		}
 	}
 }
