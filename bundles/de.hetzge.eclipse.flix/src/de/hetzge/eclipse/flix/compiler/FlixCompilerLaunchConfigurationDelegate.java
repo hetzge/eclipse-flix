@@ -20,7 +20,7 @@ import org.eclipse.jdt.launching.JavaRuntime;
 
 import de.hetzge.eclipse.flix.model.FlixProject;
 
-public class FlixLanguageServerLaunchConfigurationDelegate extends JavaLaunchDelegate {
+public class FlixCompilerLaunchConfigurationDelegate extends JavaLaunchDelegate {
 
 	private static final String ID = "de.hetzge.eclipse.flix.lspLaunchConfigurationType";
 
@@ -29,7 +29,7 @@ public class FlixLanguageServerLaunchConfigurationDelegate extends JavaLaunchDel
 		super.launch(configuration, mode, launch, monitor);
 	}
 
-	public static FlixLanguageServerLaunch launch(FlixProject project, int compilerPort) {
+	public static FlixCompilerLaunch launch(FlixProject project, int compilerPort) {
 		System.out.println("FlixLanguageServerLaunchConfigurationDelegate.launch()");
 		try {
 			final File flixJarFile = project.getFlixCompilerJarFile();
@@ -37,7 +37,7 @@ public class FlixLanguageServerLaunchConfigurationDelegate extends JavaLaunchDel
 			entry.setClasspathProperty(IRuntimeClasspathEntry.USER_CLASSES);
 			final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 			final ILaunchConfigurationType launchConfigurationType = launchManager.getLaunchConfigurationType(ID);
-			final ILaunchConfigurationWorkingCopy configurationWorkingCopy = launchConfigurationType.newInstance(null, "Flix LSP Server");
+			final ILaunchConfigurationWorkingCopy configurationWorkingCopy = launchConfigurationType.newInstance(null, String.format("(%s) Flix LSP Server", project.getProject().getName()));
 			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, "ca.uwaterloo.flix.Main");
 			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_DEFAULT_CLASSPATH, false);
 			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH, List.of(entry.getMemento()));
@@ -45,7 +45,7 @@ public class FlixLanguageServerLaunchConfigurationDelegate extends JavaLaunchDel
 			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, "lsp " + compilerPort);
 			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, "-XX:+UseG1GC -XX:+UseStringDeduplication -Xss4m -Xms100m -Xmx2G");
 			final ILaunch launch = configurationWorkingCopy.launch(ILaunchManager.RUN_MODE, new NullProgressMonitor());
-			return new FlixLanguageServerLaunch(launch);
+			return new FlixCompilerLaunch(launch);
 		} catch (final CoreException exception) {
 			throw new RuntimeException(exception);
 		}

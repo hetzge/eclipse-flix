@@ -9,13 +9,13 @@ import org.lxtk.util.Disposable;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
-public class FlixLanguageServerLaunch implements Disposable {
+public class FlixCompilerLaunch implements Disposable {
 	private final ILaunch launch;
 	private final Rollback rollback;
 	private boolean connected;
 	private boolean ready;
 
-	public FlixLanguageServerLaunch(ILaunch launch) {
+	public FlixCompilerLaunch(ILaunch launch) {
 		this.launch = launch;
 		this.rollback = SafeRun.runWithResult(rollback -> {
 			rollback.add(() -> terminateLaunch());

@@ -28,8 +28,8 @@ import org.lxtk.util.SafeRun;
 
 import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
-import de.hetzge.eclipse.flix.compiler.FlixLanguageServerLaunch;
-import de.hetzge.eclipse.flix.compiler.FlixLanguageServerLaunchConfigurationDelegate;
+import de.hetzge.eclipse.flix.compiler.FlixCompilerLaunch;
+import de.hetzge.eclipse.flix.compiler.FlixCompilerLaunchConfigurationDelegate;
 import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.utils.Utils;
 
@@ -39,13 +39,15 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 	private final FlixServerService flixService;
 	private final FlixTextDocumentService flixTextDocumentService;
 	private final FlixWorkspaceService flixWorkspaceService;
-	private final FlixLanguageServerLaunch launch;
+	private final FlixCompilerLaunch launch;
+	private boolean initialized;
 
-	public FlixLanguageServer(FlixServerService flixService, FlixLanguageServerLaunch launch) {
+	public FlixLanguageServer(FlixServerService flixService, FlixCompilerLaunch launch) {
 		this.flixService = flixService;
 		this.flixTextDocumentService = new FlixTextDocumentService(this.flixService);
 		this.flixWorkspaceService = new FlixWorkspaceService(this.flixService);
 		this.launch = launch;
+		this.initialized = false;
 	}
 
 	public boolean isRunning() {
@@ -99,9 +101,9 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 	public void initialized(InitializedParams params) {
 		System.out.println("FlixLanguageServer.initialized()");
 		LanguageServer.super.initialized(params);
-
 		this.flixService.addWorkspaceUris();
 		this.flixService.compile();
+		this.initialized = true;
 	}
 
 	@Override
@@ -142,11 +144,15 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 		this.flixService.setClient(client);
 	}
 
+	public boolean isInitialized() {
+		return this.initialized;
+	}
+
 	public static FlixLanguageServer start(FlixProject project) {
 		return SafeRun.runWithResult(rollback -> {
 			rollback.setLogger(FlixLogger::logError);
 			final int compilerPort = Utils.queryPort();
-			final FlixLanguageServerLaunch launch = FlixLanguageServerLaunchConfigurationDelegate.launch(project, compilerPort);
+			final FlixCompilerLaunch launch = FlixCompilerLaunchConfigurationDelegate.launch(project, compilerPort);
 			rollback.add(launch::dispose);
 			launch.waitUntilReady();
 			final FlixCompilerClient compilerClient = FlixCompilerClient.connect(compilerPort);

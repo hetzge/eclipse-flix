@@ -33,12 +33,10 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 	@Override
 	public void run() {
 		SafeRun.run(rollback -> {
-			FlixLogger.logInfo("Start flix language server middleware");
 			this.status = Status.STARTING;
 			updateStatus(Status.STARTING);
-			try (ServerSocket serverSocket = new ServerSocket(this.port)) {
+			try (final ServerSocket serverSocket = new ServerSocket(this.port)) {
 				try {
-					FlixLogger.logInfo("Wait for connections at port " + this.port);
 					final Socket socket = serverSocket.accept();
 					rollback.add(() -> {
 						try {
@@ -47,7 +45,6 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 							FlixLogger.logError(exception);
 						}
 					});
-					FlixLogger.logInfo("Start flix language server");
 					final FlixLanguageServer server = FlixLanguageServer.start(this.flixProject);
 					rollback.add(server::close);
 					final Launcher<LanguageClient> launcher = new Builder<LanguageClient>()
@@ -59,14 +56,14 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 //								.traceMessages(new PrintWriter(System.out))
 							.create();
 					server.setClient(launcher.getRemoteProxy());
-					FlixLogger.logInfo("Flix language middleware and language server is ready");
-					updateStatus(Status.STARTED);
 					final Future<Void> startListeningFuture = launcher.startListening();
 					rollback.add(() -> startListeningFuture.cancel(true));
-					while (server.isRunning() && !startListeningFuture.isDone() && !startListeningFuture.isCancelled()) {
+					while (this.status != Status.STOPPED && server.isRunning() && !startListeningFuture.isDone() && !startListeningFuture.isCancelled()) {
+						if (server.isInitialized()) {
+							updateStatus(Status.STARTED);
+						}
 						Thread.sleep(1000);
 					}
-					FlixLogger.logInfo("Flix language middleware listener terminated");
 					rollback.run();
 				} catch (final IOException | InterruptedException exception) {
 					throw new RuntimeException(exception);
