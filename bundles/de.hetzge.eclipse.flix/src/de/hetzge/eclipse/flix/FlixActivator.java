@@ -2,7 +2,6 @@ package de.hetzge.eclipse.flix;
 
 import java.net.URI;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
@@ -10,22 +9,18 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lxtk.FileCreate;
 import org.lxtk.FileDelete;
-import org.lxtk.WorkspaceFolder;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
 import de.hetzge.eclipse.flix.launch.FlixRunMainCommandHandler;
 import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
-import de.hetzge.eclipse.flix.model.FlixModel;
-import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
@@ -72,68 +67,60 @@ public class FlixActivator extends AbstractUIPlugin {
 				this.flix = null;
 			});
 
-			Job.create("Initialize flix tooling", monitor -> {
+			/*
+			 * Register commands ...
+			 */
+			rollback.add(this.flix.getCommandService().addCommand("flix.runMain", new FlixRunMainCommandHandler())::dispose);
+			rollback.add(this.flix.getCommandService().addCommand("flix.cmdRepl", new FlixRunReplCommandHandler())::dispose);
 
-				rollback.add(this.flix.getLanguageToolingManager().startMonitor()::dispose);
+			/*
+			 * Init model and projects ...
+			 */
+			this.flix.getLanguageToolingManager().connectProjects(Flix.get().getModel().getFlixProjects());
+			rollback.add(this.flix.getLanguageToolingManager().startMonitor()::dispose);
 
-				/*
-				 * Register commands ...
-				 */
-				rollback.add(this.flix.getCommandService().addCommand("flix.runMain", new FlixRunMainCommandHandler())::dispose);
-				rollback.add(this.flix.getCommandService().addCommand("flix.cmdRepl", new FlixRunReplCommandHandler())::dispose);
+			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+			workspace.addResourceChangeListener(this.flix.getPostResourceMonitor(), IResourceChangeEvent.POST_CHANGE);
+			rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getPostResourceMonitor()));
 
-				/*
-				 * Init model and projects ...
-				 */
-				final FlixModel model = Flix.get().getModel();
-				this.flix.getWorkspaceService().setWorkspaceFolders(model.getFlixProjects().stream().map(flixProject -> new WorkspaceFolder(flixProject.getProject().getLocationURI(), flixProject.getProject().getName())).collect(Collectors.toList()));
-				for (final FlixProject flixProject : model.getFlixProjects()) {
-					this.flix.getLanguageToolingManager().connectProject(flixProject);
+			rollback.add(this.flix.getPostResourceMonitor().onDidCreateFiles().subscribe(fileCreateEvent -> {
+				System.out.println("CREATED");
+				for (final FileCreate create : fileCreateEvent.getFiles()) {
+					final IPath createPath = URIUtil.toPath(create.getUri());
+					final IProject project = EclipseUtils.project(createPath).orElseThrow();
+						if (project.getFile("flix.jar").getLocation().equals(createPath)) {
+							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
+								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+							});
+						}
 				}
-
-				final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-				workspace.addResourceChangeListener(this.flix.getPostResourceMonitor(), IResourceChangeEvent.POST_CHANGE);
-				rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getPostResourceMonitor()));
-
-				rollback.add(this.flix.getPostResourceMonitor().onDidCreateFiles().subscribe(fileCreateEvent -> {
-					System.out.println("CREATED");
-					for (final FileCreate create : fileCreateEvent.getFiles()) {
-						final IPath deletePath = URIUtil.toPath(create.getUri());
-						final IProject project = EclipseUtils.project(deletePath).orElseThrow();
+			})::dispose);
+			rollback.add(this.flix.getPostResourceMonitor().onDidDeleteFiles().subscribe(fileDeleteEvent -> {
+				System.out.println("DELETED");
+				for (final FileDelete delete : fileDeleteEvent.getFiles()) {
+					final IPath deletePath = URIUtil.toPath(delete.getUri());
+					final IProject project = EclipseUtils.project(deletePath).orElseThrow();
 						if (project.getFile("flix.jar").getLocation().equals(deletePath)) {
 							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
 								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
 							});
 						}
-					}
-				})::dispose);
-				rollback.add(this.flix.getPostResourceMonitor().onDidDeleteFiles().subscribe(fileDeleteEvent -> {
-					System.out.println("DELETED");
-					for (final FileDelete delete : fileDeleteEvent.getFiles()) {
-						final IPath deletePath = URIUtil.toPath(delete.getUri());
-						final IProject project = EclipseUtils.project(deletePath).orElseThrow();
-						if (project.getFile("flix.jar").getLocation().equals(deletePath)) {
-							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
-								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
-							});
-						}
-					}
-				})::dispose);
-				rollback.add(this.flix.getPostResourceMonitor().onDidChangeFiles().subscribe(fileChangeEvent -> {
-					System.out.println("CHANGED");
-					for (final URI uri : fileChangeEvent.getFiles()) {
-						final IPath changePath = URIUtil.toPath(uri);
-						final IProject project = EclipseUtils.project(changePath).orElseThrow();
+				}
+			})::dispose);
+			rollback.add(this.flix.getPostResourceMonitor().onDidChangeFiles().subscribe(fileChangeEvent -> {
+				System.out.println("CHANGED");
+				for (final URI uri : fileChangeEvent.getFiles()) {
+					final IPath changePath = URIUtil.toPath(uri);
+					final IProject project = EclipseUtils.project(changePath).orElseThrow();
 						if (project.getFile("flix.jar").getLocation().equals(changePath)) {
 							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
 								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
 							});
 						}
-					}
-				})::dispose);
+				}
+			})::dispose);
 
-				this.rollback = rollback;
-			}).schedule();
+			this.rollback = rollback;
 		});
 	}
 

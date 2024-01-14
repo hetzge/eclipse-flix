@@ -50,19 +50,17 @@ import de.hetzge.eclipse.flix.model.FlixProject;
 
 public class FlixLanguageClientController extends EclipseLanguageClientController<LanguageServer> {
 
-	private final FlixProject flixProject;
 	private final int port;
 	private final EclipseLog log;
 	private final BufferingDiagnosticConsumer diagnosticConsumer;
 	private final DocumentFilter documentFilter;
 	private final FlixEclipseLanguageClient flixEclipseLanguageClient;
 
-	FlixLanguageClientController(FlixProject flixProject, int port) {
-		this.flixProject = flixProject;
+	FlixLanguageClientController(FlixProject project, int port) {
 		this.port = port;
-		this.log = new EclipseLog(FlixActivator.getDefault().getBundle(), "flix-language-client:" + flixProject.getProject().getName()); //$NON-NLS-1$
+		this.log = new EclipseLog(FlixActivator.getDefault().getBundle(), "flix-language-client"); //$NON-NLS-1$
 		this.diagnosticConsumer = new BufferingDiagnosticConsumer(new DiagnosticMarkers(FlixMarkerResolutionGenerator.MARKER_TYPE));
-		this.documentFilter = new DocumentFilter(FlixConstants.LANGUAGE_ID, "file", this.flixProject.getProject().getLocation().append("**").toString()); //$NON-NLS-1$ //$NON-NLS-2$
+		this.documentFilter = new DocumentFilter(FlixConstants.LANGUAGE_ID, "file", project.getProject().getLocation().append("**").toString()); //$NON-NLS-1$ //$NON-NLS-2$
 		final LanguageService languageService = Flix.get().getLanguageService();
 		final DocumentService documentService = Flix.get().getDocumentService();
 		final WorkspaceService workspaceService = Flix.get().getWorkspaceService();
@@ -77,14 +75,12 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		features.add(new DeclarationFeature(languageService));
 		features.add(new HoverFeature(languageService));
 		features.add(new DocumentSymbolFeature(languageService));
-		features.add(new WorkspaceSymbolFeature(languageService, this.flixProject));
+		features.add(new WorkspaceSymbolFeature(languageService, project));
 		features.add(new WorkspaceFoldersFeature(workspaceService));
 		features.add(new RenameFeature(languageService));
 		features.add(new CodeLensFeature(languageService, commandService));
 		features.add(new CodeActionFeature(languageService, commandService));
-
 		features.add(new Feature<LanguageServer>() {
-
 			@Override
 			public void dispose() {
 			}
@@ -95,11 +91,9 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 
 			@Override
 			public void initialize(LanguageServer server, InitializeResult initializeResult, List<DocumentFilter> documentSelector) {
-				System.out.println("Supports workspace folders: " + initializeResult.getCapabilities().getWorkspace().getWorkspaceFolders().getSupported());
 			}
 		});
-
-		this.flixEclipseLanguageClient = new FlixEclipseLanguageClient(this.log, this.flixProject, this.diagnosticConsumer, features);
+		this.flixEclipseLanguageClient = new FlixEclipseLanguageClient(this.log, project, this.diagnosticConsumer, features);
 	}
 
 	@Override
@@ -155,10 +149,10 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		}
 	}
 
-	public static FlixLanguageClientController connect(FlixProject flixProject, int port) {
+	public static FlixLanguageClientController connect(FlixProject project, int port) {
 		return SafeRun.runWithResult(rollback -> {
 			rollback.setLogger(FlixLogger::logError);
-			final FlixLanguageClientController flixLanguageClientController = new FlixLanguageClientController(flixProject, port);
+			final FlixLanguageClientController flixLanguageClientController = new FlixLanguageClientController(project, port);
 			rollback.add(flixLanguageClientController::dispose);
 			flixLanguageClientController.connect();
 			return flixLanguageClientController;

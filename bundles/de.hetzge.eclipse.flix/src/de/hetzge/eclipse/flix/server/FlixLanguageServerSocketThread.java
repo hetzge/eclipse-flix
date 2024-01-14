@@ -16,9 +16,9 @@ import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.model.FlixProject;
 
 public final class FlixLanguageServerSocketThread extends Thread implements AutoCloseable {
+	private final FlixProject flixProject;
 	private final int port;
 	private final ExecutorService executorService;
-	private final FlixProject flixProject;
 	private Status status;
 
 	public FlixLanguageServerSocketThread(FlixProject flixProject, int port) {
@@ -47,7 +47,7 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 							FlixLogger.logError(exception);
 						}
 					});
-					FlixLogger.logInfo("Start flix language server for project " + this.flixProject.getProject().getName());
+					FlixLogger.logInfo("Start flix language server");
 					final FlixLanguageServer server = FlixLanguageServer.start(this.flixProject);
 					rollback.add(server::close);
 					final Launcher<LanguageClient> launcher = new Builder<LanguageClient>()
@@ -93,8 +93,8 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 		return this.status;
 	}
 
-	public static FlixLanguageServerSocketThread createAndStart(FlixProject flixProject, int port) {
-		final FlixLanguageServerSocketThread thread = new FlixLanguageServerSocketThread(flixProject, port);
+	public static FlixLanguageServerSocketThread createAndStart(FlixProject project, int port) {
+		final FlixLanguageServerSocketThread thread = new FlixLanguageServerSocketThread(project, port);
 		thread.start();
 		return thread;
 	}

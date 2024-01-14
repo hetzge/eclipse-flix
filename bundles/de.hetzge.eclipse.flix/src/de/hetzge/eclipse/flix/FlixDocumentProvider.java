@@ -85,7 +85,7 @@ public class FlixDocumentProvider extends TextFileDocumentProvider implements Te
 			final IFileEditorInput fileEditorInput = (IFileEditorInput) element;
 			super.disconnect(element);
 			final URI uri = fileEditorInput.getFile().getLocationURI();
-			final Disposable disposable = this.openResources.get(uri);
+			final Disposable disposable = this.openResources.remove(uri);
 			if (disposable != null) {
 				disposable.dispose();
 			}

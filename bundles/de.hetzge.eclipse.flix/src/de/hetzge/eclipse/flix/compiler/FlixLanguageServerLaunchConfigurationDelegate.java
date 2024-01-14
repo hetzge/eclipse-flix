@@ -1,5 +1,6 @@
 package de.hetzge.eclipse.flix.compiler;
 
+import java.io.File;
 import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
@@ -31,12 +32,12 @@ public class FlixLanguageServerLaunchConfigurationDelegate extends JavaLaunchDel
 	public static FlixLanguageServerLaunch launch(FlixProject project, int compilerPort) {
 		System.out.println("FlixLanguageServerLaunchConfigurationDelegate.launch()");
 		try {
-			final IRuntimeClasspathEntry entry = JavaRuntime.newArchiveRuntimeClasspathEntry(Path.fromOSString(project.getFlixCompilerJarFile().getAbsolutePath()));
+			final File flixJarFile = project.getFlixCompilerJarFile();
+			final IRuntimeClasspathEntry entry = JavaRuntime.newArchiveRuntimeClasspathEntry(Path.fromOSString(flixJarFile.getAbsolutePath()));
 			entry.setClasspathProperty(IRuntimeClasspathEntry.USER_CLASSES);
 			final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 			final ILaunchConfigurationType launchConfigurationType = launchManager.getLaunchConfigurationType(ID);
-			final ILaunchConfigurationWorkingCopy configurationWorkingCopy = launchConfigurationType.newInstance(null, String.format("Flix LSP Server (%s)", project.getProject().getName()));
-			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_WORKING_DIRECTORY, project.getProject().getLocation().toFile().getAbsolutePath());
+			final ILaunchConfigurationWorkingCopy configurationWorkingCopy = launchConfigurationType.newInstance(null, "Flix LSP Server");
 			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, "ca.uwaterloo.flix.Main");
 			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_DEFAULT_CLASSPATH, false);
 			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH, List.of(entry.getMemento()));

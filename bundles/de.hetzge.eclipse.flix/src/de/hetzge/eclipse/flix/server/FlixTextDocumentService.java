@@ -79,6 +79,7 @@ public final class FlixTextDocumentService implements TextDocumentService {
 	public void didSave(DidSaveTextDocumentParams params) {
 		System.out.println("FlixTextDocumentService.didSave()");
 		System.out.println("--------------\n" + params.getText() + "\n--------------");
+		this.flixService.compile();
 	}
 
 	@Override
@@ -98,7 +99,6 @@ public final class FlixTextDocumentService implements TextDocumentService {
 		for (final TextDocumentContentChangeEvent contentChange : params.getContentChanges()) {
 			System.out.println("--------------\n" + contentChange.getText() + "\n--------------");
 		}
-
 		final List<TextDocumentContentChangeEvent> contentChangesEvents = params.getContentChanges();
 		for (final TextDocumentContentChangeEvent contentChangeEvent : contentChangesEvents) {
 			this.flixService.addUri(URI.create(params.getTextDocument().getUri()), contentChangeEvent.getText());

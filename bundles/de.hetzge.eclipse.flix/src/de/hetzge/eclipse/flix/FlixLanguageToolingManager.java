@@ -1,5 +1,6 @@
 package de.hetzge.eclipse.flix;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -12,6 +13,7 @@ import org.lxtk.util.SafeRun.Rollback;
 import org.lxtk.util.connect.Connectable.ConnectionState;
 
 import de.hetzge.eclipse.flix.client.FlixLanguageClientController;
+import de.hetzge.eclipse.flix.model.FlixModel;
 import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread;
 import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread.Status;
@@ -45,39 +47,53 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 		return () -> thread.interrupt();
 	}
 
-	public synchronized void connectProject(FlixProject flixProject) {
-		System.out.println("FlixLanguageToolingManager.connectProject(" + flixProject.getProject().getName() + ")");
-		this.connectedProjects.computeIfAbsent(flixProject, key -> {
-			FlixLogger.logInfo("Initialize flix for project under " + flixProject.getProject().getLocationURI());
+	public void connectProjects(List<FlixProject> projects) {
+		for (final FlixProject project : projects) {
+			connectProject(project);
+		}
+	}
+
+	public synchronized void connectProject(FlixProject project) {
+		this.connectedProjects.computeIfAbsent(project, ignore -> {
 			return SafeRun.runWithResult(rollback -> {
+				final FlixModel model = Flix.get().getModel();
+				Flix.get().getWorkspaceService().setWorkspaceFolders(model.getWorkspaceFolders());
 				rollback.setLogger(FlixLogger::logError);
 				final int lspPort = Utils.queryPort();
-				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(flixProject, lspPort);
+				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(project, lspPort);
 				rollback.add(socketThread::close);
-				final FlixLanguageClientController client = FlixLanguageClientController.connect(flixProject, lspPort);
+				final FlixLanguageClientController client = FlixLanguageClientController.connect(project, lspPort);
 				rollback.add(client::dispose);
 				return new LanguageTooling(client, socketThread, rollback);
 			});
 		});
 	}
 
+	public synchronized void disconnectProjects() {
+		for (final FlixProject project : this.connectedProjects.keySet()) {
+			disconnectProject(project);
+		}
+	}
+
+	public synchronized void disconnectProject(FlixProject project) {
+		System.out.println("FlixLanguageToolingManager.disconnectProject()");
+		final LanguageTooling languageTooling = this.connectedProjects.remove(project);
+		if (languageTooling != null) {
+			languageTooling.close();
+		}
+	}
+
+	public synchronized void reconnectProject(FlixProject project) {
+		disconnectProject(project);
+		connectProject(project);
+	}
+
 	private synchronized void monitorProjects() {
-		for (final Entry<FlixProject, LanguageTooling> entry : FlixLanguageToolingManager.this.connectedProjects.entrySet()) {
-			System.out.println(entry.getKey().getProject().getName() + " " + entry.getValue().isHealthy());
+		for (final Entry<FlixProject, LanguageTooling> entry : this.connectedProjects.entrySet()) {
 			if (!entry.getValue().isHealthy()) {
 				reconnectProject(entry.getKey());
 			}
 		}
-	}
-
-	public synchronized void disconnectProject(FlixProject flixProject) {
-		System.out.println("FlixLanguageToolingManager.disconnectProject(" + flixProject.getProject().getName() + ")");
-		Optional.ofNullable(this.connectedProjects.remove(flixProject)).ifPresent(LanguageTooling::close);
-	}
-
-	public synchronized void reconnectProject(FlixProject flixProject) {
-		disconnectProject(flixProject);
-		connectProject(flixProject);
 	}
 
 	public synchronized Optional<LanguageServer> getLanguageServerApi(FlixProject flixProject) {
@@ -86,9 +102,7 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 
 	@Override
 	public synchronized void close() {
-		for (final FlixProject flixProject : this.connectedProjects.keySet()) {
-			disconnectProject(flixProject);
-		}
+		disconnectProjects();
 	}
 
 	private static class LanguageTooling implements AutoCloseable {

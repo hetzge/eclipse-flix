@@ -2,6 +2,7 @@ package de.hetzge.eclipse.flix.model;
 
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.core.resources.IFile;
@@ -131,5 +132,25 @@ public class FlixProject {
 
 	public FlixProjectPreferences getProjectPreferences() {
 		return this.projectPreferences;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.project);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final FlixProject other = (FlixProject) obj;
+		return Objects.equals(this.project, other.project);
 	}
 }

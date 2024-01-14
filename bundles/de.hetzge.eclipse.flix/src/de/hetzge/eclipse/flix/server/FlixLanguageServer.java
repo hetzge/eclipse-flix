@@ -65,7 +65,7 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 			fileOperationsServerCapabilities.setWillDelete(fileOperationOptions);
 			fileOperationsServerCapabilities.setWillRename(fileOperationOptions);
 			final WorkspaceFoldersOptions workspaceFolders = new WorkspaceFoldersOptions();
-			workspaceFolders.setSupported(true);
+			workspaceFolders.setSupported(false);
 			final WorkspaceServerCapabilities workspaceServerCapabilities = new WorkspaceServerCapabilities();
 			workspaceServerCapabilities.setFileOperations(fileOperationsServerCapabilities);
 			workspaceServerCapabilities.setWorkspaceFolders(workspaceFolders);
@@ -142,17 +142,17 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 		this.flixService.setClient(client);
 	}
 
-	public static FlixLanguageServer start(FlixProject flixProject) {
+	public static FlixLanguageServer start(FlixProject project) {
 		return SafeRun.runWithResult(rollback -> {
 			rollback.setLogger(FlixLogger::logError);
 			final int compilerPort = Utils.queryPort();
-			final FlixLanguageServerLaunch launch = FlixLanguageServerLaunchConfigurationDelegate.launch(flixProject, compilerPort);
+			final FlixLanguageServerLaunch launch = FlixLanguageServerLaunchConfigurationDelegate.launch(project, compilerPort);
 			rollback.add(launch::dispose);
 			launch.waitUntilReady();
 			final FlixCompilerClient compilerClient = FlixCompilerClient.connect(compilerPort);
 			rollback.add(compilerClient::close);
 			launch.waitUntilConnected();
-			return new FlixLanguageServer(new FlixServerService(flixProject, compilerClient, rollback), launch);
+			return new FlixLanguageServer(new FlixServerService(project, compilerClient, rollback), launch);
 		});
 	}
 }

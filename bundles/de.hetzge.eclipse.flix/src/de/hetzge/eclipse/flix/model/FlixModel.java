@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Status;
+import org.lxtk.WorkspaceFolder;
 
 public class FlixModel {
 
@@ -38,5 +39,9 @@ public class FlixModel {
 
 	public FlixProject getFlixProjectOrThrowCoreException(IProject project) throws CoreException {
 		return getFlixProject(project).orElseThrow(() -> new CoreException(Status.error("Not a valid flix project")));
+	}
+
+	public List<WorkspaceFolder> getWorkspaceFolders() {
+		return this.getFlixProjects().stream().map(flixProject -> new WorkspaceFolder(flixProject.getProject().getLocationURI(), flixProject.getProject().getName())).collect(Collectors.toList());
 	}
 }
