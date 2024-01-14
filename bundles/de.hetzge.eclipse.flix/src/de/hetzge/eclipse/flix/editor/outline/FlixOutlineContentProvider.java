@@ -5,7 +5,7 @@ import java.util.List;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.lsp4j.DocumentSymbol;
 
-public final class FlixContentOutlineProvider implements ITreeContentProvider {
+public final class FlixOutlineContentProvider implements ITreeContentProvider {
 
 	private List<DocumentSymbol> rootSymbols;
 

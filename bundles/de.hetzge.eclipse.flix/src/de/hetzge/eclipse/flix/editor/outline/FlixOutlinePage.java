@@ -32,7 +32,7 @@ import de.hetzge.eclipse.flix.editor.FlixEditor;
 public class FlixOutlinePage extends ContentOutlinePage {
 
 	private final FlixEditor flixEditor;
-	private FlixContentOutlineProvider contentOutlineProvider;
+	private FlixOutlineContentProvider contentOutlineProvider;
 	private final AtomicBoolean lock;
 
 	public FlixOutlinePage(FlixEditor flixEditor) {
@@ -46,7 +46,7 @@ public class FlixOutlinePage extends ContentOutlinePage {
 		System.out.println("FlixOutlinePage.createControl()");
 		super.createControl(parent);
 		final TreeViewer viewer = getTreeViewer();
-		this.contentOutlineProvider = new FlixContentOutlineProvider();
+		this.contentOutlineProvider = new FlixOutlineContentProvider();
 		viewer.setContentProvider(this.contentOutlineProvider);
 		viewer.setLabelProvider(new FlixOutlineLabelProvider());
 		viewer.setUseHashlookup(true);

@@ -16,11 +16,11 @@ import de.hetzge.eclipse.flix.editor.outline.FlixOutlineManager.Outline;
 public final class FlixOutlinePopup extends FilteringOutlinePopup {
 
 	private final FlixEditor flixEditor;
-	private final FlixContentOutlineProvider flixContentOutlineProvider;
+	private final FlixOutlineContentProvider flixContentOutlineProvider;
 
 	public FlixOutlinePopup(FlixEditor flixEditor, Outline outline) {
 		this.flixEditor = flixEditor;
-		this.flixContentOutlineProvider = new FlixContentOutlineProvider();
+		this.flixContentOutlineProvider = new FlixOutlineContentProvider();
 		this.flixContentOutlineProvider.setRootSymbols(outline.getRootSymbols());
 	}
 
