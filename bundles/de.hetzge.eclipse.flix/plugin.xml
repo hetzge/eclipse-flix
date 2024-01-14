@@ -98,6 +98,11 @@
 		<command id="de.hetzge.eclipse.flix.nature.create" defaultHandler="de.hetzge.eclipse.flix.project.FlixProjectNatureHandler" description="Converts the project to a Flix project" name="Add Flix project nature"></command>
 		<command id="de.hetzge.eclipse.flix.editor.findReferences" categoryId="org.eclipse.search.ui.category.search" name="Find References (Flix)" description="Find references to the selected symbol" defaultHandler="de.hetzge.eclipse.flix.editor.FlixFindReferencesHandler"></command>
 		<command defaultHandler="de.hetzge.eclipse.flix.FlixReconnectLanguageToolingHandler" id="de.hetzge.eclipse.flix.reconnectLanguageTooling" name="Reconnect Flix language tooling"></command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.compiler.FlixCompileHandler"
+        id="de.hetzge.eclipse.flix.compile"
+        name="Compile">
+  </command>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
 		<key sequence="M1+O" commandId="de.hetzge.eclipse.flix.editor.quickOutline" contextId="de.hetzge.eclipse.flix.editor.scope" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"></key>
@@ -128,7 +133,16 @@
 			<!-- https://blogs.itemis.com/auf-einen-blick-eclipse-actions-f%C3%BCr-project-und-package-explorer -->
 			<menu icon="assets/icons/icon.png" label="Flix">
 				<command commandId="de.hetzge.eclipse.flix.reconnectLanguageTooling" icon="assets/icons/icon.png" label="Reconnect Flix language tooling" style="push" tooltip="Reconnect Flix language tooling">
-					<visibleWhen checkEnabled="false">
+				
+				</command>
+    <command
+          commandId="de.hetzge.eclipse.flix.compile"
+          icon="assets/icons/icon.png"
+          label="Compile project"
+          style="push"
+          tooltip="Executes the compiler">
+    </command>
+    	<visibleWhen checkEnabled="false">
 						<with variable="selection">
 							<iterate>
 								<adapt type="org.eclipse.core.resources.IProject">
@@ -139,7 +153,6 @@
 							</iterate>
 						</with>
 					</visibleWhen>
-				</command>
 			</menu>
 		</menuContribution>
 	</extension>

@@ -9,24 +9,32 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.PlatformUI;
 import org.lxtk.util.Disposable;
+import org.lxtk.util.EventEmitter;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 import org.lxtk.util.connect.Connectable.ConnectionState;
 
 import de.hetzge.eclipse.flix.client.FlixLanguageClientController;
+import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
+import de.hetzge.eclipse.flix.compiler.FlixCompilerLaunch;
+import de.hetzge.eclipse.flix.compiler.FlixCompilerLaunchConfigurationDelegate;
+import de.hetzge.eclipse.flix.compiler.FlixCompilerService;
 import de.hetzge.eclipse.flix.model.FlixModel;
 import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.navigator.FlixLanguageToolingStateDecorator;
 import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread;
 import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread.Status;
+import de.hetzge.eclipse.flix.server.FlixMiddlewareLanguageServer;
 import de.hetzge.eclipse.utils.Utils;
 
 public class FlixLanguageToolingManager implements AutoCloseable {
 
 	private final Map<FlixProject, LanguageTooling> connectedProjects;
+	private final EventEmitter<Status> statusChangedEventEmitter;
 
 	public FlixLanguageToolingManager() {
 		this.connectedProjects = new ConcurrentHashMap<>();
+		this.statusChangedEventEmitter = new EventEmitter<>();
 	}
 
 	public Disposable startMonitor() {
@@ -58,15 +66,26 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 	public synchronized void connectProject(FlixProject project) {
 		this.connectedProjects.computeIfAbsent(project, ignore -> {
 			return SafeRun.runWithResult(rollback -> {
+				rollback.setLogger(FlixLogger::logError);
 				final FlixModel model = Flix.get().getModel();
 				Flix.get().getWorkspaceService().setWorkspaceFolders(model.getWorkspaceFolders());
 				rollback.setLogger(FlixLogger::logError);
+				final int compilerPort = Utils.queryPort();
+				final FlixCompilerLaunch launch = FlixCompilerLaunchConfigurationDelegate.launch(project, compilerPort);
+				rollback.add(launch::dispose);
+				launch.waitUntilReady();
+				final FlixCompilerClient compilerClient = FlixCompilerClient.connect(compilerPort);
+				rollback.add(compilerClient::close);
+				launch.waitUntilConnected();
+				final FlixCompilerService compilerService = new FlixCompilerService(project, compilerClient);
+				final FlixMiddlewareLanguageServer server = new FlixMiddlewareLanguageServer(compilerService, launch);
 				final int lspPort = Utils.queryPort();
-				final FlixLanguageServerSocketThread socketThread = FlixLanguageServerSocketThread.createAndStart(project, lspPort);
+				final FlixLanguageServerSocketThread socketThread = new FlixLanguageServerSocketThread(project, server, lspPort);
 				rollback.add(socketThread::close);
-				final FlixLanguageClientController client = FlixLanguageClientController.connect(project, lspPort);
-				rollback.add(client::dispose);
-				return new LanguageTooling(client, socketThread, rollback);
+				socketThread.start();
+				final FlixLanguageClientController controller = FlixLanguageClientController.connect(project, lspPort);
+				rollback.add(controller::dispose);
+				return new LanguageTooling(controller, compilerService, socketThread, rollback);
 			});
 		});
 	}
@@ -78,7 +97,6 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 	}
 
 	public synchronized void disconnectProject(FlixProject project) {
-		System.out.println("FlixLanguageToolingManager.disconnectProject()");
 		final LanguageTooling languageTooling = this.connectedProjects.remove(project);
 		if (languageTooling != null) {
 			languageTooling.close();
@@ -105,29 +123,51 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 		return Optional.ofNullable(this.connectedProjects.get(flixProject)).map(LanguageTooling::getLanguageServerApi);
 	}
 
+	public void compile(FlixProject project) {
+		final LanguageTooling languageTooling = this.connectedProjects.get(project);
+		if (languageTooling != null) {
+			languageTooling.getCompilerService().addWorkspaceUris();
+			languageTooling.getCompilerService().compile();
+		}
+	}
+
 	@Override
 	public synchronized void close() {
-		disconnectProjects();
+		try {
+			disconnectProjects();
+		} finally {
+			this.statusChangedEventEmitter.dispose();
+		}
 	}
 
 	public boolean isStarted(FlixProject project) {
 		return Optional.ofNullable(this.connectedProjects.get(project)).map(LanguageTooling::isStarted).orElse(false);
 	}
 
+	public EventEmitter<Status> onStatusChanged() {
+		return this.statusChangedEventEmitter;
+	}
+
 	private static class LanguageTooling implements AutoCloseable {
 
 		private final FlixLanguageClientController controller;
+		private final FlixCompilerService compilerService;
 		private final FlixLanguageServerSocketThread socketThread;
 		private final Rollback rollback;
 
-		public LanguageTooling(FlixLanguageClientController controller, FlixLanguageServerSocketThread socketThread, Rollback rollback) {
+		public LanguageTooling(FlixLanguageClientController controller, FlixCompilerService compilerService, FlixLanguageServerSocketThread socketThread, Rollback rollback) {
 			this.controller = controller;
+			this.compilerService = compilerService;
 			this.socketThread = socketThread;
 			this.rollback = rollback;
 		}
 
 		public LanguageServer getLanguageServerApi() {
 			return this.controller.getLanguageServerApi();
+		}
+
+		public FlixCompilerService getCompilerService() {
+			return this.compilerService;
 		}
 
 		public boolean isHealthy() {

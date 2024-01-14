@@ -2,6 +2,7 @@ package de.hetzge.eclipse.flix;
 
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
@@ -21,6 +22,7 @@ import org.osgi.framework.BundleContext;
 
 import de.hetzge.eclipse.flix.launch.FlixRunMainCommandHandler;
 import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
+import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
@@ -88,11 +90,11 @@ public class FlixActivator extends AbstractUIPlugin {
 				for (final FileCreate create : fileCreateEvent.getFiles()) {
 					final IPath createPath = URIUtil.toPath(create.getUri());
 					final IProject project = EclipseUtils.project(createPath).orElseThrow();
-						if (project.getFile("flix.jar").getLocation().equals(createPath)) {
-							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
-								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
-							});
-						}
+					if (project.getFile("flix.jar").getLocation().equals(createPath)) {
+						this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
+							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+						});
+					}
 				}
 			})::dispose);
 			rollback.add(this.flix.getPostResourceMonitor().onDidDeleteFiles().subscribe(fileDeleteEvent -> {
@@ -100,11 +102,13 @@ public class FlixActivator extends AbstractUIPlugin {
 				for (final FileDelete delete : fileDeleteEvent.getFiles()) {
 					final IPath deletePath = URIUtil.toPath(delete.getUri());
 					final IProject project = EclipseUtils.project(deletePath).orElseThrow();
-						if (project.getFile("flix.jar").getLocation().equals(deletePath)) {
-							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
-								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
-							});
+					if (project.getFile("flix.jar").getLocation().equals(deletePath)) {
+						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getFlixProject(project);
+						if (flixProjectOptional.isPresent()) {
+							final FlixProject flixProject = flixProjectOptional.get();
+							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
 						}
+					}
 				}
 			})::dispose);
 			rollback.add(this.flix.getPostResourceMonitor().onDidChangeFiles().subscribe(fileChangeEvent -> {
@@ -112,11 +116,17 @@ public class FlixActivator extends AbstractUIPlugin {
 				for (final URI uri : fileChangeEvent.getFiles()) {
 					final IPath changePath = URIUtil.toPath(uri);
 					final IProject project = EclipseUtils.project(changePath).orElseThrow();
-						if (project.getFile("flix.jar").getLocation().equals(changePath)) {
-							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
-								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
-							});
+					if (project.getFile("flix.jar").getLocation().equals(changePath)) {
+						this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
+							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+						});
+					} else if (project.getFile("flix.toml").getLocation().equals(changePath)) {
+						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getFlixProject(project);
+						if (flixProjectOptional.isPresent()) {
+							final FlixProject flixProject = flixProjectOptional.get();
+							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
 						}
+					}
 				}
 			})::dispose);
 

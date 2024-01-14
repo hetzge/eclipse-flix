@@ -27,7 +27,7 @@ public final class FlixOutlineManager {
 		this.cache = new ConcurrentHashMap<>();
 	}
 
-	public CompletableFuture<Outline> get(URI uri) {
+	public CompletableFuture<Outline> queryOutline(URI uri) {
 		final CompletableFuture<DocumentSymbolProvider> future = new CompletableFuture<>();
 		for (final DocumentSymbolProvider provider : this.languageService.getDocumentSymbolProviders()) {
 			future.complete(provider);
@@ -54,9 +54,9 @@ public final class FlixOutlineManager {
 		});
 	}
 
-	public CompletableFuture<Outline> getPreferedCached(URI uri) {
+	public CompletableFuture<Outline> queryOutlinePreferCache(URI uri) {
 		final Outline cachedOutline = this.cache.get(uri);
-		return cachedOutline != null ? CompletableFuture.completedFuture(cachedOutline) : get(uri);
+		return cachedOutline != null ? CompletableFuture.completedFuture(cachedOutline) : queryOutline(uri);
 	}
 
 	public static class Outline {

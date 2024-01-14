@@ -46,7 +46,10 @@ public final class FlixOutlinePopup extends FilteringOutlinePopup {
 
 	@Override
 	protected Object getCorrespondingElement(ISelection hostSelection) {
-		System.out.println("FlixOutlinePopup.getCorrespondingElement() " + hostSelection);
+		System.out.println("FlixOutlinePopup.getCorrespondingElement() " + hostSelection); // TODO TextSelection
+
+
+
 		return null; // TODO
 	}
 

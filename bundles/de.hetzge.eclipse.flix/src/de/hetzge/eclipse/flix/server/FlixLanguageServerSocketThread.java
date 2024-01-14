@@ -17,13 +17,15 @@ import de.hetzge.eclipse.flix.model.FlixProject;
 
 public final class FlixLanguageServerSocketThread extends Thread implements AutoCloseable {
 	private final FlixProject flixProject;
+	private final FlixMiddlewareLanguageServer server;
 	private final int port;
 	private final ExecutorService executorService;
 	private Status status;
 
-	public FlixLanguageServerSocketThread(FlixProject flixProject, int port) {
+	public FlixLanguageServerSocketThread(FlixProject flixProject, FlixMiddlewareLanguageServer server, int port) {
 		super("LSP Server Socket");
 		this.flixProject = flixProject;
+		this.server = server;
 		this.port = port;
 		this.executorService = Executors.newWorkStealingPool();
 		this.status = Status.STOPPED;
@@ -45,27 +47,27 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 							FlixLogger.logError(exception);
 						}
 					});
-					final FlixLanguageServer server = FlixLanguageServer.start(this.flixProject);
-					rollback.add(server::close);
 					final Launcher<LanguageClient> launcher = new Builder<LanguageClient>()
-							.setLocalService(server)
+							.setLocalService(this.server)
 							.setRemoteInterface(LanguageClient.class)
 							.setInput(socket.getInputStream())
 							.setOutput(socket.getOutputStream())
 							.setExecutorService(this.executorService)
 //								.traceMessages(new PrintWriter(System.out))
 							.create();
-					server.setClient(launcher.getRemoteProxy());
+					this.server.setClient(launcher.getRemoteProxy());
 					final Future<Void> startListeningFuture = launcher.startListening();
 					rollback.add(() -> startListeningFuture.cancel(true));
-					while (this.status != Status.STOPPED && server.isRunning() && !startListeningFuture.isDone() && !startListeningFuture.isCancelled()) {
-						if (this.status != Status.STARTED && server.isInitialized()) {
+					while (this.status != Status.STOPPED && this.server.isRunning() && !startListeningFuture.isDone() && !startListeningFuture.isCancelled()) {
+						if (this.status != Status.STARTED && this.server.isInitialized()) {
 							updateStatus(Status.STARTED);
 						}
 						Thread.sleep(1000);
 					}
 					rollback.run();
-				} catch (final IOException | InterruptedException exception) {
+				} catch (final InterruptedException exception) {
+					FlixLogger.logInfo("Sleep interupted");
+				} catch (final IOException exception) {
 					throw new RuntimeException(exception);
 				}
 			} catch (final Exception exception) {
@@ -89,12 +91,6 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 
 	public Status getStatus() {
 		return this.status;
-	}
-
-	public static FlixLanguageServerSocketThread createAndStart(FlixProject project, int port) {
-		final FlixLanguageServerSocketThread thread = new FlixLanguageServerSocketThread(project, port);
-		thread.start();
-		return thread;
 	}
 
 	public enum Status {

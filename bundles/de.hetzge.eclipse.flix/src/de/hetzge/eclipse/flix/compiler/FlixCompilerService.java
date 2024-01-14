@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.server;
+package de.hetzge.eclipse.flix.compiler;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -30,13 +30,11 @@ import org.eclipse.lsp4j.WorkspaceSymbolLocation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
-import org.lxtk.util.SafeRun.Rollback;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
-import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
 import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.flix.utils.GsonUtils;
@@ -44,25 +42,17 @@ import de.hetzge.eclipse.utils.Utils;
 
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
 
-public final class FlixServerService implements AutoCloseable {
+public final class FlixCompilerService {
 
 	private final FlixProject flixProject;
 	private final FlixCompilerClient compilerClient;
 	private final Map<String, PublishDiagnosticsParams> diagnosticsParamsByUri;
-	private final Rollback rollback;
 	private LanguageClient client;
 
-	FlixServerService(FlixProject flixProject, FlixCompilerClient compilerClient, Rollback rollback) {
+	public FlixCompilerService(FlixProject flixProject, FlixCompilerClient compilerClient) {
 		this.flixProject = flixProject;
 		this.compilerClient = compilerClient;
-		this.rollback = rollback;
 		this.diagnosticsParamsByUri = new HashMap<>();
-	}
-
-	@Override
-	public void close() {
-		System.out.println("FlixServerService.close()");
-		this.rollback.run();
 	}
 
 	public void addWorkspaceUris() {

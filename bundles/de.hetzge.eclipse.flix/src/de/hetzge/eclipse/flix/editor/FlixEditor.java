@@ -19,11 +19,12 @@ import de.hetzge.eclipse.flix.editor.outline.FlixOutlinePage;
 
 public class FlixEditor extends AbstractDecoratedTextEditor {
 
-	private FlixOutlinePage outlinePage;
+	private final FlixOutlinePage outlinePage;
 	private final Throttler syncOutlineThrottler;
 
 	public FlixEditor() {
 		this.syncOutlineThrottler = new Throttler(PlatformUI.getWorkbench().getDisplay(), Duration.ofMillis(250), this::syncOutline);
+		this.outlinePage = new FlixOutlinePage(this);
 	}
 
 	@Override
@@ -43,9 +44,7 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 	}
 
 	private void syncOutline() {
-		if (FlixEditor.this.outlinePage != null) {
-			FlixEditor.this.outlinePage.update(getSelectionProvider().getSelection());
-		}
+		this.outlinePage.update(getSelectionProvider().getSelection());
 	}
 
 	private ChainedPreferenceStore getPreferenceStores() {
@@ -65,17 +64,12 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 	@Override
 	protected void editorSaved() {
 		super.editorSaved();
-		if (this.outlinePage != null) {
-			this.outlinePage.update();
-		}
+		this.outlinePage.update();
 	}
 
 	@Override
 	public <T> T getAdapter(Class<T> adapter) {
 		if (adapter == IContentOutlinePage.class) {
-			if (this.outlinePage == null) {
-				this.outlinePage = new FlixOutlinePage(this);
-			}
 			return adapter.cast(this.outlinePage);
 		} else if (adapter == LanguageOperationTarget.class) {
 			return adapter.cast(FlixOperationTargetProvider.getOperationTarget(this));

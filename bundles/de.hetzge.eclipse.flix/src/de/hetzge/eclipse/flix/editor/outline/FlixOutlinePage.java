@@ -9,7 +9,6 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreePath;
@@ -36,14 +35,12 @@ public class FlixOutlinePage extends ContentOutlinePage {
 	private final AtomicBoolean lock;
 
 	public FlixOutlinePage(FlixEditor flixEditor) {
-		System.out.println("FlixOutlinePage.FlixOutlinePage()");
 		this.flixEditor = flixEditor;
 		this.lock = new AtomicBoolean(false);
 	}
 
 	@Override
 	public void createControl(Composite parent) {
-		System.out.println("FlixOutlinePage.createControl()");
 		super.createControl(parent);
 		final TreeViewer viewer = getTreeViewer();
 		this.contentOutlineProvider = new FlixOutlineContentProvider();
@@ -52,47 +49,16 @@ public class FlixOutlinePage extends ContentOutlinePage {
 		viewer.setUseHashlookup(true);
 		viewer.setInput(this.flixEditor.getEditorInput());
 		viewer.expandAll();
-		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				if (FlixOutlinePage.this.lock.get()) {
-					return;
-				}
-				final ISelection selection = event.getSelection();
-				if (!(selection instanceof ITreeSelection)) {
-					return;
-				}
-				final ITreeSelection treeSelection = (ITreeSelection) selection;
-				if (treeSelection.getPaths().length == 0) {
-					return;
-				}
-				final Object lastSegment = treeSelection.getPaths()[0].getLastSegment();
-				if (!(lastSegment instanceof DocumentSymbol)) {
-					return;
-				}
-				final DocumentSymbol documentSymbol = (DocumentSymbol) lastSegment;
-				final IDocument document = DefaultEditorHelper.INSTANCE.getDocument(FlixOutlinePage.this.flixEditor);
-				if (document == null) {
-					return;
-				}
-				try {
-					final int startOffset = DocumentUtil.toOffset(document, documentSymbol.getSelectionRange().getStart());
-					final int endOffset = DocumentUtil.toOffset(document, documentSymbol.getSelectionRange().getEnd());
-					FlixOutlinePage.this.flixEditor.selectAndReveal(startOffset, endOffset - startOffset);
-				} catch (final BadLocationException exception) {
-					throw new RuntimeException(exception);
-				}
-			}
-		});
+		viewer.addSelectionChangedListener(this::onSelectionChanged);
 		update();
 	}
 
 	public void update() {
-		if (this.flixEditor == null && this.contentOutlineProvider != null) {
+		if (this.flixEditor == null || this.contentOutlineProvider == null) {
 			return;
 		}
 		final URI uri = ((IFileEditorInput) this.flixEditor.getEditorInput()).getFile().getLocationURI();
-		Flix.get().getOutlineManager().get(uri).thenAccept(outline -> {
+		Flix.get().getOutlineManager().queryOutline(uri).thenAccept(outline -> {
 			Display.getDefault().asyncExec(() -> {
 				this.contentOutlineProvider.setRootSymbols(outline.getRootSymbols());
 				final TreeViewer viewer = getTreeViewer();
@@ -132,7 +98,7 @@ public class FlixOutlinePage extends ContentOutlinePage {
 		if (document == null) {
 			return;
 		}
-		Flix.get().getOutlineManager().getPreferedCached(uri).thenAccept(outline -> {
+		Flix.get().getOutlineManager().queryOutlinePreferCache(uri).thenAccept(outline -> {
 			final AtomicReference<TreePath> lastMatchingTreePath = new AtomicReference<>();
 			final AtomicInteger smallestDistance = new AtomicInteger(Integer.MAX_VALUE);
 			outline.visitPaths(path -> {
@@ -161,7 +127,35 @@ public class FlixOutlinePage extends ContentOutlinePage {
 				}
 			});
 		});
-
 	}
 
+	private void onSelectionChanged(SelectionChangedEvent event) {
+		if (FlixOutlinePage.this.lock.get()) {
+			return;
+		}
+		final ISelection selection = event.getSelection();
+		if (!(selection instanceof ITreeSelection)) {
+			return;
+		}
+		final ITreeSelection treeSelection = (ITreeSelection) selection;
+		if (treeSelection.getPaths().length == 0) {
+			return;
+		}
+		final Object lastSegment = treeSelection.getPaths()[0].getLastSegment();
+		if (!(lastSegment instanceof DocumentSymbol)) {
+			return;
+		}
+		final DocumentSymbol documentSymbol = (DocumentSymbol) lastSegment;
+		final IDocument document = DefaultEditorHelper.INSTANCE.getDocument(FlixOutlinePage.this.flixEditor);
+		if (document == null) {
+			return;
+		}
+		try {
+			final int startOffset = DocumentUtil.toOffset(document, documentSymbol.getSelectionRange().getStart());
+			final int endOffset = DocumentUtil.toOffset(document, documentSymbol.getSelectionRange().getEnd());
+			FlixOutlinePage.this.flixEditor.selectAndReveal(startOffset, endOffset - startOffset);
+		} catch (final BadLocationException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
 }
