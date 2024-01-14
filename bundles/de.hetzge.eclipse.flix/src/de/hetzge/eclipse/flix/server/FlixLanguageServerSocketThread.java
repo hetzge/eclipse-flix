@@ -59,7 +59,7 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 					final Future<Void> startListeningFuture = launcher.startListening();
 					rollback.add(() -> startListeningFuture.cancel(true));
 					while (this.status != Status.STOPPED && server.isRunning() && !startListeningFuture.isDone() && !startListeningFuture.isCancelled()) {
-						if (server.isInitialized()) {
+						if (this.status != Status.STARTED && server.isInitialized()) {
 							updateStatus(Status.STARTED);
 						}
 						Thread.sleep(1000);
@@ -77,6 +77,7 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 	}
 
 	private void updateStatus(Status status) {
+		System.out.println("FlixLanguageServerSocketThread.updateStatus(" + status + ") " + this.flixProject.getProject().getName());
 		this.status = status;
 	}
 

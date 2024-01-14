@@ -183,4 +183,17 @@
 	       <run class="de.hetzge.eclipse.flix.FlixJarFileSystem"></run>
 	    </filesystem>
 	 </extension>
+  <extension
+        point="org.eclipse.ui.decorators">
+     <decorator
+           class="de.hetzge.eclipse.flix.navigator.FlixLanguageToolingStateDecorator"
+           id="de.hetzge.eclipse.flix.decorator.languageTooling"
+           label="Flix Language Tooling State">
+        <enablement>
+           <objectClass
+                 name="org.eclipse.core.resources.IProject">
+           </objectClass>
+        </enablement>
+     </decorator>
+  </extension>
 </plugin>

@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.eclipse.ui.PlatformUI;
 import org.lxtk.util.Disposable;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
@@ -15,6 +16,7 @@ import org.lxtk.util.connect.Connectable.ConnectionState;
 import de.hetzge.eclipse.flix.client.FlixLanguageClientController;
 import de.hetzge.eclipse.flix.model.FlixModel;
 import de.hetzge.eclipse.flix.model.FlixProject;
+import de.hetzge.eclipse.flix.navigator.FlixLanguageToolingStateDecorator;
 import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread;
 import de.hetzge.eclipse.flix.server.FlixLanguageServerSocketThread.Status;
 import de.hetzge.eclipse.utils.Utils;
@@ -93,6 +95,9 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 			if (!entry.getValue().isHealthy()) {
 				reconnectProject(entry.getKey());
 			}
+			PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+				PlatformUI.getWorkbench().getDecoratorManager().update(FlixLanguageToolingStateDecorator.ID);
+			});
 		}
 	}
 
@@ -103,6 +108,10 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 	@Override
 	public synchronized void close() {
 		disconnectProjects();
+	}
+
+	public boolean isStarted(FlixProject project) {
+		return Optional.ofNullable(this.connectedProjects.get(project)).map(LanguageTooling::isStarted).orElse(false);
 	}
 
 	private static class LanguageTooling implements AutoCloseable {
@@ -123,6 +132,10 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 
 		public boolean isHealthy() {
 			return this.controller.getConnectionState() != ConnectionState.DISCONNECTED && this.socketThread.isAlive() && this.socketThread.getStatus() != Status.STOPPED;
+		}
+
+		public boolean isStarted() {
+			return isHealthy() && this.socketThread.getStatus() == Status.STARTED;
 		}
 
 		@Override

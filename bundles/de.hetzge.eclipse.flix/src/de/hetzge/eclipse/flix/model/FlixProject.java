@@ -12,6 +12,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SafeRunner;
 
+import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
 import de.hetzge.eclipse.flix.project.FlixProjectPreferences;
@@ -126,12 +127,12 @@ public class FlixProject {
 		}
 	}
 
-	public static boolean isActiveFlixProject(IProject project) {
-		return SafeRunner.run(() -> project.isOpen() && project.getDescription().hasNature(FlixProjectNature.ID));
-	}
-
 	public FlixProjectPreferences getProjectPreferences() {
 		return this.projectPreferences;
+	}
+
+	public boolean isLanguageToolingStarted() {
+		return Flix.get().getLanguageToolingManager().isStarted(this);
 	}
 
 	@Override
@@ -152,5 +153,9 @@ public class FlixProject {
 		}
 		final FlixProject other = (FlixProject) obj;
 		return Objects.equals(this.project, other.project);
+	}
+
+	public static boolean isActiveFlixProject(IProject project) {
+		return SafeRunner.run(() -> project.isOpen() && project.getDescription().hasNature(FlixProjectNature.ID));
 	}
 }
