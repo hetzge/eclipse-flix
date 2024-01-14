@@ -170,13 +170,10 @@ public class FlixCompilerClient implements AutoCloseable {
 		System.out.println("FlixCompilerClient.connect()");
 		return SafeRun.runWithResult(rollback -> {
 			rollback.setLogger(FlixLogger::logError);
-
 			final FlixCompilerProcessSocketListener listener = new FlixCompilerProcessSocketListener();
 			final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:" + port), listener).join();
 			rollback.add(webSocket::abort);
-
 			System.out.println("Connected compiler client on port " + port);
-
 			return new FlixCompilerClient(webSocket, listener, rollback);
 		});
 	}

@@ -34,7 +34,6 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(getPreferenceStores(), this));
 		setEditorContextMenuId("#FlixEditorContext"); //$NON-NLS-1$
 		setRulerContextMenuId("#FlixRulerContext"); //$NON-NLS-1$
-
 	}
 
 	@Override

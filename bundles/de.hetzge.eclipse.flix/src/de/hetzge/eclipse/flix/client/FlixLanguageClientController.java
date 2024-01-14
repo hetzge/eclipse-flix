@@ -7,11 +7,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.DocumentFilter;
+import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.lxtk.CommandService;
 import org.lxtk.DocumentService;
 import org.lxtk.LanguageService;
+import org.lxtk.WorkspaceService;
 import org.lxtk.client.AbstractLanguageClient;
 import org.lxtk.client.BufferingDiagnosticConsumer;
 import org.lxtk.client.CodeActionFeature;
@@ -25,6 +28,7 @@ import org.lxtk.client.HoverFeature;
 import org.lxtk.client.ReferencesFeature;
 import org.lxtk.client.RenameFeature;
 import org.lxtk.client.TextDocumentSyncFeature;
+import org.lxtk.client.WorkspaceFoldersFeature;
 import org.lxtk.client.WorkspaceSymbolFeature;
 import org.lxtk.jsonrpc.AbstractJsonRpcConnectionFactory;
 import org.lxtk.jsonrpc.JsonRpcConnectionFactory;
@@ -61,6 +65,7 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		this.documentFilter = new DocumentFilter(FlixConstants.LANGUAGE_ID, "file", this.flixProject.getProject().getLocation().append("**").toString()); //$NON-NLS-1$ //$NON-NLS-2$
 		final LanguageService languageService = Flix.get().getLanguageService();
 		final DocumentService documentService = Flix.get().getDocumentService();
+		final WorkspaceService workspaceService = Flix.get().getWorkspaceService();
 		final CommandService commandService = Flix.get().getCommandService();
 		final TextDocumentSyncFeature textDocumentSyncFeature = new TextDocumentSyncFeature(documentService);
 		textDocumentSyncFeature.setChangeEventMergeStrategy(new EclipseTextDocumentChangeEventMergeStrategy());
@@ -73,9 +78,27 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		features.add(new HoverFeature(languageService));
 		features.add(new DocumentSymbolFeature(languageService));
 		features.add(new WorkspaceSymbolFeature(languageService, this.flixProject));
+		features.add(new WorkspaceFoldersFeature(workspaceService));
 		features.add(new RenameFeature(languageService));
 		features.add(new CodeLensFeature(languageService, commandService));
 		features.add(new CodeActionFeature(languageService, commandService));
+
+		features.add(new Feature<LanguageServer>() {
+
+			@Override
+			public void dispose() {
+			}
+
+			@Override
+			public void fillClientCapabilities(ClientCapabilities capabilities) {
+			}
+
+			@Override
+			public void initialize(LanguageServer server, InitializeResult initializeResult, List<DocumentFilter> documentSelector) {
+				System.out.println("Supports workspace folders: " + initializeResult.getCapabilities().getWorkspace().getWorkspaceFolders().getSupported());
+			}
+		});
+
 		this.flixEclipseLanguageClient = new FlixEclipseLanguageClient(this.log, this.flixProject, this.diagnosticConsumer, features);
 	}
 
@@ -133,13 +156,11 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 	}
 
 	public static FlixLanguageClientController connect(FlixProject flixProject, int port) {
-		System.out.println("FlixLanguageClient.connect()");
 		return SafeRun.runWithResult(rollback -> {
 			rollback.setLogger(FlixLogger::logError);
 			final FlixLanguageClientController flixLanguageClientController = new FlixLanguageClientController(flixProject, port);
 			rollback.add(flixLanguageClientController::dispose);
 			flixLanguageClientController.connect();
-			System.out.println("Connected language client on port " + port);
 			return flixLanguageClientController;
 		});
 	}

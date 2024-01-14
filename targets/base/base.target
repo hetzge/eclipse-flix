@@ -34,6 +34,7 @@
 			<repository location="https://download.eclipse.org/tm4e/releases/0.8.0/"/>
 			<unit id="org.eclipse.tm4e.feature.feature.group" version="0.0.0"/>
 		</location>
+		
 	</locations>
 	<environment>
 		<arch>x86_64</arch>

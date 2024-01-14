@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,7 +18,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.tm.terminal.view.core.TerminalServiceFactory;
 import org.eclipse.tm.terminal.view.core.interfaces.ITerminalService;
 import org.eclipse.tm.terminal.view.core.interfaces.ITerminalService.Done;
-import org.eclipse.tm.terminal.view.core.interfaces.ITerminalServiceOutputStreamMonitorListener;
 import org.eclipse.tm.terminal.view.core.interfaces.constants.ITerminalsConnectorConstants;
 
 import de.hetzge.eclipse.flix.FlixConstants;
@@ -53,25 +50,6 @@ public final class FlixLauncher {
 		launch(createTerminalBuildProperties(flixProject), String.format("BUILD_%s", flixProject.getProject().getFullPath().toOSString()));
 	}
 
-	public static void launchCompiler(FlixProject flixProject, int port) {
-		final CountDownLatch latch = new CountDownLatch(1);
-		final Map<String, Object> properties = createTerminalCompilerProperties(flixProject, port);
-		properties.put(ITerminalsConnectorConstants.PROP_STDOUT_LISTENERS, new ITerminalServiceOutputStreamMonitorListener[] { new ITerminalServiceOutputStreamMonitorListener() {
-			@Override
-			public void onContentReadFromStream(byte[] byteBuffer, int bytesRead) {
-				if (new String(byteBuffer).startsWith("LSP listening on")) {
-					latch.countDown();
-				}
-			}
-		} });
-		launch(properties, String.format("COMPILER_%s", flixProject.getProject().getFullPath().toOSString()));
-		try {
-			latch.await(10L, TimeUnit.SECONDS);
-		} catch (final InterruptedException exception) {
-			throw new RuntimeException(exception);
-		}
-	}
-
 	public static void launchInit(File folder, FlixVersion flixVersion) {
 		final File jreExecutableFile = Utils.getJreExecutable();
 		final File flixJarFile = FlixUtils.loadFlixJarFile(flixVersion, null);
@@ -87,11 +65,6 @@ public final class FlixLauncher {
 		} catch (final IOException | InterruptedException exception) {
 			throw new RuntimeException(exception);
 		}
-	}
-
-	public static void closeCompiler(FlixProject flixProject, int port) {
-		System.out.println("FlixLauncher.closeCompiler(!!!)");
-		closeConsole(createTerminalCompilerProperties(flixProject, port));
 	}
 
 	private static void launch(Map<String, Object> properties, String launchKey) {

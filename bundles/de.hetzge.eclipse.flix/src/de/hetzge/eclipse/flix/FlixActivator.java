@@ -2,6 +2,7 @@ package de.hetzge.eclipse.flix;
 
 import java.net.URI;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
@@ -16,6 +17,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.lxtk.FileCreate;
 import org.lxtk.FileDelete;
+import org.lxtk.WorkspaceFolder;
 import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
@@ -28,6 +30,9 @@ import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 // TODO https://github.com/mlutze/fcwg
+// TODO LSP Workspace functionality?!
+// TODO Document service per project?! -> we have DocumentFilter
+// TODO Reregister documents on LSP ready?
 
 /**
  * The activator class controls the plug-in life cycle
@@ -69,6 +74,8 @@ public class FlixActivator extends AbstractUIPlugin {
 
 			Job.create("Initialize flix tooling", monitor -> {
 
+				rollback.add(this.flix.getLanguageToolingManager().startMonitor()::dispose);
+
 				/*
 				 * Register commands ...
 				 */
@@ -79,8 +86,8 @@ public class FlixActivator extends AbstractUIPlugin {
 				 * Init model and projects ...
 				 */
 				final FlixModel model = Flix.get().getModel();
+				this.flix.getWorkspaceService().setWorkspaceFolders(model.getFlixProjects().stream().map(flixProject -> new WorkspaceFolder(flixProject.getProject().getLocationURI(), flixProject.getProject().getName())).collect(Collectors.toList()));
 				for (final FlixProject flixProject : model.getFlixProjects()) {
-					System.out.println(">>> " + flixProject);
 					this.flix.getLanguageToolingManager().connectProject(flixProject);
 				}
 
