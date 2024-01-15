@@ -1,6 +1,7 @@
 package de.hetzge.eclipse.flix.editor.outline;
 
 import java.net.URI;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,7 @@ public final class FlixOutlineManager {
 		private final List<DocumentSymbol> rootSymbols;
 
 		public Outline(List<DocumentSymbol> rootSymbols) {
-			this.rootSymbols = rootSymbols;
+			this.rootSymbols = rootSymbols.stream().sorted(Comparator.comparingInt(it -> it.getRange().getStart().getLine())).collect(Collectors.toList());
 		}
 
 		public List<DocumentSymbol> getRootSymbols() {

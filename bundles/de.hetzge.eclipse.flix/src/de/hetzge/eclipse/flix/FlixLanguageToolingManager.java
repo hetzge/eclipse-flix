@@ -110,10 +110,10 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 
 	private synchronized void monitorProjects() {
 		for (final Entry<FlixProject, LanguageTooling> entry : this.connectedProjects.entrySet()) {
-			if (!entry.getValue().isHealthy()) {
-				reconnectProject(entry.getKey());
-			}
 			PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+				if (!entry.getValue().isHealthy()) {
+					reconnectProject(entry.getKey());
+				}
 				PlatformUI.getWorkbench().getDecoratorManager().update(FlixLanguageToolingStateDecorator.ID);
 			});
 		}

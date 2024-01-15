@@ -24,7 +24,8 @@ public class FlixTestLaunchConfigurationDelegate implements ILaunchConfiguration
 		LOG.info(String.format("Launch '%s'", configuration.getName()));
 		final IProject project = configuration.getMappedResources()[0].getProject();
 		final FlixProject flixProject = Flix.get().getModel().getFlixProject(project).orElseThrow(() -> new CoreException(Status.error("Not a valid flix project")));
-		FlixLauncher.launchTest(flixProject);
+		final FlixLaunchConfiguration launchConfiguration = new FlixLaunchConfiguration(configuration);
+		FlixLauncher.launchTest(launchConfiguration, flixProject);
 	}
 
 }

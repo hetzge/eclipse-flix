@@ -42,8 +42,8 @@ public final class FlixLauncher {
 		launch(createTerminalReplProperties(flixProject), String.format("REPL_%s", flixProject.getProject().getFullPath().toOSString()));
 	}
 
-	public static void launchTest(FlixProject flixProject) {
-		launch(createTerminalTestProperties(flixProject), String.format("TEST_%s", flixProject.getProject().getFullPath().toOSString()));
+	public static void launchTest(FlixLaunchConfiguration launchConfiguration, FlixProject flixProject) {
+		launch(createTerminalTestProperties(launchConfiguration, flixProject), String.format("TEST_%s", flixProject.getProject().getFullPath().toOSString()));
 	}
 
 	public static void launchBuild(FlixProject flixProject) {
@@ -71,7 +71,6 @@ public final class FlixLauncher {
 		if (properties.get(ITerminalsConnectorConstants.PROP_PROCESS_PATH) != null) {
 			System.out.println(String.format("Launch '%s %s'", properties.get(ITerminalsConnectorConstants.PROP_PROCESS_PATH), properties.get(ITerminalsConnectorConstants.PROP_PROCESS_ARGS)));
 		}
-
 		final Map<String, Object> lastProperties = PROPERTIES_BY_KEY.getOrDefault(launchKey, properties);
 		final ITerminalService terminalService = TerminalServiceFactory.getService();
 		terminalService.terminateConsole(lastProperties, createDoneLogger("terminateConsole"));
@@ -114,9 +113,17 @@ public final class FlixLauncher {
 		return createBasicTerminalLaunchProperties(name, flixProject, List.of());
 	}
 
-	private static Map<String, Object> createTerminalTestProperties(FlixProject flixProject) {
+	private static Map<String, Object> createTerminalTestProperties(FlixLaunchConfiguration launchConfiguration, FlixProject flixProject) {
 		final String name = "Test " + flixProject.getProject().getName();
-		return createBasicTerminalLaunchProperties(name, flixProject, List.of("test"));
+		final Map<String, Object> properties = createBasicTerminalLaunchProperties(name, flixProject, List.of("test"));
+//		properties.put(ITerminalsConnectorConstants.PROP_STDOUT_LISTENERS, new ITerminalServiceOutputStreamMonitorListener[] { new ITerminalServiceOutputStreamMonitorListener() {
+//			@Override
+//			public void onContentReadFromStream(byte[] byteBuffer, int bytesRead) {
+//				final String value = new String(byteBuffer);
+//				// TODO
+//			}
+//		} });
+		return properties;
 	}
 
 	private static Map<String, Object> createTerminalBuildProperties(FlixProject flixProject) {

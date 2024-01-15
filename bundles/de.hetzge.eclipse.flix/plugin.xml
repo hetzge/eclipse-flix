@@ -209,4 +209,17 @@
         </enablement>
      </decorator>
   </extension>
+  <extension
+        point="org.eclipse.jdt.junit.internal_testKinds">
+     <kind
+           displayName="displayName"
+           finderClass="de.hetzge.eclipse.flix.test.TestFinder1"
+           id="de.hetzge.eclipse.flix.kind1"
+           loaderClass="de.hetzge.eclipse.flix.kind1"
+           loaderPluginId="de.hetzge.eclipse.flix.kind1">
+        <runtimeClasspathEntry
+              pluginId="de.hetzge.eclipse.flix.runtimeClasspathEntry1">
+        </runtimeClasspathEntry>
+     </kind>
+  </extension>
 </plugin>
