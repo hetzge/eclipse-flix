@@ -25,13 +25,13 @@ public final class FlixUtils {
 	}
 
 	public synchronized static File loadFlixJarFile(FlixVersion version, IProgressMonitor monitor) {
-		final String flixJarName = "flix." + version.getKey() + ".jar";
+		final String flixJarName = "flix.v" + version.getKey() + ".jar";
 		final File flixJarFile = new File("_flix", flixJarName);
 		flixJarFile.getParentFile().mkdirs();
 		if (!flixJarFile.exists()) {
 			System.out.println("Download " + flixJarName);
 			try (final FileOutputStream outputStream = new FileOutputStream(flixJarFile)) {
-				final URL url = URI.create("https://github.com/flix/flix/releases/download/" + version.getKey() + "/flix.jar").toURL();
+				final URL url = URI.create("https://github.com/flix/flix/releases/download/v" + version.getKey() + "/flix.jar").toURL();
 				final HttpURLConnection httpConnection = (HttpURLConnection) (url.openConnection());
 				final long completeFileSize = httpConnection.getContentLength();
 				final SubMonitor subMonitor;

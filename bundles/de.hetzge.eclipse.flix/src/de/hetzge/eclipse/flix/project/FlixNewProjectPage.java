@@ -3,9 +3,9 @@ package de.hetzge.eclipse.flix.project;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
 
-public class FlixProjectPage extends WizardNewProjectCreationPage {
+public class FlixNewProjectPage extends WizardNewProjectCreationPage {
 
-	public FlixProjectPage() {
+	public FlixNewProjectPage() {
 		super("Flix Project");
 	}
 
@@ -13,5 +13,4 @@ public class FlixProjectPage extends WizardNewProjectCreationPage {
 	public void createControl(Composite parent) {
 		super.createControl(parent);
 	}
-
 }

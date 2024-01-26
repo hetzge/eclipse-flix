@@ -1,6 +1,7 @@
 package de.hetzge.eclipse.flix.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,8 +15,10 @@ import org.eclipse.core.runtime.SafeRunner;
 
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixConstants;
+import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
 import de.hetzge.eclipse.flix.project.FlixProjectPreferences;
+import de.hetzge.eclipse.flix.project.FlixToml;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
 
@@ -37,9 +40,30 @@ public class FlixProject {
 		if (getInProjectFolderFlixCompilerJarFile().isPresent()) {
 			return FlixVersion.CUSTOM;
 		} else {
-			return this.projectPreferences.getFlixVersion().orElse(FlixConstants.FLIX_DEFAULT_VERSION);
+			return getFlixToml().map(FlixToml::getFlixVersion).orElse(FlixConstants.FLIX_DEFAULT_VERSION);
 		}
 	}
+
+	public Optional<FlixToml> getFlixToml() {
+		try {
+			return Optional.of(FlixToml.load(this));
+		} catch (final IOException exception) {
+			FlixLogger.logError(String.format("Failed to read flix.toml in project '%s'", getProject().getName()), exception);
+			return Optional.empty();
+		}
+	}
+
+
+// TODO create flix toml if missing
+// TODO marker if version is missing in flix.toml
+// result.errors().forEach(error -> System.err.println(error.toString()));
+//	void reportError(IResource resource, int line, String msg) {
+//		   IMarker m = resource.createMarker(IMarker.PROBLEM);
+//		   m.setAttribute(IMarker.LINE_NUMBER, line);
+//		   m.setAttribute(IMarker.MESSAGE, msg);
+//		   m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+//		   m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+//		}
 
 	public boolean isActive() {
 		return isActiveFlixProject(this.project);
@@ -97,14 +121,23 @@ public class FlixProject {
 	}
 
 	public boolean isFlixSourceFile(IFile file) {
+		if(!getSourceFolder().exists()) {
+			return false;
+		}
 		return file.getFileExtension() != null && file.getFileExtension().equals("flix") && getSourceFolder().getRawLocation().isPrefixOf(file.getRawLocation());
 	}
 
 	public boolean isFlixJarLibraryFile(IFile file) {
+		if(!getLibraryFolder().exists()) {
+			return false;
+		}
 		return file.getFileExtension() != null && file.getFileExtension().equals("jar") && getLibraryFolder().getRawLocation().isPrefixOf(file.getRawLocation());
 	}
 
 	public boolean isFlixFpkgLibraryFile(IFile file) {
+		if(!getLibraryFolder().exists()) {
+			return false;
+		}
 		return file.getFileExtension() != null && file.getFileExtension().equals("fpkg") && getLibraryFolder().getRawLocation().isPrefixOf(file.getRawLocation());
 	}
 
