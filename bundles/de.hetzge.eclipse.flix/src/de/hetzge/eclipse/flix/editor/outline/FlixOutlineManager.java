@@ -73,7 +73,6 @@ public final class FlixOutlineManager {
 
 		public void visitPaths(Consumer<LinkedList<DocumentSymbol>> consumer) {
 			for (final DocumentSymbol documentSymbol : this.rootSymbols) {
-				consumer.accept(new LinkedList<>(List.of(documentSymbol)));
 				visitPaths(List.of(documentSymbol), consumer);
 			}
 		}
@@ -82,6 +81,7 @@ public final class FlixOutlineManager {
 			if (parents.isEmpty()) {
 				return;
 			}
+			consumer.accept(new LinkedList<DocumentSymbol>(parents));
 			for (final DocumentSymbol child : parents.get(parents.size() - 1).getChildren()) {
 				final LinkedList<DocumentSymbol> newParents = new LinkedList<>();
 				newParents.addAll(parents);

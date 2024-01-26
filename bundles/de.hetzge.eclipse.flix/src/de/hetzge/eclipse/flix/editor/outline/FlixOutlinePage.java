@@ -1,7 +1,7 @@
 package de.hetzge.eclipse.flix.editor.outline;
 
 import java.net.URI;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -32,11 +32,11 @@ public class FlixOutlinePage extends ContentOutlinePage {
 
 	private final FlixEditor flixEditor;
 	private FlixOutlineContentProvider contentOutlineProvider;
-	private final AtomicBoolean lock;
+	private DocumentSymbol last;
 
 	public FlixOutlinePage(FlixEditor flixEditor) {
 		this.flixEditor = flixEditor;
-		this.lock = new AtomicBoolean(false);
+		this.last = null;
 	}
 
 	@Override
@@ -104,9 +104,8 @@ public class FlixOutlinePage extends ContentOutlinePage {
 			outline.visitPaths(path -> {
 				try {
 					final int startOffset = DocumentUtil.toOffset(document, path.getLast().getRange().getStart());
-					final int offset = textSelection.getOffset();
-					final int distance = offset - startOffset;
-					if (distance >= 0 && distance < smallestDistance.get()) {
+					final int distance = textSelection.getOffset() - startOffset;
+					if (distance >= 0 && distance <= smallestDistance.get()) {
 						smallestDistance.set(distance);
 						lastMatchingTreePath.set(new TreePath(path.toArray()));
 					}
@@ -118,21 +117,17 @@ public class FlixOutlinePage extends ContentOutlinePage {
 			if (treePath == null) {
 				return;
 			}
+			if(Objects.equals(treePath.getLastSegment(), this.last)) {
+				return;
+			}
+			this.last = (DocumentSymbol) treePath.getLastSegment();
 			Display.getDefault().asyncExec(() -> {
-				this.lock.set(true);
-				try {
-					getTreeViewer().setSelection(new TreeSelection(treePath));
-				} finally {
-					this.lock.set(false);
-				}
+				getTreeViewer().setSelection(new TreeSelection(treePath));
 			});
 		});
 	}
 
 	private void onSelectionChanged(SelectionChangedEvent event) {
-		if (FlixOutlinePage.this.lock.get()) {
-			return;
-		}
 		final ISelection selection = event.getSelection();
 		if (!(selection instanceof ITreeSelection)) {
 			return;
@@ -145,6 +140,10 @@ public class FlixOutlinePage extends ContentOutlinePage {
 		if (!(lastSegment instanceof DocumentSymbol)) {
 			return;
 		}
+		if(Objects.equals(lastSegment, this.last)) {
+			return;
+		}
+		this.last = (DocumentSymbol) lastSegment;
 		final DocumentSymbol documentSymbol = (DocumentSymbol) lastSegment;
 		final IDocument document = DefaultEditorHelper.INSTANCE.getDocument(FlixOutlinePage.this.flixEditor);
 		if (document == null) {
