@@ -21,11 +21,13 @@ import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
+import de.hetzge.eclipse.flix.compiler.FlixCompilerService;
+
 public final class FlixWorkspaceService implements WorkspaceService {
 
-	private final FlixServerService flixService;
+	private final FlixCompilerService flixService;
 
-	public FlixWorkspaceService(FlixServerService flixService) {
+	public FlixWorkspaceService(FlixCompilerService flixService) {
 		this.flixService = flixService;
 	}
 

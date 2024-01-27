@@ -16,6 +16,7 @@ import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
 
 import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.launch.FlixLauncher;
+import de.hetzge.eclipse.flix.model.FlixVersion;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
@@ -29,10 +30,15 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 
 	@Override
 	public void addPages() {
-		final FlixProjectPage page = new FlixProjectPage();
+		final FlixNewProjectPage page = new FlixNewProjectPage();
 		page.setTitle("Flix Project");
 		page.setDescription("Create a new Flix project");
 		addPage(page);
+
+		final FlixNewProjectVersionPage versionPage = new FlixNewProjectVersionPage();
+		versionPage.setTitle("Flix Version");
+		versionPage.setDescription("Select Flix version");
+		addPage(versionPage);
 	}
 
 	@Override
@@ -40,15 +46,17 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 		System.out.println("FlixProjectWizard.performFinish()");
 
 		try {
-			final FlixProjectPage page = (FlixProjectPage) getStartingPage();
+			final FlixNewProjectPage page = (FlixNewProjectPage) getStartingPage();
+			final FlixNewProjectVersionPage versionPage = (FlixNewProjectVersionPage) page.getNextPage();
 			final String projectName = page.getProjectName();
+			final FlixVersion flixVersion = versionPage.getVersionValue();
 			final File newProjectFolder = new File(page.getLocationPath().toFile(), projectName);
 			getContainer().run(true, true, monitor -> {
 				try {
 					final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
 
 					newProjectFolder.mkdirs();
-					FlixLauncher.launchInit(newProjectFolder, FlixConstants.FLIX_DEFAULT_VERSION);
+					FlixLauncher.launchInit(newProjectFolder, flixVersion);
 
 					EclipseUtils.addNature(description, FlixProjectNature.ID);
 					EclipseUtils.addBuilder(description, FlixConstants.FLIX_BUILDER_ID);

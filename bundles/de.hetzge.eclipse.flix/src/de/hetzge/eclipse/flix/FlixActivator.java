@@ -2,6 +2,7 @@ package de.hetzge.eclipse.flix;
 
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.eclipse.core.filesystem.URIUtil;
 import org.eclipse.core.resources.IProject;
@@ -9,13 +10,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.handly.model.ElementDeltas;
-import org.eclipse.handly.model.IElement;
-import org.eclipse.handly.model.IElementChangeEvent;
-import org.eclipse.handly.model.IElementChangeListener;
-import org.eclipse.handly.model.IElementDelta;
-import org.eclipse.handly.model.impl.support.NotificationManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
@@ -28,16 +22,19 @@ import org.osgi.framework.BundleContext;
 
 import de.hetzge.eclipse.flix.launch.FlixRunMainCommandHandler;
 import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
-import de.hetzge.eclipse.flix.model.api.FlixModelManager;
-import de.hetzge.eclipse.flix.model.api.IFlixModel;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
+
+// TODO https://github.com/mlutze/fcwg
+// TODO LSP Workspace functionality?!
+// TODO Document service per project?! -> we have DocumentFilter
+// TODO Reregister documents on LSP ready?
 
 /**
  * The activator class controls the plug-in life cycle
  */
-public class FlixActivator extends AbstractUIPlugin implements IElementChangeListener {
+public class FlixActivator extends AbstractUIPlugin {
 
 	private static FlixActivator plugin;
 
@@ -63,7 +60,6 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		FlixLogger.logInfo("Let's go Flix");
 
 		SafeRun.run(rollback -> {
 			this.flix = new Flix();
@@ -72,79 +68,72 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 				this.flix = null;
 			});
 
-			Job.create("Initialize flix tooling", monitor -> {
+			/*
+			 * Register commands ...
+			 */
+			rollback.add(this.flix.getCommandService().addCommand("flix.runMain", new FlixRunMainCommandHandler())::dispose);
+			rollback.add(this.flix.getCommandService().addCommand("flix.cmdRepl", new FlixRunReplCommandHandler())::dispose);
 
-				/*
-				 * Register commands ...
-				 */
-				rollback.add(this.flix.getCommandService().addCommand("flix.runMain", new FlixRunMainCommandHandler())::dispose);
-				rollback.add(this.flix.getCommandService().addCommand("flix.cmdRepl", new FlixRunReplCommandHandler())::dispose);
+			/*
+			 * Init model and projects ...
+			 */
+			this.flix.getLanguageToolingManager().connectProjects(Flix.get().getModel().getFlixProjects());
+			rollback.add(this.flix.getLanguageToolingManager().startMonitor()::dispose);
 
-				/*
-				 * Init model and projects ...
-				 */
-				final FlixModelManager modelManager = this.flix.getModelManager();
-				final IFlixModel model = modelManager.getModel();
-				for (final IFlixProject flixProject : model.getFlixProjects()) {
-					System.out.println(">>> " + flixProject);
-					this.flix.getLanguageToolingManager().connectProject(flixProject);
+			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+			workspace.addResourceChangeListener(this.flix.getPostResourceMonitor(), IResourceChangeEvent.POST_CHANGE);
+			rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getPostResourceMonitor()));
+
+			rollback.add(this.flix.getPostResourceMonitor().onDidCreateFiles().subscribe(fileCreateEvent -> {
+				for (final FileCreate create : fileCreateEvent.getFiles()) {
+					final IPath createPath = URIUtil.toPath(create.getUri());
+					final IProject project = EclipseUtils.project(createPath).orElseThrow();
+					if (project.getFile("flix.jar").getLocation().equals(createPath)) {
+						this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
+							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+						});
+					}
 				}
-
-				final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-				workspace.addResourceChangeListener(this.flix.getPostResourceMonitor(), IResourceChangeEvent.POST_CHANGE);
-				rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getPostResourceMonitor()));
-				workspace.addResourceChangeListener(modelManager, IResourceChangeEvent.POST_CHANGE);
-				rollback.add(() -> workspace.removeResourceChangeListener(modelManager));
-
-				final NotificationManager notificationManager = modelManager.getNotificationManager();
-				notificationManager.addElementChangeListener(this);
-				rollback.add(() -> notificationManager.removeElementChangeListener(this));
-
-				rollback.add(this.flix.getPostResourceMonitor().onDidCreateFiles().subscribe(fileCreateEvent -> {
-					System.out.println("CREATED");
-					for (final FileCreate create : fileCreateEvent.getFiles()) {
-						final IPath deletePath = URIUtil.toPath(create.getUri());
-						final IProject project = EclipseUtils.project(deletePath).orElseThrow();
-						if (project.getFile("flix.jar").getLocation().equals(deletePath)) {
-							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
-								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
-							});
+			})::dispose);
+			rollback.add(this.flix.getPostResourceMonitor().onDidDeleteFiles().subscribe(fileDeleteEvent -> {
+				for (final FileDelete delete : fileDeleteEvent.getFiles()) {
+					final IPath deletePath = URIUtil.toPath(delete.getUri());
+					final IProject project = EclipseUtils.project(deletePath).orElseThrow();
+					if (project.getFile("flix.jar").getLocation().equals(deletePath)) {
+						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getFlixProject(project);
+						if (flixProjectOptional.isPresent()) {
+							final FlixProject flixProject = flixProjectOptional.get();
+							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
 						}
 					}
-				})::dispose);
-				rollback.add(this.flix.getPostResourceMonitor().onDidDeleteFiles().subscribe(fileDeleteEvent -> {
-					System.out.println("DELETED");
-					for (final FileDelete delete : fileDeleteEvent.getFiles()) {
-						final IPath deletePath = URIUtil.toPath(delete.getUri());
-						final IProject project = EclipseUtils.project(deletePath).orElseThrow();
-						if (project.getFile("flix.jar").getLocation().equals(deletePath)) {
-							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
-								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
-							});
-						}
+				}
+			})::dispose);
+			rollback.add(this.flix.getPostResourceMonitor().onDidChangeFiles().subscribe(fileChangeEvent -> {
+				for (final URI uri : fileChangeEvent.getFiles()) {
+					final IPath changePath = URIUtil.toPath(uri);
+					final IProject project = EclipseUtils.project(changePath).orElseThrow();
+					if (project.getFile("flix.jar").getLocation().equals(changePath)) {
+						this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
+							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+						});
 					}
-				})::dispose);
-				rollback.add(this.flix.getPostResourceMonitor().onDidChangeFiles().subscribe(fileChangeEvent -> {
-					System.out.println("CHANGED");
-					for (final URI uri : fileChangeEvent.getFiles()) {
-						final IPath changePath = URIUtil.toPath(uri);
-						final IProject project = EclipseUtils.project(changePath).orElseThrow();
-						if (project.getFile("flix.jar").getLocation().equals(changePath)) {
-							this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
-								this.flix.getLanguageToolingManager().reconnectProject(flixProject);
-							});
-						}
-					}
-				})::dispose);
+					// TODO only on save
+//					else if (project.getFile("flix.toml").getLocation().equals(changePath)) {
+//						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getFlixProject(project);
+//						if (flixProjectOptional.isPresent()) {
+//							final FlixProject flixProject = flixProjectOptional.get();
+//							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+//						}
+//					}
+				}
+			})::dispose);
 
-				this.rollback = rollback;
-			}).schedule();
+			this.rollback = rollback;
 		});
 	}
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		System.out.println("FlixActivator.stop()");
 		try {
 			if (this.rollback != null) {
 				this.rollback.run();
@@ -153,37 +142,6 @@ public class FlixActivator extends AbstractUIPlugin implements IElementChangeLis
 			plugin = null;
 		} finally {
 			super.stop(context);
-		}
-	}
-
-	@Override
-	public void elementChanged(IElementChangeEvent event) {
-		System.out.println("FlixActivator.elementChanged()");
-		for (final IElementDelta delta : event.getDeltas()) {
-			for (final IElementDelta addedChildDelta : ElementDeltas.getAddedChildren(delta)) {
-				final IElement element = ElementDeltas.getElement(addedChildDelta);
-				if (element instanceof IFlixProject) {
-					final IFlixProject flixProject = (IFlixProject) element;
-					Flix.get().getLanguageToolingManager().connectProject(flixProject);
-				}
-				System.out.println("added " + element.getClass());
-			}
-			for (final IElementDelta removedChildDelta : ElementDeltas.getRemovedChildren(delta)) {
-				final IElement element = ElementDeltas.getElement(removedChildDelta);
-				if (element instanceof IFlixProject) {
-					final IFlixProject flixProject = (IFlixProject) element;
-					Flix.get().getLanguageToolingManager().disconnectProject(flixProject);
-				}
-				System.out.println("removed " + element.getClass());
-			}
-			for (final IElementDelta changedChildDelta : ElementDeltas.getChangedChildren(delta)) {
-				final IElement element = ElementDeltas.getElement(changedChildDelta);
-				System.out.println("changed " + element.getClass());
-			}
-			for (final IElementDelta affectedChildDelta : ElementDeltas.getAffectedChildren(delta)) {
-				final IElement element = ElementDeltas.getElement(affectedChildDelta);
-				System.out.println("affected " + element.getClass());
-			}
 		}
 	}
 

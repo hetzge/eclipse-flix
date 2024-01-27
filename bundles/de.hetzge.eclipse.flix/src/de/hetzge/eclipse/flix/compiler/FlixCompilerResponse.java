@@ -45,6 +45,6 @@ public final class FlixCompilerResponse {
 
 	@Override
 	public String toString() {
-		return "FlixCompilerResponse [successJsonElement=" + this.successJsonElement + ", failureJsonElement=" + this.failureJsonElement + "]";
+		return "FlixCompilerResponse [successJsonElement=" + this.successJsonElement + ", failureJsonElement=" + this.failureJsonElement + "]"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 	}
 }

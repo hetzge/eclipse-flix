@@ -24,33 +24,34 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.lsp4j.services.NotebookDocumentService;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
-import org.lxtk.util.SafeRun;
 
-import de.hetzge.eclipse.flix.FlixLogger;
-import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
-import de.hetzge.eclipse.flix.launch.FlixLauncher;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
-import de.hetzge.eclipse.utils.Utils;
+import de.hetzge.eclipse.flix.compiler.FlixCompilerLaunch;
+import de.hetzge.eclipse.flix.compiler.FlixCompilerService;
 
 // https://github.com/flix/flix/issues/806#issuecomment-612400296
+public class FlixMiddlewareLanguageServer implements LanguageServer {
 
-public class FlixLanguageServer implements LanguageServer, AutoCloseable {
-
-	private final FlixServerService flixService;
+	private final FlixCompilerService flixService;
 	private final FlixTextDocumentService flixTextDocumentService;
 	private final FlixWorkspaceService flixWorkspaceService;
+	private final FlixCompilerLaunch launch;
+	private boolean initialized;
 
-	public FlixLanguageServer(FlixServerService flixService) {
+	public FlixMiddlewareLanguageServer(FlixCompilerService flixService, FlixCompilerLaunch launch) {
 		this.flixService = flixService;
 		this.flixTextDocumentService = new FlixTextDocumentService(this.flixService);
 		this.flixWorkspaceService = new FlixWorkspaceService(this.flixService);
+		this.launch = launch;
+		this.initialized = false;
+	}
+
+	public boolean isRunning() {
+		return this.launch.isRunning();
 	}
 
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
 		return CompletableFuture.supplyAsync(() -> {
-			System.out.println("FlixLanguageServer.initialize()");
-
 			final FileOperationOptions fileOperationOptions = new FileOperationOptions();
 			fileOperationOptions.setFilters(List.of(new FileOperationFilter(new FileOperationPattern("**"))));
 			final FileOperationsServerCapabilities fileOperationsServerCapabilities = new FileOperationsServerCapabilities();
@@ -61,7 +62,7 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 			fileOperationsServerCapabilities.setWillDelete(fileOperationOptions);
 			fileOperationsServerCapabilities.setWillRename(fileOperationOptions);
 			final WorkspaceFoldersOptions workspaceFolders = new WorkspaceFoldersOptions();
-			workspaceFolders.setSupported(true);
+			workspaceFolders.setSupported(false);
 			final WorkspaceServerCapabilities workspaceServerCapabilities = new WorkspaceServerCapabilities();
 			workspaceServerCapabilities.setFileOperations(fileOperationsServerCapabilities);
 			workspaceServerCapabilities.setWorkspaceFolders(workspaceFolders);
@@ -95,9 +96,9 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 	public void initialized(InitializedParams params) {
 		System.out.println("FlixLanguageServer.initialized()");
 		LanguageServer.super.initialized(params);
-
 		this.flixService.addWorkspaceUris();
 		this.flixService.compile();
+		this.initialized = true;
 	}
 
 	@Override
@@ -128,30 +129,11 @@ public class FlixLanguageServer implements LanguageServer, AutoCloseable {
 		return new FlixNotebookDocumentService();
 	}
 
-	@Override
-	public void close() {
-		System.out.println("FlixLanguageServer.close()");
-		this.flixService.close();
-	}
-
 	public void setClient(LanguageClient client) {
 		this.flixService.setClient(client);
 	}
 
-	public static FlixLanguageServer start(IFlixProject flixProject) {
-		System.out.println("FlixLanguageServer.start()");
-		return SafeRun.runWithResult(rollback -> {
-			rollback.setLogger(FlixLogger::logError);
-
-			final int compilerPort = Utils.queryPort();
-
-			FlixLauncher.launchCompiler(flixProject, compilerPort);
-			rollback.add(() -> FlixLauncher.closeCompiler(flixProject, compilerPort));
-
-			final FlixCompilerClient compilerClient = FlixCompilerClient.connect(compilerPort);
-			rollback.add(compilerClient::close);
-
-			return new FlixLanguageServer(new FlixServerService(flixProject, compilerClient, rollback));
-		});
+	public boolean isInitialized() {
+		return this.initialized;
 	}
 }

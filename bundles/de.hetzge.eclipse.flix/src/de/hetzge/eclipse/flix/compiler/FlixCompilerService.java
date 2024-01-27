@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.server;
+package de.hetzge.eclipse.flix.compiler;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -10,6 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionList;
@@ -30,39 +32,31 @@ import org.eclipse.lsp4j.WorkspaceSymbolLocation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
-import org.lxtk.util.SafeRun.Rollback;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
-import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.FlixProjectBuilder;
+import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.flix.utils.GsonUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
 
-public final class FlixServerService implements AutoCloseable {
+public final class FlixCompilerService {
+	private static final ILog LOG = Platform.getLog(FlixProjectBuilder.class);
 
-	private final IFlixProject flixProject;
+	private final FlixProject flixProject;
 	private final FlixCompilerClient compilerClient;
 	private final Map<String, PublishDiagnosticsParams> diagnosticsParamsByUri;
-	private final Rollback rollback;
 	private LanguageClient client;
 
-	FlixServerService(IFlixProject flixProject, FlixCompilerClient compilerClient, Rollback rollback) {
+	public FlixCompilerService(FlixProject flixProject, FlixCompilerClient compilerClient) {
 		this.flixProject = flixProject;
 		this.compilerClient = compilerClient;
-		this.rollback = rollback;
 		this.diagnosticsParamsByUri = new HashMap<>();
-	}
-
-	@Override
-	public void close() {
-		System.out.println("FlixServerService.close()");
-		this.rollback.run();
 	}
 
 	public void addWorkspaceUris() {
@@ -86,7 +80,7 @@ public final class FlixServerService implements AutoCloseable {
 		} else if (this.flixProject.isFlixJarLibraryFile(file)) {
 			addJar(file.getLocationURI());
 		} else {
-			System.out.println("[" + this.flixProject.getProject().getName() + "] Ignore '" + uri + "'");
+			// ignore
 		}
 	}
 
@@ -99,7 +93,7 @@ public final class FlixServerService implements AutoCloseable {
 		} else if (this.flixProject.isFlixJarLibraryFile(file)) {
 			removeJar(uri);
 		} else {
-			System.out.println("[" + this.flixProject.getProject().getName() + "] Ignore '" + uri + "'");
+			// ignore
 		}
 	}
 
@@ -150,8 +144,8 @@ public final class FlixServerService implements AutoCloseable {
 	}
 
 	private String fixLibraryUri(String targetUriValue) {
-		if (targetUriValue.endsWith(".flix") && !targetUriValue.startsWith("file:")) {
-			return FlixUtils.loadFlixJarUri(this.flixProject.getFlixVersion(), null).toString() + "!/src/library/" + targetUriValue;
+		if (targetUriValue.endsWith(".flix") && !targetUriValue.startsWith("file:")) { //$NON-NLS-1$ //$NON-NLS-2$
+			return FlixUtils.loadFlixJarUri(this.flixProject.getFlixVersion(), null).toString() + "!/src/library/" + targetUriValue; //$NON-NLS-1$
 		} else {
 			return targetUriValue;
 		}
@@ -169,14 +163,9 @@ public final class FlixServerService implements AutoCloseable {
 
 	public CompletableFuture<Void> compile() {
 		return this.compilerClient.sendCheck().thenApply(response -> {
-			synchronized (this.diagnosticsParamsByUri) {
-				if (response.getSuccessJsonElement().isPresent()) {
-					for (final PublishDiagnosticsParams diagnosticsParams : this.diagnosticsParamsByUri.values()) {
-						this.client.publishDiagnostics(new PublishDiagnosticsParams(diagnosticsParams.getUri(), List.of()));
-					}
-					return null;
-				} else {
-					final JsonArray jsonArray = response.getFailureJsonElement().orElse(new JsonArray()).getAsJsonArray();
+			if (response.getSuccessJsonElement().isPresent()) {
+				synchronized (this.diagnosticsParamsByUri) {
+					final JsonArray jsonArray = response.getSuccessJsonElement().orElse(new JsonArray()).getAsJsonArray();
 					final Map<String, PublishDiagnosticsParams> diffMap = new HashMap<>(this.diagnosticsParamsByUri);
 					// Set all new diagnostics
 					for (final JsonElement jsonElement : jsonArray) {
@@ -189,9 +178,9 @@ public final class FlixServerService implements AutoCloseable {
 					for (final PublishDiagnosticsParams diagnosticsParams : diffMap.values()) {
 						this.client.publishDiagnostics(new PublishDiagnosticsParams(diagnosticsParams.getUri(), List.of()));
 					}
-					return null;
 				}
 			}
+			return null;
 		});
 	}
 
@@ -220,14 +209,14 @@ public final class FlixServerService implements AutoCloseable {
 					final Either<Location, WorkspaceSymbolLocation> location = workspaceSymbol.getLocation();
 					if (location.isLeft()) {
 						location.getLeft().setUri(fixLibraryUri(location.getLeft().getUri()));
-						if ("<unknown>".equals(location.getLeft().getUri())) {
-							System.out.println("Skip symbol because uri is '<unknown>'");
+						if ("<unknown>".equals(location.getLeft().getUri())) { //$NON-NLS-1$
+							LOG.info("Skip symbol because uri is '<unknown>'"); //$NON-NLS-1$
 							continue loop;
 						}
 					} else {
 						location.getRight().setUri(fixLibraryUri(location.getRight().getUri()));
-						if ("<unknown>".equals(location.getRight().getUri())) {
-							System.out.println("Skip symbol because uri is '<unknown>'");
+						if ("<unknown>".equals(location.getRight().getUri())) { //$NON-NLS-1$
+							LOG.info("Skip symbol because uri is '<unknown>'"); //$NON-NLS-1$
 							continue loop;
 						}
 					}
@@ -253,8 +242,9 @@ public final class FlixServerService implements AutoCloseable {
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
 		return this.compilerClient.sendUses(params).thenApply(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
-				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<Location>>() {
+				final List<Location> locations = GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<Location>>() {
 				}.getType());
+				return locations.stream().filter(location -> !"<unknown>".equals(location.getUri())).collect(Collectors.toList()); //$NON-NLS-1$
 			} else {
 				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}
@@ -271,7 +261,7 @@ public final class FlixServerService implements AutoCloseable {
 				} else {
 					codeLenses = List.of();
 				}
-				return codeLenses.stream().filter(codeLens -> Set.of("flix.runMain", "flix.cmdRepl").contains(codeLens.getCommand().getCommand())).collect(Collectors.toList());
+				return codeLenses.stream().filter(codeLens -> Set.of("flix.runMain", "flix.cmdRepl").contains(codeLens.getCommand().getCommand())).collect(Collectors.toList()); //$NON-NLS-1$ //$NON-NLS-2$
 			} else {
 				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}

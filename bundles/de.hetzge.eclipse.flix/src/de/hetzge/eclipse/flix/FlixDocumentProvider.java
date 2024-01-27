@@ -1,8 +1,11 @@
 package de.hetzge.eclipse.flix;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -10,13 +13,13 @@ import java.util.concurrent.TimeoutException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.handly.buffer.TextFileBuffer;
-import org.eclipse.handly.model.ISourceFile;
-import org.eclipse.handly.ui.texteditor.SourceFileDocumentProvider;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.lsp4j.TextDocumentSaveReason;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.text.edits.MalformedTreeException;
-import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
+import org.lxtk.DocumentService;
 import org.lxtk.TextDocument;
 import org.lxtk.TextDocumentSaveEvent;
 import org.lxtk.TextDocumentSaveEventSource;
@@ -35,10 +38,59 @@ import org.lxtk.util.WaitUntilEventEmitter;
 /**
  * Flix document provider.
  */
-public class FlixDocumentProvider extends SourceFileDocumentProvider implements TextDocumentWillSaveEventSource, TextDocumentWillSaveWaitUntilEventSource, TextDocumentSaveEventSource {
-	private final EventEmitter<TextDocumentWillSaveEvent> onWillSaveTextDocument = new EventEmitter<>();
-	private final WaitUntilEventEmitter<TextDocumentWillSaveEvent, List<TextEdit>> onWillSaveTextDocumentWaitUntil = new WaitUntilEventEmitter<>();
-	private final EventEmitter<TextDocumentSaveEvent> onDidSaveTextDocument = new EventEmitter<>();
+public class FlixDocumentProvider extends TextFileDocumentProvider implements TextDocumentWillSaveEventSource, TextDocumentWillSaveWaitUntilEventSource, TextDocumentSaveEventSource {
+	private final EventEmitter<TextDocumentWillSaveEvent> onWillSaveTextDocument;
+	private final WaitUntilEventEmitter<TextDocumentWillSaveEvent, List<TextEdit>> onWillSaveTextDocumentWaitUntil;
+	private final EventEmitter<TextDocumentSaveEvent> onDidSaveTextDocument;
+	private final Map<URI, Disposable> openResources;
+	private final DocumentService documentService;
+
+	public FlixDocumentProvider(DocumentService documentService) {
+		this.documentService = documentService;
+		this.onWillSaveTextDocument = new EventEmitter<>();
+		this.onWillSaveTextDocumentWaitUntil = new WaitUntilEventEmitter<>();
+		this.onDidSaveTextDocument = new EventEmitter<>();
+		this.openResources = new ConcurrentHashMap<>();
+	}
+
+	@Override
+	public void connect(Object element) throws CoreException {
+		if (element instanceof IFileEditorInput) {
+			final IFileEditorInput fileEditorInput = (IFileEditorInput) element;
+			super.connect(element);
+			final URI uri = fileEditorInput.getFile().getLocationURI();
+			SafeRun.run(rollback -> {
+				final TextFileBuffer buffer = createBuffer(fileEditorInput);
+				final EclipseTextDocument eclipseTextDocument = new EclipseTextDocument(uri, FlixConstants.LANGUAGE_ID, buffer, element);
+				rollback.add(eclipseTextDocument::dispose);
+				rollback.add(this.documentService.addTextDocument(eclipseTextDocument)::dispose);
+				this.openResources.put(uri, rollback::run);
+			});
+		} else {
+			super.connect(element);
+		}
+	}
+
+	private TextFileBuffer createBuffer(final IFileEditorInput fileEditorInput) {
+		try {
+			return TextFileBuffer.forFile(fileEditorInput.getFile());
+		} catch (final CoreException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	@Override
+	public void disconnect(Object element) {
+		if (element instanceof IFileEditorInput) {
+			final IFileEditorInput fileEditorInput = (IFileEditorInput) element;
+			super.disconnect(element);
+			final URI uri = fileEditorInput.getFile().getLocationURI();
+			final Disposable disposable = this.openResources.remove(uri);
+			if (disposable != null) {
+				disposable.dispose();
+			}
+		}
+	}
 
 	@Override
 	public EventStream<TextDocumentWillSaveEvent> onWillSaveTextDocument() {
@@ -53,45 +105,6 @@ public class FlixDocumentProvider extends SourceFileDocumentProvider implements 
 	@Override
 	public EventStream<TextDocumentSaveEvent> onDidSaveTextDocument() {
 		return this.onDidSaveTextDocument;
-	}
-
-	@Override
-	protected FileInfo createEmptyFileInfo() {
-		return new XFileInfo();
-	}
-
-	@Override
-	protected FileInfo createFileInfo(Object element) throws CoreException {
-		final XFileInfo info = (XFileInfo) super.createFileInfo(element);
-		if (info == null || info.fTextFileBuffer == null) {
-			return null;
-		}
-
-		try (TextFileBuffer buffer = info.fTextFileBufferLocationKind == null ? TextFileBuffer.forFileStore(info.fTextFileBuffer.getFileStore()) : TextFileBuffer.forLocation(info.fTextFileBuffer.getLocation(), info.fTextFileBufferLocationKind);) {
-			SafeRun.run(rollback -> {
-				final EclipseTextDocument document = new EclipseTextDocument(info.fTextFileBuffer.getFileStore().toURI(), FlixConstants.LANGUAGE_ID, buffer, element);
-				rollback.add(document::dispose);
-
-				final Disposable registration = Flix.get().getDocumentService().addTextDocument(document);
-				rollback.add(registration::dispose);
-
-				rollback.setLogger(FlixLogger::logError);
-				info.disposeRunnable = rollback;
-			});
-		}
-		return info;
-	}
-
-	@Override
-	protected void disposeFileInfo(Object element, FileInfo info) {
-		try {
-			final XFileInfo xInfo = (XFileInfo) info;
-			if (xInfo.disposeRunnable != null) {
-				xInfo.disposeRunnable.run();
-			}
-		} finally {
-			super.disposeFileInfo(element, info);
-		}
 	}
 
 	@Override
@@ -126,17 +139,5 @@ public class FlixDocumentProvider extends SourceFileDocumentProvider implements 
 		if (document != null) {
 			this.onDidSaveTextDocument.emit(new TextDocumentSaveEvent(document, info.fTextFileBuffer.getDocument().get()), FlixLogger::logError);
 		}
-	}
-
-	private static class XFileInfo extends FileInfo {
-		Runnable disposeRunnable;
-	}
-
-	@Override
-	protected ISourceFile getSourceFile(Object element) {
-		if (!(element instanceof IEditorInput)) {
-			return null;
-		}
-		return FlixInputElementProvider.INSTANCE.getElement((IEditorInput) element);
 	}
 }

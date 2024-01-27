@@ -15,6 +15,10 @@ import org.lxtk.LanguageOperationTarget;
  */
 public final class FlixOperationTargetProvider {
 
+	private FlixOperationTargetProvider() {
+		// private utils class constructor
+	}
+
 	/**
 	 * Returns a Flix-specific operation target for the given file.
 	 *
@@ -25,7 +29,6 @@ public final class FlixOperationTargetProvider {
 		if (file == null) {
 			return null;
 		}
-
 		return new LanguageOperationTarget(file.getLocationURI(), FlixConstants.LANGUAGE_ID, Flix.get().getLanguageService());
 	}
 
@@ -39,22 +42,14 @@ public final class FlixOperationTargetProvider {
 		if (editor == null) {
 			return null;
 		}
-
 		URI documentUri = null;
-
 		final IEditorInput editorInput = editor.getEditorInput();
 		if (editorInput instanceof IURIEditorInput) {
 			documentUri = ((IURIEditorInput) editorInput).getURI();
 		}
-
 		if (documentUri == null) {
 			return null;
 		}
-
 		return new LanguageOperationTarget(documentUri, FlixConstants.LANGUAGE_ID, Flix.get().getLanguageService());
-	}
-
-	private FlixOperationTargetProvider() {
-		// private utils class constructor
 	}
 }

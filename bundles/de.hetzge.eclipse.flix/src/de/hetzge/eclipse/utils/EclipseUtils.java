@@ -303,9 +303,9 @@ public final class EclipseUtils {
 		project.setDescription(description, null);
 	}
 
-	public static void addBuilder(final IProjectDescription description, String flixBuilderId) {
+	public static void addBuilder(final IProjectDescription description, String builderId) {
 		final ICommand buildCommand = description.newCommand();
-		buildCommand.setBuilderName(flixBuilderId);
+		buildCommand.setBuilderName(builderId);
 
 		final List<ICommand> commands = new ArrayList<>();
 		commands.addAll(Arrays.asList(description.getBuildSpec()));
@@ -314,14 +314,14 @@ public final class EclipseUtils {
 		description.setBuildSpec(commands.toArray(new ICommand[commands.size()]));
 	}
 
-	public static void removeBuilder(IProject project, String flixBuilderId) throws CoreException {
+	public static void removeBuilder(IProject project, String builderId) throws CoreException {
 		final IProjectDescription description = project.getDescription();
-		removeBuilder(description, flixBuilderId);
+		removeBuilder(description, builderId);
 		project.setDescription(description, null);
 	}
 
-	private static void removeBuilder(final IProjectDescription description, String flixBuilderId) {
-		final List<ICommand> commands = Arrays.asList(description.getBuildSpec()).stream().filter(command -> !flixBuilderId.equals(command.getBuilderName())).collect(Collectors.toList());
+	private static void removeBuilder(final IProjectDescription description, String builderId) {
+		final List<ICommand> commands = Arrays.asList(description.getBuildSpec()).stream().filter(command -> !builderId.equals(command.getBuilderName())).collect(Collectors.toList());
 		description.setBuildSpec(commands.toArray(new ICommand[commands.size()]));
 	}
 

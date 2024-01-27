@@ -1,9 +1,9 @@
 package de.hetzge.eclipse.flix.editor;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.handly.ui.IWorkingCopyManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DefaultInformationControl;
+import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -12,6 +12,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.tm4e.languageconfiguration.internal.LanguageConfigurationAutoEditStrategy;
 import org.eclipse.tm4e.ui.text.TMPresentationReconciler;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -31,12 +32,10 @@ import de.hetzge.eclipse.flix.FlixOperationTargetProvider;
 public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration {
 
 	private final ITextEditor editor;
-	private final IWorkingCopyManager workingCopyManager;
 
-	public FlixSourceViewerConfiguration(IPreferenceStore preferenceStore, ITextEditor editor, IWorkingCopyManager workingCopyManager) {
+	public FlixSourceViewerConfiguration(IPreferenceStore preferenceStore, ITextEditor editor) {
 		super(preferenceStore);
 		this.editor = editor;
-		this.workingCopyManager = workingCopyManager;
 	}
 
 	@Override
@@ -50,12 +49,17 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 	}
 
 	@Override
+	public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
+		return new IAutoEditStrategy[] { new LanguageConfigurationAutoEditStrategy() };
+	};
+
+	@Override
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
 		System.out.println("FlixSourceViewerConfiguration.getReconciler()");
-		if (this.editor == null || !this.editor.isEditable() || this.workingCopyManager == null) {
+		if (this.editor == null || !this.editor.isEditable()) {
 			return null;
 		}
-		return new FlixReconciler(this.editor, this.workingCopyManager);
+		return new FlixReconciler(this.editor);
 	}
 
 	@Override

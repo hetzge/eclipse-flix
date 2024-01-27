@@ -9,13 +9,13 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.PlatformUI;
 
-import de.hetzge.eclipse.flix.model.api.IFlixModel;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixModel;
+import de.hetzge.eclipse.flix.model.FlixProject;
 
 public class FlixReconnectLanguageToolingHandler extends AbstractHandler {
 
 	private final FlixLanguageToolingManager languageToolingManager;
-	private final IFlixModel model;
+	private final FlixModel model;
 
 	public FlixReconnectLanguageToolingHandler() {
 		this.languageToolingManager = Flix.get().getLanguageToolingManager();
@@ -24,19 +24,18 @@ public class FlixReconnectLanguageToolingHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		System.out.println("RestartLanguageToolingHandler.execute()");
 		this.languageToolingManager.reconnectProject(getFlixProject());
 		return null;
 	}
 
-	private IFlixProject getFlixProject() throws ExecutionException {
+	private FlixProject getFlixProject() throws ExecutionException {
 		final ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
 		if (selection instanceof IStructuredSelection) {
 			final Object item = ((IStructuredSelection) selection).getFirstElement();
 			final IProject project = Adapters.adapt(item, IProject.class);
-			return this.model.getFlixProject(project).orElseThrow(() -> new ExecutionException("Not a valid flix project"));
+			return this.model.getFlixProject(project).orElseThrow(() -> new ExecutionException("Not a valid flix project")); //$NON-NLS-1$
 		} else {
-			throw new ExecutionException("No project found");
+			throw new ExecutionException("No project found"); //$NON-NLS-1$
 		}
 	}
 

@@ -1,81 +1,65 @@
-package de.hetzge.eclipse.flix.model.impl;
+package de.hetzge.eclipse.flix.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SafeRunner;
-import org.eclipse.handly.context.IContext;
-import org.eclipse.handly.model.impl.support.Element;
-import org.eclipse.handly.model.impl.support.IModelManager;
 
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixConstants;
-import de.hetzge.eclipse.flix.model.api.FlixVersion;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
 import de.hetzge.eclipse.flix.project.FlixProjectPreferences;
+import de.hetzge.eclipse.flix.project.FlixToml;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
 
-public class FlixProject extends Element implements IFlixProject {
+public class FlixProject {
 
 	private final IProject project;
 	private final FlixProjectPreferences projectPreferences;
 
-	public FlixProject(FlixModel parent, IProject project) {
-		super(parent, project.getName());
+	public FlixProject(IProject project) {
 		this.project = project;
 		this.projectPreferences = new FlixProjectPreferences(project);
 	}
 
-	@Override
-	public void validateExistence_(IContext context) throws CoreException {
-		if (!isActive()) {
-			throw newDoesNotExistException_();
-		}
-	}
-
-	@Override
-	public void buildStructure_(IContext context, IProgressMonitor monitor) throws CoreException {
-	}
-
-	@Override
-	public IModelManager getModelManager_() {
-		return Flix.get().getModelManager();
-	}
-
-	@Override
-	public IResource getResource_() {
-		return this.project;
-	}
-
-	@Override
 	public IProject getProject() {
 		return this.project;
 	}
 
-	@Override
 	public FlixVersion getFlixVersion() {
 		if (getInProjectFolderFlixCompilerJarFile().isPresent()) {
 			return FlixVersion.CUSTOM;
 		} else {
-			return this.projectPreferences.getFlixVersion().orElse(FlixConstants.FLIX_DEFAULT_VERSION);
+			return getFlixToml().map(FlixToml::getFlixVersion).orElse(FlixConstants.FLIX_DEFAULT_VERSION);
 		}
 	}
 
-	@Override
+	public Optional<FlixToml> getFlixToml() {
+		try {
+			return Optional.of(FlixToml.load(this));
+		} catch (final IOException exception) {
+			FlixLogger.logError(String.format("Failed to read flix.toml in project '%s'", getProject().getName()), exception);
+			return Optional.empty();
+		}
+	}
+
+// TODO create flix toml if missing
+
+
 	public boolean isActive() {
 		return isActiveFlixProject(this.project);
 	}
 
-	@Override
 	public File getFlixCompilerJarFile() {
 		final Optional<File> inProjectFolderFlixCompilerJarFileOptional = getInProjectFolderFlixCompilerJarFile();
 		if (inProjectFolderFlixCompilerJarFileOptional.isPresent()) {
@@ -94,7 +78,6 @@ public class FlixProject extends Element implements IFlixProject {
 		}
 	}
 
-	@Override
 	public File getFlixFolder() {
 		final IFile flixJarInProjectFile = this.project.getFile("flix.jar");
 		if (flixJarInProjectFile.exists()) {
@@ -104,52 +87,63 @@ public class FlixProject extends Element implements IFlixProject {
 		}
 	}
 
-	@Override
 	public List<IFile> getFlixSourceFiles() {
-		return EclipseUtils.collectFiles(getSourceFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("flix")));
+		if (getSourceFolder().exists()) {
+			return EclipseUtils.collectFiles(getSourceFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("flix")));
+		} else {
+			return List.of();
+		}
 	}
 
-	@Override
 	public List<IFile> getFlixJarLibraryFiles() {
-		return EclipseUtils.collectFiles(getLibraryFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("jar")));
+		if (getLibraryFolder().exists()) {
+			return EclipseUtils.collectFiles(getLibraryFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("jar")));
+		} else {
+			return List.of();
+		}
 	}
 
-	@Override
 	public List<IFile> getFlixFpkgLibraryFiles() {
-		return EclipseUtils.collectFiles(getLibraryFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("fpkg")));
+		if (getLibraryFolder().exists()) {
+			return EclipseUtils.collectFiles(getLibraryFolder(), file -> file.getFileExtension() != null && (file.getFileExtension().equals("fpkg")));
+		} else {
+			return List.of();
+		}
 	}
 
-	@Override
 	public boolean isFlixSourceFile(IFile file) {
+		if (!getSourceFolder().exists()) {
+			return false;
+		}
 		return file.getFileExtension() != null && file.getFileExtension().equals("flix") && getSourceFolder().getRawLocation().isPrefixOf(file.getRawLocation());
 	}
 
-	@Override
 	public boolean isFlixJarLibraryFile(IFile file) {
+		if (!getLibraryFolder().exists()) {
+			return false;
+		}
 		return file.getFileExtension() != null && file.getFileExtension().equals("jar") && getLibraryFolder().getRawLocation().isPrefixOf(file.getRawLocation());
 	}
 
-	@Override
 	public boolean isFlixFpkgLibraryFile(IFile file) {
+		if (!getLibraryFolder().exists()) {
+			return false;
+		}
 		return file.getFileExtension() != null && file.getFileExtension().equals("fpkg") && getLibraryFolder().getRawLocation().isPrefixOf(file.getRawLocation());
 	}
 
-	@Override
 	public IFolder getSourceFolder() {
 		return this.project.getFolder("src");
 	}
 
-	@Override
 	public IFolder getLibraryFolder() {
 		return this.project.getFolder("lib");
 	}
 
-	@Override
 	public IFolder getBuildFolder() {
 		return this.project.getFolder("build");
 	}
 
-	@Override
 	public void deleteBuildFolder(IProgressMonitor progressMonitor) throws CoreException {
 		final IFolder buildFolder = getBuildFolder();
 		if (buildFolder.exists()) {
@@ -157,12 +151,35 @@ public class FlixProject extends Element implements IFlixProject {
 		}
 	}
 
-	public static boolean isActiveFlixProject(IProject project) {
-		return SafeRunner.run(() -> project.isOpen() && project.getDescription().hasNature(FlixProjectNature.ID));
+	public FlixProjectPreferences getProjectPreferences() {
+		return this.projectPreferences;
+	}
+
+	public boolean isLanguageToolingStarted() {
+		return Flix.get().getLanguageToolingManager().isStarted(this);
 	}
 
 	@Override
-	public FlixProjectPreferences getProjectPreferences() {
-		return this.projectPreferences;
+	public int hashCode() {
+		return Objects.hash(this.project);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		final FlixProject other = (FlixProject) obj;
+		return Objects.equals(this.project, other.project);
+	}
+
+	public static boolean isActiveFlixProject(IProject project) {
+		return SafeRunner.run(() -> project.isOpen() && project.getDescription().hasNature(FlixProjectNature.ID));
 	}
 }
