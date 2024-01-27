@@ -120,13 +120,15 @@ public class FlixActivator extends AbstractUIPlugin {
 						this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
 							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
 						});
-					} else if (project.getFile("flix.toml").getLocation().equals(changePath)) {
-						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getFlixProject(project);
-						if (flixProjectOptional.isPresent()) {
-							final FlixProject flixProject = flixProjectOptional.get();
-							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
-						}
 					}
+					// TODO only on save
+//					else if (project.getFile("flix.toml").getLocation().equals(changePath)) {
+//						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getFlixProject(project);
+//						if (flixProjectOptional.isPresent()) {
+//							final FlixProject flixProject = flixProjectOptional.get();
+//							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+//						}
+//					}
 				}
 			})::dispose);
 

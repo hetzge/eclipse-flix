@@ -53,17 +53,8 @@ public class FlixProject {
 		}
 	}
 
-
 // TODO create flix toml if missing
-// TODO marker if version is missing in flix.toml
-// result.errors().forEach(error -> System.err.println(error.toString()));
-//	void reportError(IResource resource, int line, String msg) {
-//		   IMarker m = resource.createMarker(IMarker.PROBLEM);
-//		   m.setAttribute(IMarker.LINE_NUMBER, line);
-//		   m.setAttribute(IMarker.MESSAGE, msg);
-//		   m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-//		   m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-//		}
+
 
 	public boolean isActive() {
 		return isActiveFlixProject(this.project);
@@ -121,21 +112,21 @@ public class FlixProject {
 	}
 
 	public boolean isFlixSourceFile(IFile file) {
-		if(!getSourceFolder().exists()) {
+		if (!getSourceFolder().exists()) {
 			return false;
 		}
 		return file.getFileExtension() != null && file.getFileExtension().equals("flix") && getSourceFolder().getRawLocation().isPrefixOf(file.getRawLocation());
 	}
 
 	public boolean isFlixJarLibraryFile(IFile file) {
-		if(!getLibraryFolder().exists()) {
+		if (!getLibraryFolder().exists()) {
 			return false;
 		}
 		return file.getFileExtension() != null && file.getFileExtension().equals("jar") && getLibraryFolder().getRawLocation().isPrefixOf(file.getRawLocation());
 	}
 
 	public boolean isFlixFpkgLibraryFile(IFile file) {
-		if(!getLibraryFolder().exists()) {
+		if (!getLibraryFolder().exists()) {
 			return false;
 		}
 		return file.getFileExtension() != null && file.getFileExtension().equals("fpkg") && getLibraryFolder().getRawLocation().isPrefixOf(file.getRawLocation());

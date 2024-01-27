@@ -3,9 +3,11 @@ package de.hetzge.eclipse.flix;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.PlatformUI;
 import org.lxtk.util.Disposable;
@@ -110,13 +112,26 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 
 	private synchronized void monitorProjects() {
 		for (final Entry<FlixProject, LanguageTooling> entry : this.connectedProjects.entrySet()) {
-			PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+			final FlixProject flixProject = entry.getKey();
+			final Boolean reconnect = PlatformUI.getWorkbench().getDisplay().syncCall(() -> {
 				if (!entry.getValue().isHealthy()) {
-					reconnectProject(entry.getKey());
+					if (MessageDialog.openConfirm(PlatformUI.getWorkbench().getDisplay().getActiveShell(), String.format("Flix language tooling crashed for project '%s'", flixProject.getProject().getName()), "Try to restart?")) {
+						return Boolean.TRUE;
+					} else {
+						return Boolean.FALSE;
+					}
 				}
-				PlatformUI.getWorkbench().getDecoratorManager().update(FlixLanguageToolingStateDecorator.ID);
+				return null;
 			});
+			if (Objects.equals(reconnect, Boolean.TRUE)) {
+				reconnectProject(flixProject);
+			} else if (Objects.equals(reconnect, Boolean.FALSE)) {
+				disconnectProject(flixProject);
+			}
 		}
+		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+			PlatformUI.getWorkbench().getDecoratorManager().update(FlixLanguageToolingStateDecorator.ID);
+		});
 	}
 
 	public synchronized Optional<LanguageServer> getLanguageServerApi(FlixProject flixProject) {
