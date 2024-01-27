@@ -10,6 +10,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionList;
@@ -35,6 +37,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
+import de.hetzge.eclipse.flix.FlixProjectBuilder;
 import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.flix.utils.GsonUtils;
@@ -43,6 +46,7 @@ import de.hetzge.eclipse.utils.Utils;
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
 
 public final class FlixCompilerService {
+	private static final ILog LOG = Platform.getLog(FlixProjectBuilder.class);
 
 	private final FlixProject flixProject;
 	private final FlixCompilerClient compilerClient;
@@ -76,7 +80,7 @@ public final class FlixCompilerService {
 		} else if (this.flixProject.isFlixJarLibraryFile(file)) {
 			addJar(file.getLocationURI());
 		} else {
-			System.out.println("[" + this.flixProject.getProject().getName() + "] Ignore '" + uri + "'");
+			// ignore
 		}
 	}
 
@@ -89,7 +93,7 @@ public final class FlixCompilerService {
 		} else if (this.flixProject.isFlixJarLibraryFile(file)) {
 			removeJar(uri);
 		} else {
-			System.out.println("[" + this.flixProject.getProject().getName() + "] Ignore '" + uri + "'");
+			// ignore
 		}
 	}
 
@@ -140,8 +144,8 @@ public final class FlixCompilerService {
 	}
 
 	private String fixLibraryUri(String targetUriValue) {
-		if (targetUriValue.endsWith(".flix") && !targetUriValue.startsWith("file:")) {
-			return FlixUtils.loadFlixJarUri(this.flixProject.getFlixVersion(), null).toString() + "!/src/library/" + targetUriValue;
+		if (targetUriValue.endsWith(".flix") && !targetUriValue.startsWith("file:")) { //$NON-NLS-1$ //$NON-NLS-2$
+			return FlixUtils.loadFlixJarUri(this.flixProject.getFlixVersion(), null).toString() + "!/src/library/" + targetUriValue; //$NON-NLS-1$
 		} else {
 			return targetUriValue;
 		}
@@ -205,14 +209,14 @@ public final class FlixCompilerService {
 					final Either<Location, WorkspaceSymbolLocation> location = workspaceSymbol.getLocation();
 					if (location.isLeft()) {
 						location.getLeft().setUri(fixLibraryUri(location.getLeft().getUri()));
-						if ("<unknown>".equals(location.getLeft().getUri())) {
-							System.out.println("Skip symbol because uri is '<unknown>'");
+						if ("<unknown>".equals(location.getLeft().getUri())) { //$NON-NLS-1$
+							LOG.info("Skip symbol because uri is '<unknown>'"); //$NON-NLS-1$
 							continue loop;
 						}
 					} else {
 						location.getRight().setUri(fixLibraryUri(location.getRight().getUri()));
-						if ("<unknown>".equals(location.getRight().getUri())) {
-							System.out.println("Skip symbol because uri is '<unknown>'");
+						if ("<unknown>".equals(location.getRight().getUri())) { //$NON-NLS-1$
+							LOG.info("Skip symbol because uri is '<unknown>'"); //$NON-NLS-1$
 							continue loop;
 						}
 					}
@@ -240,7 +244,7 @@ public final class FlixCompilerService {
 			if (response.getSuccessJsonElement().isPresent()) {
 				final List<Location> locations = GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<Location>>() {
 				}.getType());
-				return locations.stream().filter(location -> !"<unknown>".equals(location.getUri())).collect(Collectors.toList());
+				return locations.stream().filter(location -> !"<unknown>".equals(location.getUri())).collect(Collectors.toList()); //$NON-NLS-1$
 			} else {
 				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}
@@ -257,7 +261,7 @@ public final class FlixCompilerService {
 				} else {
 					codeLenses = List.of();
 				}
-				return codeLenses.stream().filter(codeLens -> Set.of("flix.runMain", "flix.cmdRepl").contains(codeLens.getCommand().getCommand())).collect(Collectors.toList());
+				return codeLenses.stream().filter(codeLens -> Set.of("flix.runMain", "flix.cmdRepl").contains(codeLens.getCommand().getCommand())).collect(Collectors.toList()); //$NON-NLS-1$ //$NON-NLS-2$
 			} else {
 				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}

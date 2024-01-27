@@ -40,7 +40,7 @@ public class FlixSymbolSelectionHandler extends AbstractItemsSelectionHandler {
 	protected SelectionDialog createSelectionDialog(Shell shell, ExecutionEvent event) {
 		final List<WorkspaceSymbolProvider> providers = Utils.toList(this.languageService.getWorkspaceSymbolProviders());
 		if (providers.isEmpty()) {
-			LOG.warn("Skip selection dialog because no workspace symbol provider found");
+			LOG.warn("Skip selection dialog because no workspace symbol provider found"); //$NON-NLS-1$
 			return null;
 		}
 

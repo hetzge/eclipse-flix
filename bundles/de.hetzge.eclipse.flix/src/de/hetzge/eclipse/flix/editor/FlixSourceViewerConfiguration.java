@@ -3,6 +3,7 @@ package de.hetzge.eclipse.flix.editor;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.DefaultInformationControl;
+import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
@@ -11,6 +12,7 @@ import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.tm4e.languageconfiguration.internal.LanguageConfigurationAutoEditStrategy;
 import org.eclipse.tm4e.ui.text.TMPresentationReconciler;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -45,6 +47,11 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 	public IPresentationReconciler getPresentationReconciler(ISourceViewer viewer) {
 		return new TMPresentationReconciler();
 	}
+
+	@Override
+	public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
+		return new IAutoEditStrategy[] { new LanguageConfigurationAutoEditStrategy() };
+	};
 
 	@Override
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {

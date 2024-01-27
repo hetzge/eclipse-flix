@@ -107,12 +107,11 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 
 	@Override
 	protected JsonRpcConnectionFactory<LanguageServer> getConnectionFactory() {
-		System.out.println("FlixLanguageClient.getConnectionFactory()");
 		return new AbstractJsonRpcConnectionFactory<>() {
 			@Override
 			protected StreamBasedConnection newStreamBasedConnection() {
 				try {
-					return new SocketConnection(new Socket("localhost", FlixLanguageClientController.this.port));
+					return new SocketConnection(new Socket("localhost", FlixLanguageClientController.this.port)); //$NON-NLS-1$
 				} catch (final IOException exception) {
 					throw new RuntimeException(exception);
 				}

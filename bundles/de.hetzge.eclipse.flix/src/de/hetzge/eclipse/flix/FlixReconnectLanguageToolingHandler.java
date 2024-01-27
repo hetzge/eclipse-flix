@@ -24,7 +24,6 @@ public class FlixReconnectLanguageToolingHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		System.out.println("RestartLanguageToolingHandler.execute()");
 		this.languageToolingManager.reconnectProject(getFlixProject());
 		return null;
 	}
@@ -34,9 +33,9 @@ public class FlixReconnectLanguageToolingHandler extends AbstractHandler {
 		if (selection instanceof IStructuredSelection) {
 			final Object item = ((IStructuredSelection) selection).getFirstElement();
 			final IProject project = Adapters.adapt(item, IProject.class);
-			return this.model.getFlixProject(project).orElseThrow(() -> new ExecutionException("Not a valid flix project"));
+			return this.model.getFlixProject(project).orElseThrow(() -> new ExecutionException("Not a valid flix project")); //$NON-NLS-1$
 		} else {
-			throw new ExecutionException("No project found");
+			throw new ExecutionException("No project found"); //$NON-NLS-1$
 		}
 	}
 

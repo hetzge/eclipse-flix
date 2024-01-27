@@ -53,7 +53,7 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 				}
 			}
 		};
-		thread.setName("Flix language tooling monitor thread");
+		thread.setName("Flix language tooling monitor thread"); //$NON-NLS-1$
 		thread.setDaemon(true);
 		thread.start();
 		return () -> thread.interrupt();

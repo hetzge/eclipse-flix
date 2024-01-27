@@ -14,10 +14,9 @@ import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.model.FlixProject;
 
 public class FlixTestLaunchConfigurationDelegate implements ILaunchConfigurationDelegate {
+	private static final ILog LOG = Platform.getLog(FlixLaunchConfigurationDelegate.class);
 
 	// TODO JUnitViewEditorLauncher
-
-	private static final ILog LOG = Platform.getLog(FlixLaunchConfigurationDelegate.class);
 
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {

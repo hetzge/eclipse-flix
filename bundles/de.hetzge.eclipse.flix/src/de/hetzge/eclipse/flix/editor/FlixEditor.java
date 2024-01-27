@@ -3,11 +3,16 @@ package de.hetzge.eclipse.flix.editor;
 import java.time.Duration;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.util.Throttler;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.tm4e.languageconfiguration.internal.LanguageConfigurationCharacterPairMatcher;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.lxtk.LanguageOperationTarget;
 
@@ -18,7 +23,6 @@ import de.hetzge.eclipse.flix.FlixOperationTargetProvider;
 import de.hetzge.eclipse.flix.editor.outline.FlixOutlinePage;
 
 public class FlixEditor extends AbstractDecoratedTextEditor {
-
 	private final FlixOutlinePage outlinePage;
 	private final Throttler syncOutlineThrottler;
 
@@ -35,6 +39,18 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(getPreferenceStores(), this));
 		setEditorContextMenuId("#FlixEditorContext"); //$NON-NLS-1$
 		setRulerContextMenuId("#FlixRulerContext"); //$NON-NLS-1$
+
+	}
+
+	@Override
+	protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
+		final ISourceViewer sourceViewer = super.createSourceViewer(parent, ruler, styles);
+
+		final SourceViewerDecorationSupport support = getSourceViewerDecorationSupport(sourceViewer);
+		support.setCharacterPairMatcher(new LanguageConfigurationCharacterPairMatcher());
+		support.setMatchingCharacterPainterPreferenceKeys("matchingBrackets", "matchingBracketsColor", "highlightBracketAtCaretLocation", "enclosingBrackets");
+
+		return sourceViewer;
 	}
 
 	@Override

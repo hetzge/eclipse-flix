@@ -60,7 +60,6 @@ public class FlixActivator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		FlixLogger.logInfo("Let's go Flix");
 
 		SafeRun.run(rollback -> {
 			this.flix = new Flix();
@@ -86,7 +85,6 @@ public class FlixActivator extends AbstractUIPlugin {
 			rollback.add(() -> workspace.removeResourceChangeListener(this.flix.getPostResourceMonitor()));
 
 			rollback.add(this.flix.getPostResourceMonitor().onDidCreateFiles().subscribe(fileCreateEvent -> {
-				System.out.println("CREATED");
 				for (final FileCreate create : fileCreateEvent.getFiles()) {
 					final IPath createPath = URIUtil.toPath(create.getUri());
 					final IProject project = EclipseUtils.project(createPath).orElseThrow();
@@ -98,7 +96,6 @@ public class FlixActivator extends AbstractUIPlugin {
 				}
 			})::dispose);
 			rollback.add(this.flix.getPostResourceMonitor().onDidDeleteFiles().subscribe(fileDeleteEvent -> {
-				System.out.println("DELETED");
 				for (final FileDelete delete : fileDeleteEvent.getFiles()) {
 					final IPath deletePath = URIUtil.toPath(delete.getUri());
 					final IProject project = EclipseUtils.project(deletePath).orElseThrow();
@@ -112,7 +109,6 @@ public class FlixActivator extends AbstractUIPlugin {
 				}
 			})::dispose);
 			rollback.add(this.flix.getPostResourceMonitor().onDidChangeFiles().subscribe(fileChangeEvent -> {
-				System.out.println("CHANGED");
 				for (final URI uri : fileChangeEvent.getFiles()) {
 					final IPath changePath = URIUtil.toPath(uri);
 					final IProject project = EclipseUtils.project(changePath).orElseThrow();
@@ -138,7 +134,6 @@ public class FlixActivator extends AbstractUIPlugin {
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		System.out.println("FlixActivator.stop()");
 		try {
 			if (this.rollback != null) {
 				this.rollback.run();

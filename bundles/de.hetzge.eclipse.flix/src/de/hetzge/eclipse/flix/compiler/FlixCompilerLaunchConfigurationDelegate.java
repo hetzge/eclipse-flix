@@ -22,7 +22,7 @@ import de.hetzge.eclipse.flix.model.FlixProject;
 
 public class FlixCompilerLaunchConfigurationDelegate extends JavaLaunchDelegate {
 
-	private static final String ID = "de.hetzge.eclipse.flix.lspLaunchConfigurationType";
+	private static final String ID = "de.hetzge.eclipse.flix.lspLaunchConfigurationType"; //$NON-NLS-1$
 
 	@Override
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor) throws CoreException {
@@ -30,20 +30,19 @@ public class FlixCompilerLaunchConfigurationDelegate extends JavaLaunchDelegate 
 	}
 
 	public static FlixCompilerLaunch launch(FlixProject project, int compilerPort) {
-		System.out.println("FlixLanguageServerLaunchConfigurationDelegate.launch()");
 		try {
 			final File flixJarFile = project.getFlixCompilerJarFile();
 			final IRuntimeClasspathEntry entry = JavaRuntime.newArchiveRuntimeClasspathEntry(Path.fromOSString(flixJarFile.getAbsolutePath()));
 			entry.setClasspathProperty(IRuntimeClasspathEntry.USER_CLASSES);
 			final ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
 			final ILaunchConfigurationType launchConfigurationType = launchManager.getLaunchConfigurationType(ID);
-			final ILaunchConfigurationWorkingCopy configurationWorkingCopy = launchConfigurationType.newInstance(null, String.format("(%s) Flix LSP Server", project.getProject().getName()));
-			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, "ca.uwaterloo.flix.Main");
+			final ILaunchConfigurationWorkingCopy configurationWorkingCopy = launchConfigurationType.newInstance(null, String.format("(%s) Flix LSP Server", project.getProject().getName())); //$NON-NLS-1$
+			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, "ca.uwaterloo.flix.Main"); //$NON-NLS-1$
 			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_DEFAULT_CLASSPATH, false);
 			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH, List.of(entry.getMemento()));
 			configurationWorkingCopy.setAttribute(DebugPlugin.ATTR_CAPTURE_OUTPUT, true);
-			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, "lsp " + compilerPort);
-			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, "-XX:+UseG1GC -XX:+UseStringDeduplication -Xss4m -Xms100m -Xmx2G");
+			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROGRAM_ARGUMENTS, "lsp " + compilerPort); //$NON-NLS-1$
+			configurationWorkingCopy.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, "-XX:+UseG1GC -XX:+UseStringDeduplication -Xss4m -Xms100m -Xmx2G"); //$NON-NLS-1$
 			final ILaunch launch = configurationWorkingCopy.launch(ILaunchManager.RUN_MODE, new NullProgressMonitor());
 			return new FlixCompilerLaunch(launch);
 		} catch (final CoreException exception) {

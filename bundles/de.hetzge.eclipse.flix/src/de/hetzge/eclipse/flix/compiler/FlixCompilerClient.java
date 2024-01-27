@@ -6,6 +6,8 @@ import java.net.http.WebSocket;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
@@ -22,6 +24,7 @@ import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.utils.GsonUtils;
 
 public class FlixCompilerClient implements AutoCloseable {
+	private static final ILog LOG = Platform.getLog(FlixCompilerClient.class);
 
 	private final WebSocket webSocket;
 	private final FlixCompilerProcessSocketListener listener;
@@ -40,78 +43,78 @@ public class FlixCompilerClient implements AutoCloseable {
 
 	public CompletableFuture<Void> sendAddUri(URI uri, String src) {
 		final JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("request", "api/addUri");
-		jsonObject.addProperty("id", UUID.randomUUID().toString());
-		jsonObject.addProperty("uri", uri.toString());
-		jsonObject.addProperty("src", src);
+		jsonObject.addProperty("request", "api/addUri"); //$NON-NLS-1$ //$NON-NLS-2$
+		jsonObject.addProperty("id", UUID.randomUUID().toString()); //$NON-NLS-1$
+		jsonObject.addProperty("uri", uri.toString()); //$NON-NLS-1$
+		jsonObject.addProperty("src", src); //$NON-NLS-1$
 		return send(jsonObject);
 	}
 
 	public CompletableFuture<Void> sendRemoveUri(URI uri) {
 		final JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("request", "api/remUri");
-		jsonObject.addProperty("id", UUID.randomUUID().toString());
-		jsonObject.addProperty("uri", uri.toString());
+		jsonObject.addProperty("request", "api/remUri"); //$NON-NLS-1$
+		jsonObject.addProperty("id", UUID.randomUUID().toString()); //$NON-NLS-1$
+		jsonObject.addProperty("uri", uri.toString()); //$NON-NLS-1$
 		return send(jsonObject);
 	}
 
 	public CompletableFuture<Void> sendFpkg(URI uri, String base64String) {
 		final JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("request", "api/addPkg");
+		jsonObject.addProperty("request", "api/addPkg"); //$NON-NLS-1$ //$NON-NLS-2$
 		jsonObject.addProperty("id", UUID.randomUUID().toString());
-		jsonObject.addProperty("uri", uri.toString());
-		jsonObject.addProperty("base64", base64String);
+		jsonObject.addProperty("uri", uri.toString()); //$NON-NLS-1$
+		jsonObject.addProperty("base64", base64String); //$NON-NLS-1$
 		return send(jsonObject);
 	}
 
 	public CompletableFuture<Void> sendRemoveFpkg(URI uri) {
 		final JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("request", "api/remPkg");
-		jsonObject.addProperty("id", UUID.randomUUID().toString());
-		jsonObject.addProperty("uri", uri.toString());
+		jsonObject.addProperty("request", "api/remPkg"); //$NON-NLS-1$ //$NON-NLS-2$
+		jsonObject.addProperty("id", UUID.randomUUID().toString()); //$NON-NLS-1$
+		jsonObject.addProperty("uri", uri.toString()); //$NON-NLS-1$
 		return send(jsonObject);
 	}
 
 	public CompletableFuture<Void> sendJar(URI uri) {
 		final JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("request", "api/addJar");
-		jsonObject.addProperty("id", UUID.randomUUID().toString());
-		jsonObject.addProperty("uri", uri.toString());
+		jsonObject.addProperty("request", "api/addJar"); //$NON-NLS-1$ //$NON-NLS-2$
+		jsonObject.addProperty("id", UUID.randomUUID().toString()); //$NON-NLS-1$
+		jsonObject.addProperty("uri", uri.toString()); //$NON-NLS-1$
 		return send(jsonObject);
 	}
 
 	public CompletableFuture<Void> sendRemoveJar(URI uri) {
 		final JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("request", "api/remJar");
-		jsonObject.addProperty("id", UUID.randomUUID().toString());
-		jsonObject.addProperty("uri", uri.toString());
+		jsonObject.addProperty("request", "api/remJar"); //$NON-NLS-1$ //$NON-NLS-2$
+		jsonObject.addProperty("id", UUID.randomUUID().toString()); //$NON-NLS-1$
+		jsonObject.addProperty("uri", uri.toString()); //$NON-NLS-1$
 		return send(jsonObject);
 	}
 
 	public CompletableFuture<FlixCompilerResponse> sendComplete(CompletionParams position) {
-		return send("lsp/complete", position);
+		return send("lsp/complete", position); //$NON-NLS-1$
 	}
 
 	public CompletableFuture<FlixCompilerResponse> sendGoto(DeclarationParams params) {
-		return send("lsp/goto", params);
+		return send("lsp/goto", params); //$NON-NLS-1$
 	}
 
 	public CompletableFuture<FlixCompilerResponse> sendCheck() {
-		return send("lsp/check", new Object());
+		return send("lsp/check", new Object()); //$NON-NLS-1$
 	}
 
 	public CompletableFuture<FlixCompilerResponse> sendHover(HoverParams params) {
 		final String id = UUID.randomUUID().toString();
 
 		final JsonObject positionJsonObject = new JsonObject();
-		positionJsonObject.addProperty("line", params.getPosition().getLine());
-		positionJsonObject.addProperty("character", params.getPosition().getCharacter());
+		positionJsonObject.addProperty("line", params.getPosition().getLine()); //$NON-NLS-1$
+		positionJsonObject.addProperty("character", params.getPosition().getCharacter()); //$NON-NLS-1$
 
 		final JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("request", "lsp/hover");
-		jsonObject.addProperty("id", id);
-		jsonObject.addProperty("uri", params.getTextDocument().getUri());
-		jsonObject.add("position", positionJsonObject);
+		jsonObject.addProperty("request", "lsp/hover"); //$NON-NLS-1$ //$NON-NLS-2$
+		jsonObject.addProperty("id", id); //$NON-NLS-1$
+		jsonObject.addProperty("uri", params.getTextDocument().getUri()); //$NON-NLS-1$
+		jsonObject.add("position", positionJsonObject); //$NON-NLS-1$
 
 		final CompletableFuture<FlixCompilerResponse> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
@@ -121,36 +124,36 @@ public class FlixCompilerClient implements AutoCloseable {
 		final String id = UUID.randomUUID().toString();
 
 		final JsonObject jsonObject = new JsonObject();
-		jsonObject.addProperty("request", "lsp/documentSymbols");
-		jsonObject.addProperty("id", id);
-		jsonObject.addProperty("uri", uri.toString());
+		jsonObject.addProperty("request", "lsp/documentSymbols"); //$NON-NLS-1$ //$NON-NLS-2$
+		jsonObject.addProperty("id", id); //$NON-NLS-1$
+		jsonObject.addProperty("uri", uri.toString()); //$NON-NLS-1$
 
 		final CompletableFuture<FlixCompilerResponse> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
 	}
 
 	public CompletableFuture<FlixCompilerResponse> sendWorkspaceSymbols(WorkspaceSymbolParams params) {
-		return send("lsp/workspaceSymbols", params);
+		return send("lsp/workspaceSymbols", params); //$NON-NLS-1$
 	}
 
 	public CompletableFuture<FlixCompilerResponse> sendRename(RenameParams params) {
-		return send("lsp/rename", params);
+		return send("lsp/rename", params); //$NON-NLS-1$
 	}
 
 	public CompletableFuture<FlixCompilerResponse> sendUses(ReferenceParams params) {
-		return send("lsp/uses", params);
+		return send("lsp/uses", params); //$NON-NLS-1$
 	}
 
 	public CompletableFuture<FlixCompilerResponse> sendCodeLens(CodeLensParams params) {
-		return send("lsp/codelens", params);
+		return send("lsp/codelens", params); //$NON-NLS-1$
 	}
 
 	public CompletableFuture<FlixCompilerResponse> send(String request, Object params) {
 		final String id = UUID.randomUUID().toString();
 
 		final JsonObject jsonObject = GsonUtils.getGson().toJsonTree(params).getAsJsonObject();
-		jsonObject.addProperty("request", request);
-		jsonObject.addProperty("id", id);
+		jsonObject.addProperty("request", request); //$NON-NLS-1$
+		jsonObject.addProperty("id", id); //$NON-NLS-1$
 
 		final CompletableFuture<FlixCompilerResponse> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
@@ -161,19 +164,17 @@ public class FlixCompilerClient implements AutoCloseable {
 	}
 
 	private CompletableFuture<Void> send(final String jsonString) {
-		System.out.println("Send with length " + jsonString.length());
 		return this.webSocket.sendText(jsonString, true).thenRun(() -> {
 		});
 	}
 
 	public static synchronized FlixCompilerClient connect(int port) {
-		System.out.println("FlixCompilerClient.connect()");
 		return SafeRun.runWithResult(rollback -> {
 			rollback.setLogger(FlixLogger::logError);
 			final FlixCompilerProcessSocketListener listener = new FlixCompilerProcessSocketListener();
-			final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:" + port), listener).join();
+			final WebSocket webSocket = HttpClient.newHttpClient().newWebSocketBuilder().buildAsync(URI.create("ws://localhost:" + port), listener).join(); //$NON-NLS-1$
 			rollback.add(webSocket::abort);
-			System.out.println("Connected compiler client on port " + port);
+			LOG.info("Connected compiler client on port " + port); //$NON-NLS-1$
 			return new FlixCompilerClient(webSocket, listener, rollback);
 		});
 	}

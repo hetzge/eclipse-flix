@@ -51,7 +51,7 @@
 	</extension>
 	<extension point="org.eclipse.ui.newWizards">
 		<category id="de.hetzge.eclipse.flix.wizards" name="Flix"></category>
-		<wizard category="de.hetzge.eclipse.flix.wizards" class="de.hetzge.eclipse.flix.project.FlixFileWizard" icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix..newfile" name="Flix File">
+		<wizard category="de.hetzge.eclipse.flix.wizards" class="de.hetzge.eclipse.flix.project.FlixFileWizard" icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix.newfile" name="Flix File">
 			<description>
 				Create a Flix file
 			</description>

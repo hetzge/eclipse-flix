@@ -1,5 +1,7 @@
 package de.hetzge.eclipse.flix.compiler;
 
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.IStreamListener;
@@ -10,6 +12,8 @@ import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 
 public class FlixCompilerLaunch implements Disposable {
+	private static final ILog LOG = Platform.getLog(FlixCompilerLaunch.class);
+
 	private final ILaunch launch;
 	private final Rollback rollback;
 	private boolean connected;
@@ -33,9 +37,9 @@ public class FlixCompilerLaunch implements Disposable {
 	}
 
 	private void onOutput(String text, IStreamMonitor monitor) {
-		if (text.startsWith("Listen on")) {
+		if (text.startsWith("Listen on")) { //$NON-NLS-1$
 			this.ready = true;
-		} else if (text.startsWith("Client at")) {
+		} else if (text.startsWith("Client at")) { //$NON-NLS-1$
 			this.connected = true;
 		}
 	}
@@ -45,14 +49,14 @@ public class FlixCompilerLaunch implements Disposable {
 			if (this.ready) {
 				return;
 			}
-			System.out.println("Wait until ready ...");
+			LOG.info("Wait until ready ..."); //$NON-NLS-1$
 			try {
 				Thread.sleep(500);
 			} catch (final InterruptedException exception) {
 				throw new RuntimeException(exception);
 			}
 		}
-		throw new RuntimeException("Failed to start language server");
+		throw new RuntimeException("Failed to start language server"); //$NON-NLS-1$
 	}
 
 	public void waitUntilConnected() {
@@ -60,14 +64,14 @@ public class FlixCompilerLaunch implements Disposable {
 			if (this.connected) {
 				return;
 			}
-			System.out.println("Wait until started ...");
+			LOG.info("Wait until started ..."); //$NON-NLS-1$
 			try {
 				Thread.sleep(500);
 			} catch (final InterruptedException exception) {
 				throw new RuntimeException(exception);
 			}
 		}
-		throw new RuntimeException("Failed to connect to language server");
+		throw new RuntimeException("Failed to connect to language server"); //$NON-NLS-1$
 	}
 
 	@Override
