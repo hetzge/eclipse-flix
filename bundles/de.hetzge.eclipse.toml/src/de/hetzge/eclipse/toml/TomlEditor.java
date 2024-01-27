@@ -10,7 +10,7 @@ public class TomlEditor extends AbstractDecoratedTextEditor {
 	@Override
 	protected void initializeEditor() {
 		setPreferenceStore(getPreferenceStores());
-		setSourceViewerConfiguration(new TomlSourceViewerConfiguration());
+		setSourceViewerConfiguration(new TomlSourceViewerConfiguration(this));
 	}
 
 	private ChainedPreferenceStore getPreferenceStores() {
