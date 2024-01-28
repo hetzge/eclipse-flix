@@ -34,7 +34,7 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 		final CompletableFuture<FlixCompilerResponse> successFailureFuture = future.thenApply(message -> {
 			this.messagesById.remove(id);
 			final String statusValue = message.get("status").getAsString(); //$NON-NLS-1$
-			final JsonElement resultJsonElement = message.get("result");
+			final JsonElement resultJsonElement = message.get("result"); //$NON-NLS-1$
 			if (statusValue.equals(SUCCESS_STATUS_VALUE)) {
 				return new FlixCompilerResponse(resultJsonElement, null);
 			} else if (statusValue.equals(FAILURE_STATUS_VALUE)) {

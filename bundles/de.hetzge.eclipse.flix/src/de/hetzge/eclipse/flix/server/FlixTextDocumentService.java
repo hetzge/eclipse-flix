@@ -14,6 +14,8 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
+import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
@@ -73,9 +75,15 @@ public final class FlixTextDocumentService implements TextDocumentService {
 	}
 
 	@Override
+	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params) {
+		return this.flixService.documentHighlight(params);
+	}
+
+	@Override
 	public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
 		return this.flixService.rename(params);
 	}
+
 
 	@Override
 	public void didSave(DidSaveTextDocumentParams params) {

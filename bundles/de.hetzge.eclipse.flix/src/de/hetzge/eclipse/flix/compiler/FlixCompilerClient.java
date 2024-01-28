@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
+import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
@@ -130,6 +131,10 @@ public class FlixCompilerClient implements AutoCloseable {
 
 		final CompletableFuture<FlixCompilerResponse> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);
+	}
+
+	public CompletableFuture<FlixCompilerResponse> sendDocumentHighlight(DocumentHighlightParams params) {
+		return send("lsp/highlight", params); //$NON-NLS-1$
 	}
 
 	public CompletableFuture<FlixCompilerResponse> sendWorkspaceSymbols(WorkspaceSymbolParams params) {

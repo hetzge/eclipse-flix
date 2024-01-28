@@ -21,6 +21,7 @@ import org.lxtk.client.CodeActionFeature;
 import org.lxtk.client.CodeLensFeature;
 import org.lxtk.client.CompletionFeature;
 import org.lxtk.client.DeclarationFeature;
+import org.lxtk.client.DocumentHighlightFeature;
 import org.lxtk.client.DocumentSymbolFeature;
 import org.lxtk.client.Feature;
 import org.lxtk.client.FileOperationsFeature;
@@ -80,6 +81,7 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		features.add(new RenameFeature(languageService));
 		features.add(new CodeLensFeature(languageService, commandService));
 		features.add(new CodeActionFeature(languageService, commandService));
+		features.add(new DocumentHighlightFeature(languageService));
 		features.add(new Feature<LanguageServer>() {
 			@Override
 			public void dispose() {

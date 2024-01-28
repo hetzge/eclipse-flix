@@ -17,6 +17,8 @@ import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
+import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
@@ -193,6 +195,17 @@ public final class FlixCompilerService {
 					result.add(Either.forRight(GsonUtils.getGson().fromJson(jsonElement, DocumentSymbol.class)));
 				}
 				return result;
+			} else {
+				throw new RuntimeException(response.getFailureJsonElement().toString());
+			}
+		});
+	}
+
+	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params) {
+		return this.compilerClient.sendDocumentHighlight(params).thenApply(response -> {
+			if (response.getSuccessJsonElement().isPresent()) {
+				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<DocumentHighlight>>() {
+				}.getType());
 			} else {
 				throw new RuntimeException(response.getFailureJsonElement().toString());
 			}

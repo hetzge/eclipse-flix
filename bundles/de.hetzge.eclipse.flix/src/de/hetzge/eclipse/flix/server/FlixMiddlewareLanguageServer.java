@@ -76,12 +76,13 @@ public class FlixMiddlewareLanguageServer implements LanguageServer {
 			capabilities.setCodeLensProvider(null);
 			capabilities.setTextDocumentSync(TextDocumentSyncKind.Full);
 			capabilities.setWorkspace(workspaceServerCapabilities);
-			capabilities.setDocumentFormattingProvider(true);
+//			capabilities.setDocumentFormattingProvider(true);
 			capabilities.setCompletionProvider(completionProvider);
 			capabilities.setHoverProvider(true);
 			capabilities.setReferencesProvider(true);
 			capabilities.setDeclarationProvider(true);
 			capabilities.setDocumentSymbolProvider(true);
+			capabilities.setDocumentHighlightProvider(true);
 			capabilities.setWorkspaceSymbolProvider(true);
 			capabilities.setRenameProvider(true);
 			capabilities.setCodeLensProvider(new CodeLensOptions(true));
