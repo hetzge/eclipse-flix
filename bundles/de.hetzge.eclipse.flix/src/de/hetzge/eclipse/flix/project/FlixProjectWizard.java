@@ -21,6 +21,7 @@ import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
 public class FlixProjectWizard extends Wizard implements INewWizard {
+	public static final String ID = "de.hetzge.eclipse.flix.newProject"; //$NON-NLS-1$
 
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {

@@ -222,4 +222,14 @@
         </runtimeClasspathEntry>
      </kind>
   </extension>
+  <extension
+        point="org.eclipse.ui.perspectives">
+     <perspective
+           class="de.hetzge.eclipse.flix.FlixPerspectiveFactory"
+           fixed="false"
+           icon="assets/icons/icon.png"
+           id="de.hetzge.eclipse.flix.perspective"
+           name="Flix">
+     </perspective>
+  </extension>
 </plugin>
