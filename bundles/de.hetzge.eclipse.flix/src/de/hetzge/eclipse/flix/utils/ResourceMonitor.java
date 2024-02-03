@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -23,11 +24,13 @@ public class ResourceMonitor implements IResourceChangeListener, FileCreateEvent
 	private final EventEmitter<FileCreateEvent> onDidCreateFiles;
 	private final EventEmitter<FileDeleteEvent> onDidDeleteFiles;
 	private final EventEmitter<FileChangeEvent> onDidChangeFiles;
+	private final EventEmitter<ProjectOpenEvent> onDidOpenProject;
 
 	public ResourceMonitor() {
 		this.onDidCreateFiles = new EventEmitter<>();
 		this.onDidDeleteFiles = new EventEmitter<>();
 		this.onDidChangeFiles = new EventEmitter<>();
+		this.onDidOpenProject = new EventEmitter<>();
 	}
 
 	@Override
@@ -52,6 +55,12 @@ public class ResourceMonitor implements IResourceChangeListener, FileCreateEvent
 			} else {
 				FlixLogger.logWarning(String.format("Resource delta with null uri for '%s'", file.getName()), null);
 			}
+		} else if (resource instanceof IProject) {
+			final IProject project = (IProject) resource;
+			final int flags = delta.getFlags();
+			if ((flags & IResourceDelta.OPEN) == IResourceDelta.OPEN) {
+				this.onDidOpenProject.emit(new ProjectOpenEvent(project), FlixLogger::logError);
+			}
 		}
 		final IResourceDelta[] affectedChildren = delta.getAffectedChildren();
 		for (final IResourceDelta childrenResourceDelta : affectedChildren) {
@@ -71,5 +80,21 @@ public class ResourceMonitor implements IResourceChangeListener, FileCreateEvent
 
 	public EventEmitter<FileChangeEvent> onDidChangeFiles() {
 		return this.onDidChangeFiles;
+	}
+
+	public EventEmitter<ProjectOpenEvent> onDidOpenProject() {
+		return this.onDidOpenProject;
+	}
+
+	public static class ProjectOpenEvent {
+		private final IProject project;
+
+		public ProjectOpenEvent(IProject project) {
+			this.project = project;
+		}
+
+		public IProject getProject() {
+			return this.project;
+		}
 	}
 }

@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -71,18 +72,26 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 				rollback.setLogger(FlixLogger::logError);
 				final FlixModel model = Flix.get().getModel();
 				Flix.get().getWorkspaceService().setWorkspaceFolders(model.getWorkspaceFolders());
-				rollback.setLogger(FlixLogger::logError);
-				final int compilerPort = Utils.queryPort();
-				final FlixCompilerLaunch launch = FlixCompilerLaunchConfigurationDelegate.launch(project, compilerPort);
-				rollback.add(launch::dispose);
-				launch.waitUntilReady();
-				final FlixCompilerClient compilerClient = FlixCompilerClient.connect(compilerPort);
-				rollback.add(compilerClient::close);
-				launch.waitUntilConnected();
+				final Supplier<Boolean> isRunning;
+				final FlixCompilerClient compilerClient;
+				if (!Objects.equals(System.getProperty("flix.debug"), "true")) {
+					final int compilerPort = Utils.queryPort();
+					final FlixCompilerLaunch launch = FlixCompilerLaunchConfigurationDelegate.launch(project, compilerPort);
+					isRunning = () -> launch.isRunning();
+					rollback.add(launch::dispose);
+					launch.waitUntilReady();
+					final int connectPort = compilerPort;
+					compilerClient = FlixCompilerClient.connect(connectPort);
+					rollback.add(compilerClient::close);
+					launch.waitUntilConnected();
+				} else {
+					compilerClient = FlixCompilerClient.connect(32323);
+					isRunning = () -> true;
+				}
 				final FlixCompilerService compilerService = new FlixCompilerService(project, compilerClient);
-				final FlixMiddlewareLanguageServer server = new FlixMiddlewareLanguageServer(compilerService, launch);
+				final FlixMiddlewareLanguageServer server = new FlixMiddlewareLanguageServer(compilerService);
 				final int lspPort = Utils.queryPort();
-				final FlixLanguageServerSocketThread socketThread = new FlixLanguageServerSocketThread(project, server, lspPort);
+				final FlixLanguageServerSocketThread socketThread = new FlixLanguageServerSocketThread(project, server, isRunning, lspPort);
 				rollback.add(socketThread::close);
 				socketThread.start();
 				final FlixLanguageClientController controller = FlixLanguageClientController.connect(project, lspPort);

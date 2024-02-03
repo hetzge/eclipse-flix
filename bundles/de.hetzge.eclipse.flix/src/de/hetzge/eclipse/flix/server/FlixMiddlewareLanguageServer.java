@@ -25,7 +25,6 @@ import org.eclipse.lsp4j.services.NotebookDocumentService;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
-import de.hetzge.eclipse.flix.compiler.FlixCompilerLaunch;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerService;
 
 // https://github.com/flix/flix/issues/806#issuecomment-612400296
@@ -34,19 +33,13 @@ public class FlixMiddlewareLanguageServer implements LanguageServer {
 	private final FlixCompilerService flixService;
 	private final FlixTextDocumentService flixTextDocumentService;
 	private final FlixWorkspaceService flixWorkspaceService;
-	private final FlixCompilerLaunch launch;
 	private boolean initialized;
 
-	public FlixMiddlewareLanguageServer(FlixCompilerService flixService, FlixCompilerLaunch launch) {
+	public FlixMiddlewareLanguageServer(FlixCompilerService flixService) {
 		this.flixService = flixService;
 		this.flixTextDocumentService = new FlixTextDocumentService(this.flixService);
 		this.flixWorkspaceService = new FlixWorkspaceService(this.flixService);
-		this.launch = launch;
 		this.initialized = false;
-	}
-
-	public boolean isRunning() {
-		return this.launch.isRunning();
 	}
 
 	@Override

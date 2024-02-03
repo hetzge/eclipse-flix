@@ -30,6 +30,8 @@ import de.hetzge.eclipse.utils.Utils;
 // TODO LSP Workspace functionality?!
 // TODO Document service per project?! -> we have DocumentFilter
 // TODO Reregister documents on LSP ready?
+// TODO Catch checked exceptions with SafeRunner.run(...)
+// TODO embedd flix compiler
 
 /**
  * The activator class controls the plug-in life cycle
@@ -125,6 +127,15 @@ public class FlixActivator extends AbstractUIPlugin {
 //							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
 //						}
 //					}
+				}
+			})::dispose);
+			rollback.add(this.flix.getPostResourceMonitor().onDidOpenProject().subscribe(projectOpenEvent -> {
+				final IProject project = projectOpenEvent.getProject();
+				final FlixProject flixProject = new FlixProject(project);
+				if (project.isOpen()) {
+					this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+				} else {
+					this.flix.getLanguageToolingManager().disconnectProject(flixProject);
 				}
 			})::dispose);
 

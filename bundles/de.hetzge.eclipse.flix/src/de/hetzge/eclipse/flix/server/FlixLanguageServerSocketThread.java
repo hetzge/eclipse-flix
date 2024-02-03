@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher.Builder;
@@ -18,13 +19,15 @@ import de.hetzge.eclipse.flix.model.FlixProject;
 public final class FlixLanguageServerSocketThread extends Thread implements AutoCloseable {
 	private final FlixProject flixProject;
 	private final FlixMiddlewareLanguageServer server;
+	private final Supplier<Boolean> isRunning;
 	private final int port;
 	private final ExecutorService executorService;
 	private Status status;
 
-	public FlixLanguageServerSocketThread(FlixProject flixProject, FlixMiddlewareLanguageServer server, int port) {
+	public FlixLanguageServerSocketThread(FlixProject flixProject, FlixMiddlewareLanguageServer server, Supplier<Boolean> isRunning, int port) {
 		super("LSP Server Socket");
 		this.flixProject = flixProject;
+		this.isRunning = isRunning;
 		this.server = server;
 		this.port = port;
 		this.executorService = Executors.newWorkStealingPool();
@@ -58,7 +61,7 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 					this.server.setClient(launcher.getRemoteProxy());
 					final Future<Void> startListeningFuture = launcher.startListening();
 					rollback.add(() -> startListeningFuture.cancel(true));
-					while (this.status != Status.STOPPED && this.server.isRunning() && !startListeningFuture.isDone() && !startListeningFuture.isCancelled()) {
+					while (this.status != Status.STOPPED && this.isRunning.get() && !startListeningFuture.isDone() && !startListeningFuture.isCancelled()) {
 						if (this.status != Status.STARTED && this.server.isInitialized()) {
 							updateStatus(Status.STARTED);
 						}
