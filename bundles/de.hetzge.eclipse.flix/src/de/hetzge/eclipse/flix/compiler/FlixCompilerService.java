@@ -124,6 +124,7 @@ public final class FlixCompilerService {
 	}
 
 	public CompletableFuture<CompletionList> complete(CompletionParams params) {
+		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
 		return this.compilerClient.sendComplete(params).thenApply(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), CompletionList.class);
@@ -134,6 +135,7 @@ public final class FlixCompilerService {
 	}
 
 	public CompletableFuture<List<LocationLink>> decleration(DeclarationParams params) {
+		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
 		return this.compilerClient.sendGoto(params).thenApply(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				final LocationLink link = GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), LocationLink.class);
@@ -145,15 +147,8 @@ public final class FlixCompilerService {
 		});
 	}
 
-	private String fixLibraryUri(String targetUriValue) {
-		if (targetUriValue.endsWith(".flix") && !targetUriValue.startsWith("file:")) { //$NON-NLS-1$ //$NON-NLS-2$
-			return FlixUtils.loadFlixJarUri(this.flixProject.getFlixVersion(), null).toString() + "!/src/library/" + targetUriValue; //$NON-NLS-1$
-		} else {
-			return targetUriValue;
-		}
-	}
-
 	public CompletableFuture<Hover> hover(HoverParams params) {
+		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
 		return this.compilerClient.sendHover(params).thenApply(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), Hover.class);
@@ -187,7 +182,7 @@ public final class FlixCompilerService {
 	}
 
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbols(URI uri) {
-		return this.compilerClient.sendDocumentSymbols(uri).thenApply(response -> {
+		return this.compilerClient.sendDocumentSymbols(unfixLibraryUri(uri.toString())).thenApply(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				final List<Either<SymbolInformation, DocumentSymbol>> result = new ArrayList<>();
 				final JsonArray jsonArray = response.getSuccessJsonElement().get().getAsJsonArray();
@@ -202,6 +197,7 @@ public final class FlixCompilerService {
 	}
 
 	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params) {
+		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
 		return this.compilerClient.sendDocumentHighlight(params).thenApply(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<DocumentHighlight>>() {
@@ -243,6 +239,7 @@ public final class FlixCompilerService {
 	}
 
 	public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
+		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
 		return this.compilerClient.sendRename(params).thenApply(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), WorkspaceEdit.class);
@@ -253,6 +250,7 @@ public final class FlixCompilerService {
 	}
 
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
+		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
 		return this.compilerClient.sendUses(params).thenApply(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				final List<Location> locations = GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<Location>>() {
@@ -265,6 +263,7 @@ public final class FlixCompilerService {
 	}
 
 	public CompletableFuture<List<? extends CodeLens>> resolveCodeLens(CodeLensParams params) {
+		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
 		return this.compilerClient.sendCodeLens(params).thenApply(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				final List<? extends CodeLens> codeLenses;
@@ -284,4 +283,20 @@ public final class FlixCompilerService {
 	public void setClient(LanguageClient client) {
 		this.client = client;
 	}
+
+	private String fixLibraryUri(String uri) {
+		if (uri.startsWith("file:")) {
+			return uri;
+		}
+		return FlixUtils.loadFlixJarUri(this.flixProject.getFlixVersion(), null).toString() + "!/src/library/" + uri; //$NON-NLS-1$
+	}
+
+	private String unfixLibraryUri(String uri) {
+		final String libraryPrefix = FlixUtils.loadFlixJarUri(this.flixProject.getFlixVersion(), null).toString() + "!/src/library/"; // $NON-NLS-1$
+		if (!uri.startsWith(libraryPrefix)) {
+			return uri;
+		}
+		return uri.replace(libraryPrefix, "");
+	}
+
 }

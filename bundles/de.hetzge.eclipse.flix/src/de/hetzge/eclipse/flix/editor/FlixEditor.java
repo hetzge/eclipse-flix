@@ -1,5 +1,6 @@
 package de.hetzge.eclipse.flix.editor;
 
+import java.net.URI;
 import java.time.Duration;
 
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -10,6 +11,8 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.Throttler;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.tm4e.languageconfiguration.internal.LanguageConfigurationCharacterPairMatcher;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
@@ -59,7 +62,6 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(getPreferenceStores(), this));
 		setEditorContextMenuId("#FlixEditorContext"); //$NON-NLS-1$
 		setRulerContextMenuId("#FlixRulerContext"); //$NON-NLS-1$
-
 	}
 
 	@Override
@@ -113,6 +115,15 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 		} finally {
 			super.dispose();
 		}
+	}
+
+	public URI getUri() {
+		final IEditorInput editorInput = this.getEditorInput();
+		if (!(editorInput instanceof IURIEditorInput)) {
+			throw new RuntimeException("Unsupported editor input: " + editorInput.getClass().getName()); //$NON-NLS-1$
+		}
+		final IURIEditorInput uriEditorInput = (IURIEditorInput) editorInput;
+		return uriEditorInput.getURI();
 	}
 
 	@Override

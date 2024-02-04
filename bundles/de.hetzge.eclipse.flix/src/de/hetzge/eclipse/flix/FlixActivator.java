@@ -32,6 +32,8 @@ import de.hetzge.eclipse.utils.Utils;
 // TODO Reregister documents on LSP ready?
 // TODO Catch checked exceptions with SafeRunner.run(...)
 // TODO embedd flix compiler
+// TODO create flix toml if missing
+// TODO use progress monitor in language tooling initialization
 
 /**
  * The activator class controls the plug-in life cycle
@@ -79,6 +81,10 @@ public class FlixActivator extends AbstractUIPlugin {
 			/*
 			 * Init model and projects ...
 			 */
+			for (final FlixProject flixProjects : Flix.get().getModel().getFlixProjects()) {
+				flixProjects.createStandardLibraryLinks();
+			}
+
 			this.flix.getLanguageToolingManager().connectProjects(Flix.get().getModel().getFlixProjects());
 			rollback.add(this.flix.getLanguageToolingManager().startMonitor()::dispose);
 
@@ -161,6 +167,7 @@ public class FlixActivator extends AbstractUIPlugin {
 		super.initializeImageRegistry(reg);
 		reg.put(FlixConstants.FLIX_ICON_IMAGE_KEY, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "assets/icons/icon.png"));
 		reg.put(FlixConstants.FOLDER_ICON_IMAGE_KEY, ImageDescriptor.createFromURL(Utils.createUrl("platform:/plugin/org.eclipse.ui.ide/icons/full/obj16/folder.png")));
+		reg.put(FlixConstants.FILE_ICON_IMAGE_KEY, ImageDescriptor.createFromURL(Utils.createUrl("platform:/plugin/org.eclipse.ui/icons/full/obj16/file_obj.png")));
 	}
 
 	public static Image getImage(String symbolicName) {

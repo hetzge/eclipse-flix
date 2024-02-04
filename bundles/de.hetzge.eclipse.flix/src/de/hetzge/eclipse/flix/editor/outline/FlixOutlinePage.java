@@ -18,9 +18,6 @@ import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
 import org.lxtk.lx4e.DocumentUtil;
 import org.lxtk.lx4e.ui.DefaultEditorHelper;
@@ -57,8 +54,7 @@ public class FlixOutlinePage extends ContentOutlinePage {
 		if (this.flixEditor == null || this.contentOutlineProvider == null) {
 			return;
 		}
-		final URI uri = ((IFileEditorInput) this.flixEditor.getEditorInput()).getFile().getLocationURI();
-		Flix.get().getOutlineManager().queryOutline(uri).thenAccept(outline -> {
+		Flix.get().getOutlineManager().queryOutline(this.flixEditor.getUri()).thenAccept(outline -> {
 			Display.getDefault().asyncExec(() -> {
 				this.contentOutlineProvider.setRootSymbols(outline.getRootSymbols());
 				final TreeViewer viewer = getTreeViewer();
@@ -79,17 +75,7 @@ public class FlixOutlinePage extends ContentOutlinePage {
 		if (this.flixEditor == null && this.contentOutlineProvider != null) {
 			return;
 		}
-		final IEditorInput editorInput = this.flixEditor.getEditorInput();
-		final URI uri;
-		if (editorInput instanceof IFileEditorInput) {
-			final IFileEditorInput fileEditorInput = (IFileEditorInput) editorInput;
-			uri = fileEditorInput.getFile().getLocationURI();
-		} else if (editorInput instanceof IURIEditorInput) {
-			final IURIEditorInput uriEditorInput = (IURIEditorInput) editorInput;
-			uri = uriEditorInput.getURI();
-		} else {
-			return;
-		}
+		final URI uri = this.flixEditor.getUri();
 		if (!(selection instanceof ITextSelection)) {
 			return;
 		}
@@ -117,7 +103,7 @@ public class FlixOutlinePage extends ContentOutlinePage {
 			if (treePath == null) {
 				return;
 			}
-			if(Objects.equals(treePath.getLastSegment(), this.last)) {
+			if (Objects.equals(treePath.getLastSegment(), this.last)) {
 				return;
 			}
 			this.last = (DocumentSymbol) treePath.getLastSegment();
@@ -140,7 +126,7 @@ public class FlixOutlinePage extends ContentOutlinePage {
 		if (!(lastSegment instanceof DocumentSymbol)) {
 			return;
 		}
-		if(Objects.equals(lastSegment, this.last)) {
+		if (Objects.equals(lastSegment, this.last)) {
 			return;
 		}
 		this.last = (DocumentSymbol) lastSegment;

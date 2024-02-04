@@ -95,4 +95,11 @@ public final class Utils {
 		}
 	}
 
+	public static int secondLastIndex(String value, String find) {
+		if (value.lastIndexOf(find) == -1) {
+			return -1;
+		}
+		return value.substring(0, value.lastIndexOf(find)).lastIndexOf(find);
+	}
+
 }

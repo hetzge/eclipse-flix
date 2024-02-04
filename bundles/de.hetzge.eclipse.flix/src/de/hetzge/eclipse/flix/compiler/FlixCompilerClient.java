@@ -122,12 +122,16 @@ public class FlixCompilerClient implements AutoCloseable {
 	}
 
 	public CompletableFuture<FlixCompilerResponse> sendDocumentSymbols(URI uri) {
+		return sendDocumentSymbols(uri.toString());
+	}
+
+	public CompletableFuture<FlixCompilerResponse> sendDocumentSymbols(String uri) {
 		final String id = UUID.randomUUID().toString();
 
 		final JsonObject jsonObject = new JsonObject();
 		jsonObject.addProperty("request", "lsp/documentSymbols"); //$NON-NLS-1$ //$NON-NLS-2$
 		jsonObject.addProperty("id", id); //$NON-NLS-1$
-		jsonObject.addProperty("uri", uri.toString()); //$NON-NLS-1$
+		jsonObject.addProperty("uri", uri); //$NON-NLS-1$
 
 		final CompletableFuture<FlixCompilerResponse> responseFuture = this.listener.startRequestResponse(id);
 		return send(jsonObject).thenCompose(ignore -> responseFuture);

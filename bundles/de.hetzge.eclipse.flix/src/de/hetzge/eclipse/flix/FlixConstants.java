@@ -16,6 +16,7 @@ public final class FlixConstants {
 
 	public static final String FLIX_ICON_IMAGE_KEY = "de.hetzge.eclipse.flix.image.flix.icon.png"; //$NON-NLS-1$
 	public static final String FOLDER_ICON_IMAGE_KEY = "de.hetzge.eclipse.flix.image.folder.icon.png"; //$NON-NLS-1$
+	public static final String FILE_ICON_IMAGE_KEY = "de.hetzge.eclipse.flix.image.file.icon.png"; //$NON-NLS-1$
 
 	private FlixConstants() {
 		// private constants class constructor

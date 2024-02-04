@@ -6,7 +6,6 @@ import org.eclipse.handly.ui.quickoutline.IOutlinePopupHost;
 import org.eclipse.handly.ui.quickoutline.OutlinePopup;
 import org.eclipse.handly.ui.quickoutline.OutlinePopupHandler;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -22,11 +21,7 @@ public class FlixOutlinePopupHandler extends OutlinePopupHandler {
 			return null;
 		}
 		final FlixEditor flixEditor = (FlixEditor) editor;
-		if (!(flixEditor.getEditorInput() instanceof IFileEditorInput)) {
-			return null;
-		}
-		final IFileEditorInput editorInput = (IFileEditorInput) flixEditor.getEditorInput();
-		Flix.get().getOutlineManager().queryOutline(editorInput.getFile().getLocationURI())
+		Flix.get().getOutlineManager().queryOutline(flixEditor.getUri())
 				.thenAccept(outline -> {
 					PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
 						final IOutlinePopupHost host = getOutlinePopupHost(event);

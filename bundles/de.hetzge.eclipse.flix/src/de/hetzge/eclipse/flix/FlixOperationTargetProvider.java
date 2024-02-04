@@ -3,10 +3,10 @@ package de.hetzge.eclipse.flix;
 import java.net.URI;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IURIEditorInput;
 import org.lxtk.LanguageOperationTarget;
+
+import de.hetzge.eclipse.flix.editor.FlixEditor;
 
 /**
  * Flix operation target provider.
@@ -42,14 +42,11 @@ public final class FlixOperationTargetProvider {
 		if (editor == null) {
 			return null;
 		}
-		URI documentUri = null;
-		final IEditorInput editorInput = editor.getEditorInput();
-		if (editorInput instanceof IURIEditorInput) {
-			documentUri = ((IURIEditorInput) editorInput).getURI();
-		}
-		if (documentUri == null) {
+		if (!(editor instanceof FlixEditor)) {
 			return null;
 		}
-		return new LanguageOperationTarget(documentUri, FlixConstants.LANGUAGE_ID, Flix.get().getLanguageService());
+		final FlixEditor flixEditor = (FlixEditor) editor;
+		final URI uri = flixEditor.getUri();
+		return new LanguageOperationTarget(uri, FlixConstants.LANGUAGE_ID, Flix.get().getLanguageService());
 	}
 }

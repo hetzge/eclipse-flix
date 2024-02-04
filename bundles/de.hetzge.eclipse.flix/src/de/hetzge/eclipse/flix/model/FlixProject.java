@@ -53,11 +53,33 @@ public class FlixProject {
 		}
 	}
 
-// TODO create flix toml if missing
-
-
 	public boolean isActive() {
 		return isActiveFlixProject(this.project);
+	}
+
+	public void createStandardLibraryLinks() {
+//		try {
+//			final String jarBaseUri = FlixUtils.loadFlixJarUri(this.getFlixVersion(), null).toString();
+//			final FolderJarItem folder = JarUtils.indexJarFile(getFlixCompilerJarFile(), "src/library");
+//			for (final JarItem item : folder.getChildren()) {
+//				if (item instanceof FolderJarItem) {
+//					final FolderJarItem folderJarItem = (FolderJarItem) item;
+//
+//				} else if (item instanceof FileJarItem) {
+//					final FileJarItem fileJarItem = (FileJarItem) item;
+//					if (fileJarItem.getName().endsWith(".flix")) {
+////						getProject().getFile(fileJarItem.getPath()).delete(true, null);
+//						getProject().getFile(fileJarItem.getPath()).createLink(URI.create(jarBaseUri + "!/src/library/" + fileJarItem.getPath()), IResource.VIRTUAL, null);
+//					}
+//				}
+//			}
+//		} catch (final IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (final CoreException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 	public File getFlixCompilerJarFile() {

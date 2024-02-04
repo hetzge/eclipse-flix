@@ -232,4 +232,43 @@
            name="Flix">
      </perspective>
   </extension>
+  <extension
+        point="org.eclipse.ui.navigator.navigatorContent">
+     <navigatorContent
+           activeByDefault="true"
+           appearsBefore="org.eclipse.ui.navigator.resourceContent"
+           contentProvider="aaa.MyContentProvider"
+           icon="assets/icons/icon.png"
+           id="de.hetzge.eclipse.flix.navigatorContent1"
+           labelProvider="aaa.MyLabelProvider"
+           name="name"
+           priority="normal"
+           providesSaveables="false">
+        <triggerPoints>
+        
+	               <instanceof value="org.eclipse.core.resources.IResource"/>
+        </triggerPoints>
+        <actionProvider
+              class="aaa.MyActionProvider">
+        </actionProvider>
+     </navigatorContent>
+     <commonWizard
+           type="new"
+           wizardId="de.hetzge.eclipse.flix.newfile">
+        <enablement></enablement>
+     </commonWizard>
+     <commonWizard
+           type="new"
+           wizardId="de.hetzge.eclipse.flix.newProject">
+        <enablement></enablement>
+     </commonWizard>
+  </extension>
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+         <includes>
+            <contentExtension pattern="de.hetzge.eclipse.flix.navigatorContent1"/>
+         </includes>
+      </viewerContentBinding>
+   </extension>
 </plugin>
