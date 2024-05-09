@@ -54,10 +54,6 @@
 				{
 					"name": "constant.language.null.flix",
 					"match": "\\b(null)\\b"
-				},
-				{
-					"name": "constant.language.effect.flix",
-					"match": "\\b(Pure|Impure|Read|Write)\\b"
 				}
 			]
 		},
@@ -76,12 +72,20 @@
 					"match": "\\b(do)\\b"
 				},
 				{
+					"name": "keyword.control.applicativefor.flix",
+					"match": "\\b(forA)\\b"
+				},
+				{
+					"name": "keyword.control.monadicfor.flix",
+					"match": "\\b(forM)\\b"
+				},
+				{
 					"name": "keyword.control.foreach.flix",
 					"match": "\\b(foreach)\\b"
 				},
 				{
-					"name": "keyword.control.foryield.flix",
-					"match": "\\b(for|yield)\\b"
+					"name": "keyword.control.yield.flix",
+					"match": "\\b(yield)\\b"
 				},
 				{
 					"name": "keyword.control.if.flix",
@@ -89,15 +93,11 @@
 				},
 				{
 					"name": "keyword.control.match.flix",
-					"match": "\\b(case|match)\\b"
+					"match": "\\b(case|match|typematch)\\b"
 				},
 				{
 					"name": "keyword.control.try.flix",
 					"match": "\\b(try|catch)\\b"
-				},
-				{
-					"name": "keyword.control.resume.flix",
-					"match": "\\b(resume)\\b"
 				},
 				{
 					"name": "keyword.control.spawn.flix",
@@ -106,6 +106,10 @@
 				{
 					"name": "keyword.control.par.flix",
 					"match": "\\b(par)\\b"
+				},
+				{
+					"name": "keyword.control.ast.flix",
+					"match": "\\b(branch|jumpto)\\b"
 				},
 				{
 					"name": "keyword.operator.bool.flix",
@@ -117,11 +121,11 @@
 				},
 				{
 					"name": "keyword.declaration.flix",
-					"match": "\\b(namespace|eff|def|law|enum|case|type|rel|lat|alias|class|instance|with|without|opaque|new)\\b"
+					"match": "\\b(eff|def|law|enum|case|type|alias|trait|instance|with|without|opaque|mod)\\b"
 				},
 				{
 					"name": "keyword.expression.cast.flix",
-					"match": "\\b(as)\\b"
+					"match": "\\b(checked_cast|checked_ecast|unchecked_cast|masked_cast|as)\\b"
 				},
 				{
 					"name": "keyword.expression.discard.flix",
@@ -137,11 +141,23 @@
 				},
 				{
 					"name": "keyword.expression.hole.flix",
-					"match": "(\\?\\?\\?|\\?[a-z0-9]+)"
+					"match": "(\\?\\?\\?|\\?[a-zA-Z0-9]+)"
 				},
 				{
 					"name": "keyword.expression.import.flix",
 					"match": "\\b(import)\\b"
+				},
+				{
+					"name": "keyword.expression.javanew.flix",
+					"match": "\\b(java_new)\\b"
+				},
+				{
+					"name": "keyword.expression.javagetfield.flix",
+					"match": "\\b(java_get_field)\\b"
+				},
+				{
+					"name": "keyword.expression.javasetfield.flix",
+					"match": "\\b(java_set_field)\\b"
 				},
 				{
 					"name": "keyword.expression.let.flix",
@@ -158,10 +174,6 @@
 				{
 					"name": "keyword.expression.references.flix",
 					"match": "\\b(ref|deref)\\b"
-				},
-				{
-					"name": "keyword.expression.reify.flix",
-					"match": "\\b(reify|reifyBool|reifyType)\\b"
 				},
 				{
 					"name": "keyword.use.flix",
@@ -188,7 +200,7 @@
 			"patterns": [
 				{
 					"name": "constant.character.escape",
-					"match": "\\\\."
+					"match": "\\\\((u[0-9a-fA-F]{4})|.)"
 				}
 			]
 		},
@@ -199,7 +211,7 @@
 			"patterns": [
 				{
 					"name": "constant.character.escape.flix",
-					"match": "\\\\."
+					"match": "\\\\((u[0-9a-fA-F]{4})|.)"
 				},
 				{
 					"begin": "\\$\\{",
@@ -231,7 +243,7 @@
 				},
 				{
 					"name": "constant.numeric.decimal.flix",
-					"match": "\\b[0-9](_*[0-9])*(i8|i16|i32|i64|ii)?\\b"
+					"match": "(?<!\\$)\\b[0-9](_*[0-9])*(i8|i16|i32|i64|ii)?\\b"
 				}
 			]
 		},
@@ -275,19 +287,7 @@
 				},
 				{
 					"name": "storage.type.annotation.flix",
-					"match": "@Space"
-				},
-				{
-					"name": "storage.type.annotation.flix",
 					"match": "@Test"
-				},
-				{
-					"name": "storage.type.annotation.flix",
-					"match": "@Time"
-				},
-				{
-					"name": "storage.type.annotation.flix",
-					"match": "@Unsafe"
 				}
 			]
 		},
