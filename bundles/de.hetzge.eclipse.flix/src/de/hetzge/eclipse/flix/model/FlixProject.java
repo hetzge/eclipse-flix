@@ -46,7 +46,7 @@ public class FlixProject {
 
 	public Optional<FlixToml> getFlixToml() {
 		try {
-			return Optional.of(FlixToml.load(this));
+			return FlixToml.load(this);
 		} catch (final IOException exception) {
 			FlixLogger.logError(String.format("Failed to read flix.toml in project '%s'", getProject().getName()), exception);
 			return Optional.empty();

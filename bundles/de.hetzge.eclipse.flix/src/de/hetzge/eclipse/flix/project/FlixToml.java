@@ -2,6 +2,7 @@ package de.hetzge.eclipse.flix.project;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -30,8 +31,11 @@ public final class FlixToml {
 		return new FlixVersion(versionString);
 	}
 
-	public static FlixToml load(FlixProject project) throws IOException {
+	public static Optional<FlixToml> load(FlixProject project) throws IOException {
 		final IFile file = project.getProject().getFile("flix.toml");
+		if (file == null) {
+			return Optional.empty();
+		}
 		final Path source = file.getLocation().makeAbsolute().toPath();
 		final TomlParseResult result = Toml.parse(source);
 //
@@ -50,7 +54,7 @@ public final class FlixToml {
 //			}
 //		});
 
-		return new FlixToml(result);
+		return Optional.of(new FlixToml(result));
 	}
 
 	// TODO marker if version is missing in flix.toml
