@@ -107,6 +107,16 @@ public final class EclipseUtils {
 		return Optional.empty();
 	}
 
+	public static Optional<IProject> getProject(ISelection selection) {
+		if (selection instanceof IStructuredSelection) {
+			final Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+			if (firstElement instanceof IProject) {
+				return Optional.of((IProject) firstElement);
+			}
+		}
+		return Optional.empty();
+	}
+
 	public static Optional<IFile> getFile(IEditorPart editor) {
 		final IEditorInput editorInput = editor.getEditorInput();
 		if (editorInput instanceof IFileEditorInput) {

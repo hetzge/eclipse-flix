@@ -2,8 +2,11 @@ package de.hetzge.eclipse.flix.launch;
 
 import java.util.Optional;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jdt.launching.IVMInstall;
+import org.eclipse.jdt.launching.JavaRuntime;
 
 public class FlixLaunchConfiguration {
 
@@ -18,6 +21,14 @@ public class FlixLaunchConfiguration {
 
 	public ILaunchConfiguration getConfiguration() {
 		return this.configuration;
+	}
+
+	public IVMInstall getJvmInstall() {
+		try {
+			return JavaRuntime.computeVMInstall(this.configuration);
+		} catch (final CoreException exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 
 	public Optional<String> getEntrypoint() {

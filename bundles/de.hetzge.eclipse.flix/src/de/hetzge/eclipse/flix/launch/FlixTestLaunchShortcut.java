@@ -12,17 +12,15 @@ public class FlixTestLaunchShortcut implements ILaunchShortcut {
 
 	@Override
 	public void launch(ISelection selection, String mode) {
-		System.out.println("FlixTestLaunchShortcut.launch(A)");
 		launch(mode, EclipseUtils.getFile(selection).orElseThrow());
 	}
 
 	@Override
 	public void launch(IEditorPart editor, String mode) {
-		System.out.println("FlixTestLaunchShortcut.launch(B)");
 		launch(mode, EclipseUtils.getFile(editor).orElseThrow());
 	}
 
-	private void launch(String mode, final IFile file) {
+	private void launch(String mode, IFile file) {
 		FlixLaunchUtils.launchProject(file, mode, FlixConstants.TEST_LAUNCH_CONFIGURATION_TYPE_ID, null);
 	}
 }

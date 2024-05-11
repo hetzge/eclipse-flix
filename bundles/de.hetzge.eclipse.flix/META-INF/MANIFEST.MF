@@ -41,6 +41,7 @@ Require-Bundle: com.google.gson,
  org.eclipse.ui.navigator.resources,
  org.eclipse.jdt.launching,
  wrapped.org.tomlj.tomlj,
- org.eclipse.search
+ org.eclipse.search,
+ org.eclipse.jdt.debug.ui
 utomatic-Module-Name: eclipse.flix
 Bundle-ActivationPolicy: lazy

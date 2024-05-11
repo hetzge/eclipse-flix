@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
@@ -20,6 +21,7 @@ import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
+import de.hetzge.eclipse.flix.editor.FlixEditor;
 import de.hetzge.eclipse.flix.launch.FlixRunMainCommandHandler;
 import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
 import de.hetzge.eclipse.flix.model.FlixProject;
@@ -147,6 +149,8 @@ public class FlixActivator extends AbstractUIPlugin {
 
 			this.rollback = rollback;
 		});
+
+		FlixEditor.initPreferencesStore(getPreferenceStore());
 	}
 
 	@Override

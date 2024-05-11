@@ -4,11 +4,13 @@ import java.net.URI;
 import java.time.Duration;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.Throttler;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.tm4e.languageconfiguration.internal.LanguageConfigurationCharacterPairMatcher;
 import org.eclipse.ui.IEditorInput;
@@ -30,6 +32,11 @@ import de.hetzge.eclipse.flix.FlixOperationTargetProvider;
 import de.hetzge.eclipse.flix.editor.outline.FlixOutlinePage;
 
 public class FlixEditor extends AbstractDecoratedTextEditor {
+	private static final String MATCHING_BRACKETS_PREFERENCES_KEY = "matchingBrackets";
+	private static final String MATCHING_BRACKETS_COLOR_PREFERENCES_KEY = "matchingBracketsColor";
+	private static final String HIGHLIGHT_BRACKET_AT_CARET_LOCATION_PREFERENCES_KEY = "highlightBracketAtCaretLocation";
+	private static final String ENCLOSING_BRACKETS_PREFERENCES_KEY = "enclosingBrackets";
+
 	private final FlixOutlinePage outlinePage;
 	private final Throttler syncOutlineThrottler;
 	private ProjectionSupport projectionSupport;
@@ -70,7 +77,7 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 
 		final SourceViewerDecorationSupport support = getSourceViewerDecorationSupport(sourceViewer);
 		support.setCharacterPairMatcher(new LanguageConfigurationCharacterPairMatcher());
-		support.setMatchingCharacterPainterPreferenceKeys("matchingBrackets", "matchingBracketsColor", "highlightBracketAtCaretLocation", "enclosingBrackets");
+		support.setMatchingCharacterPainterPreferenceKeys(MATCHING_BRACKETS_PREFERENCES_KEY, MATCHING_BRACKETS_COLOR_PREFERENCES_KEY, HIGHLIGHT_BRACKET_AT_CARET_LOCATION_PREFERENCES_KEY, ENCLOSING_BRACKETS_PREFERENCES_KEY);
 
 		return sourceViewer;
 	}
@@ -146,5 +153,12 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 		} else {
 			return super.getAdapter(adapter);
 		}
+	}
+
+	public static void initPreferencesStore(IPreferenceStore preferenceStore) {
+		preferenceStore.setDefault(MATCHING_BRACKETS_PREFERENCES_KEY, true);
+		preferenceStore.setDefault(MATCHING_BRACKETS_COLOR_PREFERENCES_KEY, StringConverter.asString(new RGB(255, 0, 0)));
+		preferenceStore.setDefault(HIGHLIGHT_BRACKET_AT_CARET_LOCATION_PREFERENCES_KEY, true);
+		preferenceStore.setDefault(ENCLOSING_BRACKETS_PREFERENCES_KEY, true);
 	}
 }
