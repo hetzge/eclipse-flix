@@ -7,6 +7,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -44,8 +45,6 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 
 	@Override
 	public boolean performFinish() {
-		System.out.println("FlixProjectWizard.performFinish()");
-
 		try {
 			final FlixNewProjectPage page = (FlixNewProjectPage) getStartingPage();
 			final FlixNewProjectVersionPage versionPage = (FlixNewProjectVersionPage) page.getNextPage();
@@ -54,17 +53,20 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 			final File newProjectFolder = new File(page.getLocationPath().toFile(), projectName);
 			getContainer().run(true, true, monitor -> {
 				try {
-					final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
-
+					monitor.subTask("Init Flix project");
 					newProjectFolder.mkdirs();
-					FlixLauncher.launchInit(newProjectFolder, flixVersion);
+					final int code = FlixLauncher.launchInit(newProjectFolder, flixVersion).waitFor();
+					if (code != 0) {
+						throw new CoreException(Status.error("Init flix project process failed with code: " + code));
+					}
 
+					final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
 					EclipseUtils.addNature(description, FlixProjectNature.ID);
 					EclipseUtils.addBuilder(description, FlixConstants.FLIX_BUILDER_ID);
 
-					final CreateProjectOperation projectOperation = new CreateProjectOperation(description, "Create flix project");
+					final CreateProjectOperation projectOperation = new CreateProjectOperation(description, "Create Flix Eclipse project");
 					projectOperation.execute(monitor, WorkspaceUndoUtil.getUIInfoAdapter(getShell()));
-				} catch (final ExecutionException | CoreException exception) {
+				} catch (ExecutionException | CoreException | InterruptedException exception) {
 					// Rollback already created files
 					Utils.deleteFolder(newProjectFolder);
 					throw new InvocationTargetException(exception);

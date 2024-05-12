@@ -158,12 +158,28 @@ public class FlixProject {
 		return this.project.getFolder("src");
 	}
 
+	public IFolder getLibraryCacheFolder() {
+		return getLibraryFolder().getFolder("cache");
+	}
+
 	public IFolder getLibraryFolder() {
 		return this.project.getFolder("lib");
 	}
 
 	public IFolder getBuildFolder() {
 		return this.project.getFolder("build");
+	}
+
+	public void deleteTemporaryFolders(IProgressMonitor progressMonitor) throws CoreException {
+		deleteLibraryCacheFolder(progressMonitor);
+		deleteBuildFolder(progressMonitor);
+	}
+
+	public void deleteLibraryCacheFolder(IProgressMonitor progressMonitor) throws CoreException {
+		final IFolder libraryCacheFolder = getLibraryCacheFolder();
+		if (libraryCacheFolder.exists()) {
+			libraryCacheFolder.delete(true, progressMonitor);
+		}
 	}
 
 	public void deleteBuildFolder(IProgressMonitor progressMonitor) throws CoreException {

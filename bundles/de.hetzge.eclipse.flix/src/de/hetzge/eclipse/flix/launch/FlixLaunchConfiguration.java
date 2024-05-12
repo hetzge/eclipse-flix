@@ -23,7 +23,7 @@ public class FlixLaunchConfiguration {
 		return this.configuration;
 	}
 
-	public IVMInstall getJvmInstall() {
+	public IVMInstall getVmInstall() {
 		try {
 			return JavaRuntime.computeVMInstall(this.configuration);
 		} catch (final CoreException exception) {

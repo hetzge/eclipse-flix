@@ -27,10 +27,21 @@ public class FlixProjectBuilder extends IncrementalProjectBuilder {
 		LOG.info("Run Flix project builder");
 		if (kind == IncrementalProjectBuilder.FULL_BUILD) {
 			final FlixProject flixProject = this.model.getFlixProjectOrThrowCoreException(getProject());
-			monitor.subTask("Delete build folder");
-			flixProject.deleteBuildFolder(monitor);
-			monitor.subTask("Build flix project");
-			FlixLauncher.launchBuild(flixProject);
+			final String projectName = flixProject.getProject().getName();
+			monitor.subTask(String.format("Stop language tooling (%s)", projectName));
+			Flix.get().getLanguageToolingManager().disconnectProject(flixProject);
+			monitor.subTask(String.format("Delete temporary folders (%s)", projectName));
+			flixProject.deleteTemporaryFolders(monitor);
+			monitor.subTask(String.format("Build flix project (%s)", projectName));
+			try {
+				FlixLauncher.launchBuild(flixProject).waitFor();
+			} catch (final InterruptedException exception) {
+				throw new RuntimeException(exception);
+			}
+			monitor.subTask(String.format("Refresh project (%s)", projectName));
+			flixProject.getProject().refreshLocal(IProject.DEPTH_INFINITE, monitor);
+			monitor.subTask(String.format("Start language tooling (%s)", projectName));
+			Flix.get().getLanguageToolingManager().connectProject(flixProject);
 		}
 		return null;
 	}

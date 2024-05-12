@@ -6,10 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Platform;
@@ -25,7 +22,6 @@ import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.model.FlixVersion;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
-import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixLauncher {
 
@@ -35,53 +31,7 @@ public final class FlixLauncher {
 	private FlixLauncher() {
 	}
 
-	public static void launchRun(FlixLaunchConfiguration launchConfiguration, FlixProject flixProject) {
-		launch(createTerminalRunProperties(launchConfiguration, flixProject), String.format("RUN_%s", flixProject.getProject().getFullPath().toOSString()));
-	}
-
-	public static void launchRepl(FlixProject flixProject) {
-		launch(createTerminalReplProperties(flixProject), String.format("REPL_%s", flixProject.getProject().getFullPath().toOSString()));
-	}
-
-	public static void launchTest(FlixLaunchConfiguration launchConfiguration, FlixProject flixProject) {
-		launch(createTerminalTestProperties(launchConfiguration, flixProject), String.format("TEST_%s", flixProject.getProject().getFullPath().toOSString()));
-	}
-
-	public static void launchBuild(FlixProject flixProject) {
-		launch(createTerminalBuildProperties(flixProject), String.format("BUILD_%s", flixProject.getProject().getFullPath().toOSString()));
-	}
-
-	public static void launchInit(File folder, FlixVersion flixVersion) {
-		final File jreExecutableFile = Utils.getJreExecutable();
-		final File flixJarFile = FlixUtils.loadFlixJarFile(flixVersion, null);
-		final ProcessBuilder processBuilder = new ProcessBuilder(jreExecutableFile.getAbsolutePath(), "-jar", flixJarFile.getAbsolutePath(), "init");
-		processBuilder.directory(folder);
-		try {
-			final Process process = processBuilder.start();
-			final Map<String, Object> properties = createTerminalInitProperties(folder);
-			properties.remove(ITerminalsConnectorConstants.PROP_PROCESS_PATH);
-			properties.put(ITerminalsConnectorConstants.PROP_PROCESS_OBJ, process);
-			launch(properties, UUID.randomUUID().toString());
-			process.waitFor();
-		} catch (final IOException | InterruptedException exception) {
-			throw new RuntimeException(exception);
-		}
-	}
-
-	private static void launch(Map<String, Object> properties, String launchKey) {
-		if (properties.get(ITerminalsConnectorConstants.PROP_PROCESS_PATH) != null) {
-			System.out.println(String.format("Launch '%s %s'", properties.get(ITerminalsConnectorConstants.PROP_PROCESS_PATH), properties.get(ITerminalsConnectorConstants.PROP_PROCESS_ARGS)));
-		}
-		final Map<String, Object> lastProperties = PROPERTIES_BY_KEY.getOrDefault(launchKey, properties);
-		final ITerminalService terminalService = TerminalServiceFactory.getService();
-		terminalService.terminateConsole(lastProperties, createDoneLogger("terminateConsole"));
-		terminalService.closeConsole(lastProperties, createDoneLogger("closeConsole"));
-		terminalService.openConsole(properties, createDoneLogger("openConsole"));
-		PROPERTIES_BY_KEY.put(launchKey, properties);
-	}
-
-	private static Map<String, Object> createTerminalRunProperties(FlixLaunchConfiguration launchConfiguration, final FlixProject flixProject) {
-
+	public static Process launchRun(FlixLaunchConfiguration launchConfiguration, FlixProject flixProject) {
 		final String name = "Run " + flixProject.getProject().getName();
 		final List<String> arguments = new ArrayList<>();
 		arguments.add("run");
@@ -93,56 +43,86 @@ public final class FlixLauncher {
 			arguments.add("--args");
 			arguments.add(String.format("'%s'", launchArguments));
 		});
-		return createBasicTerminalLaunchProperties(name, flixProject, launchConfiguration.getJvmInstall(), arguments);
-	}
-
-	private static Map<String, Object> createTerminalReplProperties(FlixProject flixProject) {
-		final IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
-		final String name = "Repl " + flixProject.getProject().getName();
-		return createBasicTerminalLaunchProperties(name, flixProject, vmInstall, List.of());
-	}
-
-	private static Map<String, Object> createTerminalTestProperties(FlixLaunchConfiguration launchConfiguration, FlixProject flixProject) {
-		final String name = "Test " + flixProject.getProject().getName();
-		final Map<String, Object> properties = createBasicTerminalLaunchProperties(name, flixProject, launchConfiguration.getJvmInstall(), List.of("test"));
-//		properties.put(ITerminalsConnectorConstants.PROP_STDOUT_LISTENERS, new ITerminalServiceOutputStreamMonitorListener[] { new ITerminalServiceOutputStreamMonitorListener() {
-//			@Override
-//			public void onContentReadFromStream(byte[] byteBuffer, int bytesRead) {
-//				final String value = new String(byteBuffer);
-//				// TODO
-//			}
-//		} });
-		return properties;
-	}
-
-	private static Map<String, Object> createTerminalBuildProperties(FlixProject flixProject) {
-		final IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
-		final String name = "Build " + flixProject.getProject().getName();
-		return createBasicTerminalLaunchProperties(name, flixProject, vmInstall, List.of("build"));
-	}
-
-	private static Map<String, Object> createTerminalInitProperties(File folder) {
-		final IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
-		final String name = "Init " + folder.getName();
-		return createBasicTerminalLaunchProperties(name, folder, vmInstall, FlixUtils.loadFlixJarFile(FlixConstants.FLIX_DEFAULT_VERSION, null), List.of("init"));
-	}
-
-	private static Map<String, Object> createBasicTerminalLaunchProperties(String name, FlixProject flixProject, IVMInstall vmInstall, List<String> arguments) {
+		final IVMInstall vmInstall = launchConfiguration.getVmInstall();
 		final File folder = flixProject.getProject().getLocation() != null ? flixProject.getProject().getLocation().toFile() : null;
-		return createBasicTerminalLaunchProperties(name, folder, vmInstall, flixProject.getFlixCompilerJarFile(), arguments);
+		final File flixJarFile = flixProject.getFlixCompilerJarFile();
+		final Process process = startProcess(folder, vmInstall, flixJarFile, arguments);
+		openTerminal(createBasicTerminalLaunchProperties(name, process), String.format("RUN_%s", flixProject.getProject().getFullPath().toOSString()));
+		return process;
 	}
 
-	private static Map<String, Object> createBasicTerminalLaunchProperties(String name, File folder, IVMInstall vmInstall, File flixJarFile, List<String> arguments) {
+	public static Process launchRepl(FlixProject flixProject) {
+		final String name = "Repl " + flixProject.getProject().getName();
+		final IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
+		final File folder = flixProject.getProject().getLocation() != null ? flixProject.getProject().getLocation().toFile() : null;
+		final File flixJarFile = flixProject.getFlixCompilerJarFile();
+		final Process process = startProcess(folder, vmInstall, flixJarFile, List.of());
+		openTerminal(createBasicTerminalLaunchProperties(name, process), String.format("REPL_%s", flixProject.getProject().getFullPath().toOSString()));
+		return process;
+	}
+
+	public static Process launchTest(FlixLaunchConfiguration launchConfiguration, FlixProject flixProject) {
+		final String name = "Test " + flixProject.getProject().getName();
+		final IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
+		final File folder = flixProject.getProject().getLocation() != null ? flixProject.getProject().getLocation().toFile() : null;
+		final File flixJarFile = flixProject.getFlixCompilerJarFile();
+		final Process process = startProcess(folder, vmInstall, flixJarFile, List.of("test"));
+		openTerminal(createBasicTerminalLaunchProperties(name, process), String.format("TEST_%s", flixProject.getProject().getFullPath().toOSString()));
+		return process;
+	}
+
+	public static Process launchBuild(FlixProject flixProject) {
+		final String name = "Build " + flixProject.getProject().getName();
+		final IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
+		final File folder = flixProject.getProject().getLocation() != null ? flixProject.getProject().getLocation().toFile() : null;
+		final File flixJarFile = flixProject.getFlixCompilerJarFile();
+		final Process process = startProcess(folder, vmInstall, flixJarFile, List.of("build"));
+		openTerminal(createBasicTerminalLaunchProperties(name, process), String.format("BUILD_%s", flixProject.getProject().getFullPath().toOSString()));
+		return process;
+	}
+
+	public static Process launchInit(File folder, FlixVersion flixVersion) {
+		final String name = "Init " + folder.getName();
+		final IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
+		final File flixJarFile = FlixUtils.loadFlixJarFile(flixVersion, null);
+		final Process process = startProcess(folder, vmInstall, flixJarFile, List.of("init"));
+		openTerminal(createBasicTerminalLaunchProperties(name, process), String.format("INIT_%s", folder.getAbsolutePath()));
+		return process;
+	}
+
+	private static void openTerminal(Map<String, Object> properties, String launchKey) {
+		final Map<String, Object> lastProperties = PROPERTIES_BY_KEY.getOrDefault(launchKey, properties);
+		final ITerminalService terminalService = TerminalServiceFactory.getService();
+		terminalService.terminateConsole(lastProperties, createDoneLogger("terminateConsole"));
+		terminalService.closeConsole(lastProperties, createDoneLogger("closeConsole"));
+		terminalService.openConsole(properties, createDoneLogger("openConsole"));
+		PROPERTIES_BY_KEY.put(launchKey, properties);
+	}
+
+	private static Map<String, Object> createBasicTerminalLaunchProperties(String name, Process process) {
 		final Map<String, Object> properties = new HashMap<>();
 		properties.put(ITerminalsConnectorConstants.PROP_DELEGATE_ID, "de.hetzge.eclipse.flix.processLauncherDelegate");
 		properties.put(ITerminalsConnectorConstants.PROP_TITLE, name);
 		properties.put(ITerminalsConnectorConstants.PROP_SECONDARY_ID, null);
-		properties.put(ITerminalsConnectorConstants.PROP_PROCESS_PATH, new File(vmInstall.getInstallLocation(), "bin/java").getAbsolutePath());
-		properties.put(ITerminalsConnectorConstants.PROP_PROCESS_ARGS, Stream.concat(Stream.of("-jar", flixJarFile.getAbsolutePath()), arguments.stream()).collect(Collectors.joining(" ")));
-		if (folder != null) {
-			properties.put(ITerminalsConnectorConstants.PROP_PROCESS_WORKING_DIR, folder.getAbsolutePath());
-		}
+		properties.put(ITerminalsConnectorConstants.PROP_PROCESS_OBJ, process);
 		return properties;
+	}
+
+	private static Process startProcess(File folder, IVMInstall vmInstall, File flixJarFile, List<String> arguments) {
+		final List<String> commands = new ArrayList<>();
+		commands.add(new File(vmInstall.getInstallLocation(), "bin/java").getAbsolutePath());
+		commands.add("-jar");
+		commands.add(flixJarFile.getAbsolutePath());
+		commands.addAll(arguments);
+		final ProcessBuilder processBuilder = new ProcessBuilder(commands);
+		processBuilder.directory(folder);
+		final Process process;
+		try {
+			process = processBuilder.start();
+		} catch (final IOException exception) {
+			throw new RuntimeException(exception);
+		}
+		return process;
 	}
 
 	private static Done createDoneLogger(String key) {
