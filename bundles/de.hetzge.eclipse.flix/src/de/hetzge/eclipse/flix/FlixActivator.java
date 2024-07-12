@@ -166,19 +166,23 @@ public class FlixActivator extends AbstractUIPlugin {
 	}
 
 	@Override
-	protected void initializeImageRegistry(ImageRegistry reg) {
-		super.initializeImageRegistry(reg);
-		reg.put(FlixConstants.FLIX_ICON_IMAGE_KEY, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "assets/icons/icon.png"));
-		reg.put(FlixConstants.FLIX3_ICON_IMAGE_KEY, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "assets/icons/icon3.png"));
-		reg.put(FlixConstants.FOLDER_ICON_IMAGE_KEY, ImageDescriptor.createFromURL(Utils.createUrl("platform:/plugin/org.eclipse.ui.ide/icons/full/obj16/folder.png")));
-		reg.put(FlixConstants.FILE_ICON_IMAGE_KEY, ImageDescriptor.createFromURL(Utils.createUrl("platform:/plugin/org.eclipse.ui/icons/full/obj16/file_obj.png")));
+	protected void initializeImageRegistry(ImageRegistry registry) {
+		super.initializeImageRegistry(registry);
+		registerImage(registry, FlixImageKey.FLIX_ICON, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "assets/icons/icon.png"));
+		registerImage(registry, FlixImageKey.FLIX3_ICON, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "assets/icons/icon3.png"));
+		registerImage(registry, FlixImageKey.FOLDER_ICON, ImageDescriptor.createFromURL(Utils.createUrl("platform:/plugin/org.eclipse.ui.ide/icons/full/obj16/folder.png")));
+		registerImage(registry, FlixImageKey.FILE_ICON, ImageDescriptor.createFromURL(Utils.createUrl("platform:/plugin/org.eclipse.ui/icons/full/obj16/file_obj.png")));
 	}
 
-	public static Image getImage(String symbolicName) {
-		return FlixActivator.getDefault().getImageRegistry().get(symbolicName);
+	private void registerImage(ImageRegistry registry, FlixImageKey imageKey, ImageDescriptor descriptor) {
+		registry.put(imageKey.name(), descriptor);
 	}
 
-	public static ImageDescriptor getImageDescriptor(String symbolicName) {
-		return FlixActivator.getDefault().getImageRegistry().getDescriptor(symbolicName);
+	public static Image getImage(FlixImageKey imageKey) {
+		return FlixActivator.getDefault().getImageRegistry().get(imageKey.name());
+	}
+
+	public static ImageDescriptor getImageDescriptor(FlixImageKey imageKey) {
+		return FlixActivator.getDefault().getImageRegistry().getDescriptor(imageKey.name());
 	}
 }

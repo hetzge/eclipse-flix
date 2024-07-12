@@ -5,7 +5,7 @@ import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.swt.graphics.Image;
 
 import de.hetzge.eclipse.flix.FlixActivator;
-import de.hetzge.eclipse.flix.FlixConstants;
+import de.hetzge.eclipse.flix.FlixImageKey;
 
 public class FlixOutlineLabelProvider extends LabelProvider {
 
@@ -20,6 +20,6 @@ public class FlixOutlineLabelProvider extends LabelProvider {
 
 	@Override
 	public Image getImage(Object element) {
-		return FlixActivator.getImage(FlixConstants.FLIX_ICON_IMAGE_KEY);
+		return FlixActivator.getImage(FlixImageKey.FLIX_ICON);
 	}
 }

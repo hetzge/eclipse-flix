@@ -5,7 +5,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 
 import de.hetzge.eclipse.flix.FlixActivator;
-import de.hetzge.eclipse.flix.FlixConstants;
+import de.hetzge.eclipse.flix.FlixImageKey;
 import de.hetzge.eclipse.utils.JarUtils.FileJarItem;
 import de.hetzge.eclipse.utils.JarUtils.JarItem;
 
@@ -33,12 +33,12 @@ public class MyLabelProvider implements ILabelProvider {
 		if (element instanceof FileJarItem) {
 			final FileJarItem fileJarItem = (FileJarItem) element;
 			if (fileJarItem.getName().endsWith(".flix")) {
-				return FlixActivator.getImage(FlixConstants.FLIX_ICON_IMAGE_KEY);
+				return FlixActivator.getImage(FlixImageKey.FLIX_ICON);
 			} else {
-				return FlixActivator.getImage(FlixConstants.FILE_ICON_IMAGE_KEY);
+				return FlixActivator.getImage(FlixImageKey.FILE_ICON);
 			}
 		} else {
-			return FlixActivator.getImage(FlixConstants.FOLDER_ICON_IMAGE_KEY);
+			return FlixActivator.getImage(FlixImageKey.FOLDER_ICON);
 		}
 	}
 

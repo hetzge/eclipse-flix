@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import de.hetzge.eclipse.flix.FlixActivator;
-import de.hetzge.eclipse.flix.FlixConstants;
+import de.hetzge.eclipse.flix.FlixImageKey;
 
 public class FlixLaunchConfigTab extends AbstractLaunchConfigurationTab {
 
@@ -23,7 +23,7 @@ public class FlixLaunchConfigTab extends AbstractLaunchConfigurationTab {
 	private FlixLaunchConfigurationControl control;
 
 	public FlixLaunchConfigTab() {
-		this.image = FlixActivator.getImage(FlixConstants.FLIX_ICON_IMAGE_KEY);
+		this.image = FlixActivator.getImage(FlixImageKey.FLIX_ICON);
 	}
 
 	@Override
