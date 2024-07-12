@@ -30,12 +30,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -235,11 +233,6 @@ public final class EclipseUtils {
 		} else {
 			return Optional.empty();
 		}
-	}
-
-	public static Image createImage(String path) {
-		final Bundle bundle = Platform.getBundle(FlixConstants.PLUGIN_ID);
-		return ImageDescriptor.createFromURL(bundle.getEntry(path)).createImage();
 	}
 
 	public static IPath createResourcePath(String path) throws IOException {

@@ -11,7 +11,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 
-import de.hetzge.eclipse.utils.EclipseUtils;
+import de.hetzge.eclipse.flix.FlixActivator;
+import de.hetzge.eclipse.flix.FlixConstants;
 
 public class FlixTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
 
@@ -19,7 +20,7 @@ public class FlixTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
 	private FlixTestLaunchConfigurationControl control;
 
 	public FlixTestLaunchConfigTab() {
-		this.image = EclipseUtils.createImage("assets/icons/icon3.png");
+		this.image = FlixActivator.getImage(FlixConstants.FLIX3_ICON_IMAGE_KEY);;
 	}
 
 	@Override

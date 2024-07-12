@@ -97,14 +97,7 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 	}
 
 	@Override
-	public void close(boolean save) {
-		super.close(save);
-	}
-
-	@Override
 	public void dispose() {
-		super.dispose();
-
 		try {
 			if (this.highlighter != null) {
 				this.highlighter.uninstall();

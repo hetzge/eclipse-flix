@@ -51,11 +51,10 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 	@Override
 	public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType) {
 		return new IAutoEditStrategy[] { new LanguageConfigurationAutoEditStrategy() };
-	};
+	}
 
 	@Override
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
-		System.out.println("FlixSourceViewerConfiguration.getReconciler()");
 		if (this.editor == null || !this.editor.isEditable()) {
 			return null;
 		}
@@ -64,7 +63,6 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 
 	@Override
 	public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer) {
-		System.out.println("FlixSourceViewerConfiguration.getHyperlinkDetectors()");
 		final DeclarationHyperlinkDetector declarationHyperlinkDetector = new DeclarationHyperlinkDetector();
 		declarationHyperlinkDetector.setContext(new HyperlinkDetectorContextAdaptable());
 		return new IHyperlinkDetector[] { declarationHyperlinkDetector };
