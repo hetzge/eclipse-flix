@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.DocumentFilter;
-import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.lxtk.CommandService;
 import org.lxtk.DocumentService;
@@ -82,19 +80,6 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		features.add(new CodeLensFeature(languageService, commandService));
 		features.add(new CodeActionFeature(languageService, commandService));
 		features.add(new DocumentHighlightFeature(languageService));
-		features.add(new Feature<LanguageServer>() {
-			@Override
-			public void dispose() {
-			}
-
-			@Override
-			public void fillClientCapabilities(ClientCapabilities capabilities) {
-			}
-
-			@Override
-			public void initialize(LanguageServer server, InitializeResult initializeResult, List<DocumentFilter> documentSelector) {
-			}
-		});
 		this.flixEclipseLanguageClient = new FlixEclipseLanguageClient(this.log, project, this.diagnosticConsumer, features);
 	}
 

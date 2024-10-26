@@ -24,12 +24,6 @@ public class FlixTestLaunchConfigTab extends AbstractLaunchConfigurationTab {
 	}
 
 	@Override
-	public void dispose() {
-		this.image.dispose();
-		super.dispose();
-	}
-
-	@Override
 	public Image getImage() {
 		return this.image;
 	}
