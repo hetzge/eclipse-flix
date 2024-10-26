@@ -61,6 +61,7 @@ public class FlixNewProjectVersionPage extends WizardPage {
 	}
 
 	public FlixVersion getVersionValue() {
-		return this.versionCombo != null ? new FlixVersion(this.versionCombo.getText()) : FlixConstants.FLIX_DEFAULT_VERSION;
+		return this.versionCombo != null ? FlixVersion.getVersionByName(this.versionCombo.getText()).orElseThrow() : FlixConstants.FLIX_DEFAULT_VERSION;
 	}
+
 }

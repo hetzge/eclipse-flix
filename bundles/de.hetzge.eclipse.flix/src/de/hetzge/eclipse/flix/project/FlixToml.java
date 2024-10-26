@@ -28,7 +28,7 @@ public final class FlixToml {
 		if (versionString == null) {
 			return FlixConstants.FLIX_DEFAULT_VERSION;
 		}
-		return new FlixVersion(versionString);
+		return FlixVersion.getVersionByName(versionString).orElse(new FlixVersion(versionString, null));
 	}
 
 	public static Optional<FlixToml> load(FlixProject project) throws IOException {

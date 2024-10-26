@@ -18,6 +18,7 @@ public class FlixCompilerLaunch implements Disposable {
 	private final Rollback rollback;
 	private boolean connected;
 	private boolean ready;
+	private boolean error;
 
 	public FlixCompilerLaunch(ILaunch launch) {
 		this.launch = launch;
@@ -34,6 +35,7 @@ public class FlixCompilerLaunch implements Disposable {
 		});
 		this.connected = false;
 		this.ready = false;
+		this.error = false;
 	}
 
 	private void onOutput(String text, IStreamMonitor monitor) {
@@ -41,6 +43,8 @@ public class FlixCompilerLaunch implements Disposable {
 			this.ready = true;
 		} else if (text.startsWith("Client at")) { //$NON-NLS-1$
 			this.connected = true;
+		} else if (text.startsWith("Error")) { //$NON-NLS-1$
+			this.error = true;
 		}
 	}
 
@@ -48,6 +52,9 @@ public class FlixCompilerLaunch implements Disposable {
 		for (int i = 0; i < 500; i++) {
 			if (this.ready) {
 				return;
+			}
+			if (this.error) {
+				throw new RuntimeException("Failed to start language server"); //$NON-NLS-1$
 			}
 			LOG.info("Wait until ready ..."); //$NON-NLS-1$
 			try {
