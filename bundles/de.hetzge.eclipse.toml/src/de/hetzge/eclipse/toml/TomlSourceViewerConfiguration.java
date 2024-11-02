@@ -45,7 +45,6 @@ public class TomlSourceViewerConfiguration extends SourceViewerConfiguration {
 
 	@Override
 	public IReconciler getReconciler(ISourceViewer sourceViewer) {
-		System.out.println("TomlSourceViewerConfiguration.getReconciler()");
 		final Reconciler reconciler = new Reconciler();
 		reconciler.setReconcilingStrategy(new IReconcilingStrategy() {
 
@@ -70,13 +69,13 @@ public class TomlSourceViewerConfiguration extends SourceViewerConfiguration {
 					try {
 						resource.deleteMarkers(IMarker.PROBLEM, true, 0);
 					} catch (final CoreException exception) {
-						throw new RuntimeException("Failed to clear TOML markers", exception);
+						throw new RuntimeException("Failed to clear TOML markers", exception); //$NON-NLS-1$
 					}
 					for (final TomlParseError error : result.errors()) {
 						try {
 							reportError(resource, error);
 						} catch (final CoreException exception) {
-							throw new RuntimeException("Failed to create TOML marker", exception);
+							throw new RuntimeException("Failed to create TOML marker", exception); //$NON-NLS-1$
 						}
 					}
 				});

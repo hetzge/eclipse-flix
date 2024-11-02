@@ -19,8 +19,8 @@ import org.eclipse.tm.terminal.view.core.interfaces.ITerminalService.Done;
 import org.eclipse.tm.terminal.view.core.interfaces.constants.ITerminalsConnectorConstants;
 
 import de.hetzge.eclipse.flix.FlixConstants;
+import de.hetzge.eclipse.flix.core.model.FlixVersion;
 import de.hetzge.eclipse.flix.model.FlixProject;
-import de.hetzge.eclipse.flix.model.FlixVersion;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 
 public final class FlixLauncher {

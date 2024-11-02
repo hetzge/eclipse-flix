@@ -25,7 +25,7 @@ import org.eclipse.swt.SwtCallable;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 
-import de.hetzge.eclipse.flix.model.FlixVersion;
+import de.hetzge.eclipse.flix.core.model.FlixVersion;
 import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixUtils {
@@ -86,7 +86,7 @@ public final class FlixUtils {
 		return flixJarFile;
 	}
 
-	private static void confirmDownload(FlixVersion version, final URL url) {
+	private static void confirmDownload(FlixVersion version, URL url) {
 		final boolean isUiThread = Thread.currentThread() == Display.getDefault().getThread();
 		final Display display = PlatformUI.getWorkbench().getDisplay();
 		final SwtCallable<Boolean, RuntimeException> callable = () -> {

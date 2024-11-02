@@ -1,6 +1,6 @@
 package de.hetzge.eclipse.flix;
 
-import de.hetzge.eclipse.flix.model.FlixVersion;
+import de.hetzge.eclipse.flix.core.model.FlixVersion;
 
 public final class FlixConstants {
 

@@ -12,7 +12,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import de.hetzge.eclipse.flix.FlixConstants;
-import de.hetzge.eclipse.flix.model.FlixVersion;
+import de.hetzge.eclipse.flix.core.model.FlixVersion;
 
 public class FlixNewProjectVersionPage extends WizardPage {
 

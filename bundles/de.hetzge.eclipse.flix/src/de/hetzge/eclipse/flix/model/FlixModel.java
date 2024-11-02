@@ -11,6 +11,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Status;
 import org.lxtk.WorkspaceFolder;
 
+import de.hetzge.eclipse.flix.core.model.FlixVersion;
+
 public class FlixModel {
 
 	private final IWorkspace workspace;

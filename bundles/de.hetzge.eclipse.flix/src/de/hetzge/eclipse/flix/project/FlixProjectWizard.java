@@ -16,8 +16,8 @@ import org.eclipse.ui.ide.undo.CreateProjectOperation;
 import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
 
 import de.hetzge.eclipse.flix.FlixConstants;
+import de.hetzge.eclipse.flix.core.model.FlixVersion;
 import de.hetzge.eclipse.flix.launch.FlixLauncher;
-import de.hetzge.eclipse.flix.model.FlixVersion;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 

@@ -16,9 +16,10 @@ import org.eclipse.core.runtime.SafeRunner;
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.FlixLogger;
+import de.hetzge.eclipse.flix.core.model.FlixVersion;
+import de.hetzge.eclipse.flix.manifest.FlixManifestToml;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
 import de.hetzge.eclipse.flix.project.FlixProjectPreferences;
-import de.hetzge.eclipse.flix.project.FlixToml;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
 
@@ -38,15 +39,15 @@ public class FlixProject {
 
 	public FlixVersion getFlixVersion() {
 		if (getInProjectFolderFlixCompilerJarFile().isPresent()) {
-			return FlixVersion.CUSTOM;
+			return FlixVersion.CUSTOM_VERSION;
 		} else {
-			return getFlixToml().map(FlixToml::getFlixVersion).orElse(FlixConstants.FLIX_DEFAULT_VERSION);
+			return getFlixToml().map(FlixManifestToml::getFlixVersion).orElse(FlixConstants.FLIX_DEFAULT_VERSION);
 		}
 	}
 
-	public Optional<FlixToml> getFlixToml() {
+	public Optional<FlixManifestToml> getFlixToml() {
 		try {
-			return FlixToml.load(this);
+			return FlixManifestToml.load(this.getProject().getFile("flix.toml"));
 		} catch (final IOException exception) {
 			FlixLogger.logError(String.format("Failed to read flix.toml in project '%s'", getProject().getName()), exception);
 			return Optional.empty();

@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Toml
 Bundle-SymbolicName: de.hetzge.eclipse.toml;singleton:=true
 Bundle-Version: 1.0.0.qualifier
+Export-Package: de.hetzge.eclipse.toml
 Bundle-Activator: de.hetzge.eclipse.toml.TomlActivator
 Require-Bundle: org.eclipse.tm4e.core,
  org.eclipse.tm4e.ui,
