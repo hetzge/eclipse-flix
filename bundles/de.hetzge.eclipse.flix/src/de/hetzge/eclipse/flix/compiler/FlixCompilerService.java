@@ -1,22 +1,27 @@
 package de.hetzge.eclipse.flix.compiler;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.util.Throttler;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
+import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentSymbol;
@@ -34,6 +39,7 @@ import org.eclipse.lsp4j.WorkspaceSymbolLocation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
+import org.eclipse.swt.widgets.Display;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -54,11 +60,13 @@ public final class FlixCompilerService {
 	private final FlixCompilerClient compilerClient;
 	private final Map<String, PublishDiagnosticsParams> diagnosticsParamsByUri;
 	private LanguageClient client;
+	private final Throttler compileThrottler;
 
 	public FlixCompilerService(FlixProject flixProject, FlixCompilerClient compilerClient) {
 		this.flixProject = flixProject;
 		this.compilerClient = compilerClient;
 		this.diagnosticsParamsByUri = new HashMap<>();
+		this.compileThrottler = new Throttler(Display.getDefault(), Duration.ofSeconds(1), this::compile);
 	}
 
 	public void addWorkspaceUris() {
@@ -125,91 +133,101 @@ public final class FlixCompilerService {
 
 	public CompletableFuture<CompletionList> complete(CompletionParams params) {
 		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
-		return this.compilerClient.sendComplete(params).thenApply(response -> {
+		return this.compilerClient.sendComplete(params).thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
-				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), CompletionList.class);
+				return CompletableFuture.completedFuture(GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), CompletionList.class));
 			} else {
-				throw new RuntimeException();
+				return handleError(response);
 			}
 		});
 	}
 
 	public CompletableFuture<List<LocationLink>> decleration(DeclarationParams params) {
 		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
-		return this.compilerClient.sendGoto(params).thenApply(response -> {
+		return this.compilerClient.sendGoto(params).thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
-				final LocationLink link = GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), LocationLink.class);
+				final JsonElement jsonElement = response.getSuccessJsonElement().get();
+				final LocationLink link = GsonUtils.getGson().fromJson(jsonElement, LocationLink.class);
 				link.setTargetUri(fixLibraryUri(link.getTargetUri()));
-				return List.of(link);
+				return CompletableFuture.completedFuture(List.of(link));
 			} else {
-				throw new RuntimeException();
+				return handleError(response);
 			}
 		});
 	}
 
 	public CompletableFuture<Hover> hover(HoverParams params) {
 		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
-		return this.compilerClient.sendHover(params).thenApply(response -> {
+		return this.compilerClient.sendHover(params).thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
-				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), Hover.class);
+				return CompletableFuture.completedFuture(GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), Hover.class));
 			} else {
-				throw new RuntimeException(response.getFailureJsonElement().toString());
+				return handleError(response);
 			}
 		});
 	}
 
-	public CompletableFuture<Void> compile() {
-		return this.compilerClient.sendCheck().thenApply(response -> {
+	public synchronized void syncCompile() {
+		try {
+			compile().get();
+		} catch (InterruptedException | ExecutionException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	public void asyncCompile() {
+		this.compileThrottler.throttledExec();
+	}
+
+	private CompletableFuture<Void> compile() {
+		System.out.println("FlixCompilerService.compile()");
+		return this.compilerClient.sendCheck().thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				synchronized (this.diagnosticsParamsByUri) {
 					final JsonArray jsonArray = response.getSuccessJsonElement().orElse(new JsonArray()).getAsJsonArray();
-					final Map<String, PublishDiagnosticsParams> diffMap = new HashMap<>(this.diagnosticsParamsByUri);
-					// Set all new diagnostics
-					for (final JsonElement jsonElement : jsonArray) {
-						final PublishDiagnosticsParams publishDiagnosticsParams = GsonUtils.getGson().fromJson(jsonElement, PublishDiagnosticsParams.class);
-						this.diagnosticsParamsByUri.put(publishDiagnosticsParams.getUri(), publishDiagnosticsParams);
-						diffMap.remove(publishDiagnosticsParams.getUri());
-						this.client.publishDiagnostics(publishDiagnosticsParams);
-					}
-					// Unset all other diagnostics
-					for (final PublishDiagnosticsParams diagnosticsParams : diffMap.values()) {
-						this.client.publishDiagnostics(new PublishDiagnosticsParams(diagnosticsParams.getUri(), List.of()));
+					final Map<String, List<Diagnostic>> diagnosticsByUri = jsonArray.asList().stream()
+							.map(jsonElement -> GsonUtils.getGson().fromJson(jsonElement, PublishDiagnosticsParams.class))
+							.collect(Collectors.groupingBy(PublishDiagnosticsParams::getUri, Collectors.flatMapping(it -> it.getDiagnostics().stream(), Collectors.toList())));
+					for(final Entry<String, List<Diagnostic>> entry : diagnosticsByUri.entrySet()) {
+						this.client.publishDiagnostics(new PublishDiagnosticsParams(entry.getKey(), entry.getValue()));
 					}
 				}
+				return CompletableFuture.completedFuture(null);
+			} else {
+				return handleError(response);
 			}
-			return null;
 		});
 	}
 
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbols(URI uri) {
-		return this.compilerClient.sendDocumentSymbols(unfixLibraryUri(uri.toString())).thenApply(response -> {
+		return this.compilerClient.sendDocumentSymbols(unfixLibraryUri(uri.toString())).thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				final List<Either<SymbolInformation, DocumentSymbol>> result = new ArrayList<>();
 				final JsonArray jsonArray = response.getSuccessJsonElement().get().getAsJsonArray();
 				for (final JsonElement jsonElement : jsonArray) {
 					result.add(Either.forRight(GsonUtils.getGson().fromJson(jsonElement, DocumentSymbol.class)));
 				}
-				return result;
+				return CompletableFuture.completedFuture(result);
 			} else {
-				throw new RuntimeException(response.getFailureJsonElement().toString());
+				return handleError(response);
 			}
 		});
 	}
 
 	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams params) {
 		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
-		return this.compilerClient.sendDocumentHighlight(params).thenApply(response -> {
+		return this.compilerClient.sendDocumentHighlight(params).thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<DocumentHighlight>>() {
 				}.getType());
 			} else {
-				throw new RuntimeException(response.getFailureJsonElement().toString());
+				return handleError(response);
 			}
 		});
 	}
 
 	public CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> workspaceSymbols(WorkspaceSymbolParams params) {
-		return this.compilerClient.sendWorkspaceSymbols(params).thenApply(response -> {
+		return this.compilerClient.sendWorkspaceSymbols(params).thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				final List<WorkspaceSymbol> result = new ArrayList<>();
 				final JsonArray jsonArray = response.getSuccessJsonElement().get().getAsJsonArray();
@@ -231,40 +249,40 @@ public final class FlixCompilerService {
 					}
 					result.add(workspaceSymbol);
 				}
-				return Either.forRight(result);
+				return CompletableFuture.completedFuture(Either.forRight(result));
 			} else {
-				throw new RuntimeException(response.getFailureJsonElement().toString());
+				return handleError(response);
 			}
 		});
 	}
 
 	public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
 		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
-		return this.compilerClient.sendRename(params).thenApply(response -> {
+		return this.compilerClient.sendRename(params).thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
-				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), WorkspaceEdit.class);
+				return CompletableFuture.completedFuture(GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), WorkspaceEdit.class));
 			} else {
-				throw new RuntimeException(response.getFailureJsonElement().toString());
+				return handleError(response);
 			}
 		});
 	}
 
 	public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
 		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
-		return this.compilerClient.sendUses(params).thenApply(response -> {
+		return this.compilerClient.sendUses(params).thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				final List<Location> locations = GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<Location>>() {
 				}.getType());
-				return locations.stream().filter(location -> !"<unknown>".equals(location.getUri())).collect(Collectors.toList()); //$NON-NLS-1$
+				return CompletableFuture.completedFuture(locations.stream().filter(location -> !"<unknown>".equals(location.getUri())).collect(Collectors.toList())); //$NON-NLS-1$
 			} else {
-				throw new RuntimeException(response.getFailureJsonElement().toString());
+				return handleError(response);
 			}
 		});
 	}
 
 	public CompletableFuture<List<? extends CodeLens>> resolveCodeLens(CodeLensParams params) {
 		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
-		return this.compilerClient.sendCodeLens(params).thenApply(response -> {
+		return this.compilerClient.sendCodeLens(params).thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
 				final List<? extends CodeLens> codeLenses;
 				if (response.getSuccessJsonElement().get().isJsonArray()) {
@@ -273,9 +291,9 @@ public final class FlixCompilerService {
 				} else {
 					codeLenses = List.of();
 				}
-				return codeLenses.stream().filter(codeLens -> Set.of("flix.runMain", "flix.cmdRepl").contains(codeLens.getCommand().getCommand())).collect(Collectors.toList()); //$NON-NLS-1$ //$NON-NLS-2$
+				return CompletableFuture.completedFuture(codeLenses.stream().filter(codeLens -> Set.of("flix.runMain", "flix.cmdRepl").contains(codeLens.getCommand().getCommand())).collect(Collectors.toList())); //$NON-NLS-1$ //$NON-NLS-2$
 			} else {
-				throw new RuntimeException(response.getFailureJsonElement().toString());
+				return handleError(response);
 			}
 		});
 	}
@@ -297,6 +315,15 @@ public final class FlixCompilerService {
 			return uri;
 		}
 		return uri.replace(libraryPrefix, "");
+	}
+
+	private <T> CompletableFuture<T> handleError(FlixCompilerResponse response) {
+		if (response.isInvalidRequest()) {
+			LOG.warn("Invalid request: " + response.getFailureJsonElement().toString());
+			return new CompletableFuture<T>(); // never complete
+		} else {
+			throw new RuntimeException(response.getFailureJsonElement().toString());
+		}
 	}
 
 }

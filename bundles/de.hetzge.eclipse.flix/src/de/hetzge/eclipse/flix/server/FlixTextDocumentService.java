@@ -89,7 +89,7 @@ public final class FlixTextDocumentService implements TextDocumentService {
 	public void didSave(DidSaveTextDocumentParams params) {
 		System.out.println("FlixTextDocumentService.didSave()");
 		System.out.println("--------------\n" + params.getText() + "\n--------------");
-		this.flixService.compile();
+		this.flixService.syncCompile();
 	}
 
 	@Override
@@ -114,6 +114,6 @@ public final class FlixTextDocumentService implements TextDocumentService {
 			final URI uri = URI.create(params.getTextDocument().getUri());
 			this.flixService.addUri(uri, contentChangeEvent.getText());
 		}
-		this.flixService.compile();
+		this.flixService.asyncCompile();
 	}
 }

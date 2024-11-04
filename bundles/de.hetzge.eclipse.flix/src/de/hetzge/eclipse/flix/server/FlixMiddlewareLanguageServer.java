@@ -12,11 +12,9 @@ import org.eclipse.lsp4j.FileOperationsServerCapabilities;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.InitializedParams;
-import org.eclipse.lsp4j.SaveOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.ServerInfo;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.WorkspaceServerCapabilities;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -59,11 +57,6 @@ public class FlixMiddlewareLanguageServer implements LanguageServer {
 			final WorkspaceServerCapabilities workspaceServerCapabilities = new WorkspaceServerCapabilities();
 			workspaceServerCapabilities.setFileOperations(fileOperationsServerCapabilities);
 			workspaceServerCapabilities.setWorkspaceFolders(workspaceFolders);
-			final SaveOptions saveOptions = new SaveOptions();
-			saveOptions.setIncludeText(true);
-			final TextDocumentSyncOptions textDocumentSyncOptions = new TextDocumentSyncOptions();
-			textDocumentSyncOptions.setSave(true);
-			textDocumentSyncOptions.setSave(saveOptions);
 			final CompletionOptions completionProvider = new CompletionOptions();
 			final ServerCapabilities capabilities = new ServerCapabilities();
 			capabilities.setCodeLensProvider(null);
@@ -91,7 +84,7 @@ public class FlixMiddlewareLanguageServer implements LanguageServer {
 		System.out.println("FlixLanguageServer.initialized()");
 		LanguageServer.super.initialized(params);
 		this.flixService.addWorkspaceUris();
-		this.flixService.compile();
+		this.flixService.syncCompile();
 		this.initialized = true;
 	}
 

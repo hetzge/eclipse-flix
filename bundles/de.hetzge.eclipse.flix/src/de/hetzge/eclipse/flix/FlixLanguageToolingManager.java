@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
+import org.eclipse.core.runtime.ICoreRunnable;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.PlatformUI;
@@ -22,6 +24,8 @@ import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerLaunch;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerLaunchConfigurationDelegate;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerService;
+import de.hetzge.eclipse.flix.launch.FlixLauncher;
+import de.hetzge.eclipse.flix.manifest.FlixManifestToml;
 import de.hetzge.eclipse.flix.model.FlixModel;
 import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.navigator.FlixLanguageToolingStateDecorator;
@@ -67,38 +71,65 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 	}
 
 	public synchronized void connectProject(FlixProject project) {
-		this.connectedProjects.computeIfAbsent(project, ignore -> {
-			return SafeRun.runWithResult(rollback -> {
-				rollback.setLogger(FlixLogger::logError);
-				final FlixModel model = Flix.get().getModel();
-				Flix.get().getWorkspaceService().setWorkspaceFolders(model.getWorkspaceFolders());
-				final Supplier<Boolean> isRunning;
-				final FlixCompilerClient compilerClient;
-				if (!Objects.equals(System.getProperty("flix.debug"), "true")) {
-					final int compilerPort = Utils.queryPort();
-					final FlixCompilerLaunch launch = FlixCompilerLaunchConfigurationDelegate.launch(project, compilerPort);
-					isRunning = () -> launch.isRunning();
-					rollback.add(launch::dispose);
-					launch.waitUntilReady();
-					final int connectPort = compilerPort;
-					compilerClient = FlixCompilerClient.connect(connectPort);
-					rollback.add(compilerClient::close);
-					launch.waitUntilConnected();
-				} else {
-					compilerClient = FlixCompilerClient.connect(32323);
-					isRunning = () -> true;
-				}
-				final FlixCompilerService compilerService = new FlixCompilerService(project, compilerClient);
-				final FlixMiddlewareLanguageServer server = new FlixMiddlewareLanguageServer(compilerService);
-				final int lspPort = Utils.queryPort();
-				final FlixLanguageServerSocketThread socketThread = new FlixLanguageServerSocketThread(project, server, isRunning, lspPort);
-				rollback.add(socketThread::close);
-				socketThread.start();
-				final FlixLanguageClientController controller = FlixLanguageClientController.connect(project, lspPort);
-				rollback.add(controller::dispose);
-				return new LanguageTooling(controller, compilerService, socketThread, rollback);
+		refreshFlixDependencies(project);
+		final Job job = Job.create("Connect Flix language tooling: " + project.getProject().getName(), (ICoreRunnable) monitor -> {
+			this.connectedProjects.computeIfAbsent(project, ignore -> {
+				return SafeRun.runWithResult(rollback -> {
+					rollback.setLogger(FlixLogger::logError);
+					final FlixModel model = Flix.get().getModel();
+					Flix.get().getWorkspaceService().setWorkspaceFolders(model.getWorkspaceFolders());
+					final Supplier<Boolean> isRunning;
+					final FlixCompilerClient compilerClient;
+					if (!Objects.equals(System.getProperty("flix.debug"), "true")) {
+						final int compilerPort = Utils.queryPort();
+						final FlixCompilerLaunch launch = FlixCompilerLaunchConfigurationDelegate.launch(project, compilerPort);
+						isRunning = () -> launch.isRunning();
+						rollback.add(launch::dispose);
+						launch.waitUntilReady();
+						final int connectPort = compilerPort;
+						compilerClient = FlixCompilerClient.connect(connectPort);
+						rollback.add(compilerClient::close);
+						launch.waitUntilConnected();
+					} else {
+						compilerClient = FlixCompilerClient.connect(32323);
+						isRunning = () -> true;
+					}
+					final FlixCompilerService compilerService = new FlixCompilerService(project, compilerClient);
+					final FlixMiddlewareLanguageServer server = new FlixMiddlewareLanguageServer(compilerService);
+					final int lspPort = Utils.queryPort();
+					final FlixLanguageServerSocketThread socketThread = new FlixLanguageServerSocketThread(project, server, isRunning, lspPort);
+					rollback.add(socketThread::close);
+					socketThread.start();
+					final FlixLanguageClientController controller = FlixLanguageClientController.connect(project, lspPort);
+					rollback.add(controller::dispose);
+					return new LanguageTooling(controller, compilerService, socketThread, rollback);
+				});
 			});
+			compile(project);
 		});
+		job.setRule(project.getProject());
+		job.schedule();
+	}
+
+	private void refreshFlixDependencies(FlixProject project) {
+		final Job dependenciesJob = Job.create("Refresh Flix dependencies: " + project.getProject().getName(), (ICoreRunnable) monitor -> {
+			project.refreshProjectFolders(monitor);
+			final String libHash = project.calculateLibHash();
+			final String lastLibHash = project.getLastLibHash().orElse(null);
+			final String dependencyHash = project.getFlixToml().map(FlixManifestToml::calculateDependencyHash).orElse(null);
+			final String lastDependencyHash = project.getLastDependencyHash().orElse(null);
+			System.out.println("Lib hash: " + libHash + ", lastLib hash: " + lastLibHash + ", dependency hash: " + dependencyHash + ", last dependency hash: " + lastDependencyHash);
+			if (libHash != null && dependencyHash != null && (!Objects.equals(lastDependencyHash, dependencyHash) || !Objects.equals(lastLibHash, libHash))) {
+				project.setLastDependencyHash(dependencyHash);
+				project.setLastLibHash(libHash);
+				project.getLibraryFolder().delete(true, monitor);
+				final Process process = FlixLauncher.launchOutdated(project);
+				Utils.waitForProcess(process);
+				project.refreshProjectFolders(monitor);
+			}
+		});
+		dependenciesJob.setRule(project.getProject());
+		dependenciesJob.schedule();
 	}
 
 	public synchronized void disconnectProjects() {
@@ -108,10 +139,14 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 	}
 
 	public synchronized void disconnectProject(FlixProject project) {
-		final LanguageTooling languageTooling = this.connectedProjects.remove(project);
-		if (languageTooling != null) {
-			languageTooling.close();
-		}
+		final Job job = Job.create("Disconnect Flix language tooling: " + project.getProject().getName(), (ICoreRunnable) monitor -> {
+			final LanguageTooling languageTooling = this.connectedProjects.remove(project);
+			if (languageTooling != null) {
+				languageTooling.close();
+			}
+		});
+		job.setRule(project.getProject());
+		job.schedule();
 	}
 
 	public synchronized void reconnectProject(FlixProject project) {
@@ -148,11 +183,16 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 	}
 
 	public void compile(FlixProject project) {
-		final LanguageTooling languageTooling = this.connectedProjects.get(project);
-		if (languageTooling != null) {
-			languageTooling.getCompilerService().addWorkspaceUris();
-			languageTooling.getCompilerService().compile();
-		}
+		final Job job = Job.create("Compile Flix project: " + project.getProject().getName(), (ICoreRunnable) monitor -> {
+			final LanguageTooling languageTooling = this.connectedProjects.get(project);
+			if (languageTooling != null) {
+				languageTooling.getCompilerService().addWorkspaceUris();
+				languageTooling.getCompilerService().syncCompile();
+			}
+			project.refreshProjectFolders(monitor);
+		});
+		job.setRule(project.getProject());
+		job.schedule();
 	}
 
 	@Override

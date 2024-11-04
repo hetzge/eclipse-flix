@@ -107,9 +107,11 @@ public class FlixOutlinePage extends ContentOutlinePage {
 				return;
 			}
 			this.last = (DocumentSymbol) treePath.getLastSegment();
-			Display.getDefault().asyncExec(() -> {
-				getTreeViewer().setSelection(new TreeSelection(treePath));
-			});
+			if (getTreeViewer() != null) {
+				Display.getDefault().asyncExec(() -> {
+					getTreeViewer().setSelection(new TreeSelection(treePath));
+				});
+			}
 		});
 	}
 

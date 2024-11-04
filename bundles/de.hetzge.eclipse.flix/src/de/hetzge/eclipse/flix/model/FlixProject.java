@@ -2,16 +2,24 @@ package de.hetzge.eclipse.flix.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SafeRunner;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.osgi.service.prefs.BackingStoreException;
 
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixConstants;
@@ -196,6 +204,64 @@ public class FlixProject {
 
 	public boolean isLanguageToolingStarted() {
 		return Flix.get().getLanguageToolingManager().isStarted(this);
+	}
+
+	public Optional<String> getLastLibHash() {
+		return Optional.ofNullable(getPreferences().get("LAST_LIB_HASH", null));
+	}
+
+	public void setLastLibHash(String lastLibHash) {
+		try {
+			final IEclipsePreferences preferences = getPreferences();
+			preferences.put("LAST_LIB_HASH", lastLibHash);
+			preferences.flush();
+		} catch (final BackingStoreException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	public Optional<String> getLastDependencyHash() {
+		return Optional.ofNullable(getPreferences().get("LAST_DEPENDENCY_HASH", null));
+	}
+
+	public void setLastDependencyHash(String lastDependencyHash) {
+		try {
+			final IEclipsePreferences preferences = getPreferences();
+			preferences.put("LAST_DEPENDENCY_HASH", lastDependencyHash);
+			preferences.flush();
+		} catch (final BackingStoreException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	private IEclipsePreferences getPreferences() {
+		return new ProjectScope(this.project).getNode(FlixConstants.PLUGIN_ID);
+	}
+
+	public String calculateLibHash() {
+		try {
+			final MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+			final List<String> names = Stream.concat(
+					getFlixFpkgLibraryFiles().stream().map(IFile::getName).sorted(),
+					getFlixJarLibraryFiles().stream().map(IFile::getName).sorted())
+					.collect(Collectors.toList());
+			for (final String name : names) {
+				messageDigest.update(name.getBytes());
+			}
+			final BigInteger bigInt = new BigInteger(1, messageDigest.digest());
+			return bigInt.toString(16);
+		} catch (final NoSuchAlgorithmException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	public void refreshProjectFolders(IProgressMonitor monitor) {
+		try {
+			this.getSourceFolder().refreshLocal(IProject.DEPTH_INFINITE, monitor);
+			this.getLibraryFolder().refreshLocal(IProject.DEPTH_INFINITE, monitor);
+		} catch (final CoreException exception) {
+			throw new RuntimeException("Failed to refresh project", exception);
+		}
 	}
 
 	@Override

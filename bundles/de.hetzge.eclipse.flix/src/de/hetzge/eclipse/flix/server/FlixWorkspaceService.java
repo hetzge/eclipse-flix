@@ -3,6 +3,7 @@ package de.hetzge.eclipse.flix.server;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -67,7 +68,7 @@ public final class FlixWorkspaceService implements WorkspaceService {
 				this.flixService.removeFile(file);
 			}
 		}
-		this.flixService.compile();
+		this.flixService.syncCompile();
 	}
 
 	@Override
@@ -78,7 +79,7 @@ public final class FlixWorkspaceService implements WorkspaceService {
 
 	@Override
 	public void didCreateFiles(CreateFilesParams params) {
-		System.out.println("FlixWorkspaceService.didCreateFiles()");
+		System.out.println("FlixWorkspaceService.didCreateFiles() " + params.getFiles().stream().map(FileCreate::getUri).collect(Collectors.joining(",")));
 		final List<FileCreate> fileCreates = params.getFiles();
 		for (final FileCreate fileCreate : fileCreates) {
 			final IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(URI.create(fileCreate.getUri()));
@@ -86,7 +87,7 @@ public final class FlixWorkspaceService implements WorkspaceService {
 				this.flixService.addFile(file);
 			}
 		}
-		this.flixService.compile();
+		this.flixService.syncCompile();
 	}
 
 	@Override

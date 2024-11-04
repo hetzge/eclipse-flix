@@ -81,6 +81,16 @@ public final class FlixLauncher {
 		return process;
 	}
 
+	public static Process launchOutdated(FlixProject flixProject) {
+		final String name = "Outdated " + flixProject.getProject().getName();
+		final IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();
+		final File folder = flixProject.getProject().getLocation() != null ? flixProject.getProject().getLocation().toFile() : null;
+		final File flixJarFile = FlixUtils.loadFlixJarFile(flixProject.getFlixVersion(), null);
+		final Process process = startProcess(folder, vmInstall, flixJarFile, List.of("outdated"));
+		openTerminal(createBasicTerminalLaunchProperties(name, process), String.format("OUTDATED_%s", folder.getAbsolutePath()));
+		return process;
+	}
+
 	public static Process launchInit(File folder, FlixVersion flixVersion) {
 		final String name = "Init " + folder.getName();
 		final IVMInstall vmInstall = JavaRuntime.getDefaultVMInstall();

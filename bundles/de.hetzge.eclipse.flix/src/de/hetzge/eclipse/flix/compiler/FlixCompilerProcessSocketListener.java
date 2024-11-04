@@ -19,6 +19,7 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 
 	private static final String SUCCESS_STATUS_VALUE = "success"; //$NON-NLS-1$
 	private static final String FAILURE_STATUS_VALUE = "failure"; //$NON-NLS-1$
+	private static final String INVALID_REQUEST_STATUS_VALUE = "invalid_request"; //$NON-NLS-1$
 
 	private final StringBuilder builder;
 	private final Map<String, CompletableFuture<JsonObject>> messagesById; // TODO memory leak
@@ -36,11 +37,13 @@ class FlixCompilerProcessSocketListener implements WebSocket.Listener {
 			final String statusValue = message.get("status").getAsString(); //$NON-NLS-1$
 			final JsonElement resultJsonElement = message.get("result"); //$NON-NLS-1$
 			if (statusValue.equals(SUCCESS_STATUS_VALUE)) {
-				return new FlixCompilerResponse(resultJsonElement, null);
+				return new FlixCompilerResponse(resultJsonElement, null, false);
 			} else if (statusValue.equals(FAILURE_STATUS_VALUE)) {
-				return new FlixCompilerResponse(null, resultJsonElement);
+				return new FlixCompilerResponse(null, resultJsonElement, false);
+			} else if (statusValue.equals(INVALID_REQUEST_STATUS_VALUE)) {
+				return new FlixCompilerResponse(null, message, true);
 			} else {
-				throw new IllegalStateException(String.format("Unexpected status '%s' with message '%s'", statusValue, message.get("message"))); //$NON-NLS-1$
+				throw new IllegalStateException(String.format("Unexpected status '%s' with message '%s'", statusValue, message.get("message"))); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		});
 		successFailureFuture.exceptionally(throwable -> {

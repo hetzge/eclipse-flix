@@ -1,11 +1,16 @@
 package de.hetzge.eclipse.flix.manifest;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -65,6 +70,23 @@ public final class FlixManifestToml {
 			final String version = table.getString(List.of(key), () -> "");
 			return new MavenDependency(groupId, artifactId, version);
 		}).sorted(Comparator.comparing(MavenDependency::getGroupId).thenComparing(Comparator.comparing(MavenDependency::getArtifactId))).toList();
+	}
+
+	public String calculateDependencyHash() {
+		try {
+			final MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+			final List<String> names = Stream.concat(
+					getFlixDependencies().stream().map(it -> it.getKey() + ":" + it.getVersion()).sorted(),
+					getMavenDependencies().stream().map(it -> it.getKey() + ":" + it.getVersion()).sorted())
+					.collect(Collectors.toList());
+			for (final String name : names) {
+				messageDigest.update(name.getBytes());
+			}
+			final BigInteger bigInt = new BigInteger(1, messageDigest.digest());
+			return bigInt.toString(16);
+		} catch (final NoSuchAlgorithmException exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 
 	public static Optional<FlixManifestToml> load(IFile file) throws IOException {

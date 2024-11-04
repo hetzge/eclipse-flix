@@ -102,4 +102,14 @@ public final class Utils {
 		return value.substring(0, value.lastIndexOf(find)).lastIndexOf(find);
 	}
 
+	public static void waitForProcess(Process process) {
+		while (process.isAlive()) {
+			try {
+				Thread.sleep(100L);
+			} catch (final InterruptedException exception) {
+				break;
+			}
+		}
+	}
+
 }

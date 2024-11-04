@@ -194,6 +194,7 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 				if (dialog.open() == Dialog.OK) {
 					this.dependencies.add(dialog.getResult());
 					this.dependenciesTableViewer.refresh();
+					onModify(null);
 				}
 			});
 			final SelectionListener removeDependencySelectionListener = SelectionListener.widgetSelectedAdapter(event -> {
@@ -202,6 +203,7 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 				final List<FlixDependency> selectedDependencies = structuredSelection.stream().map(FlixDependency.class::cast).toList();
 				this.dependencies.removeAll(selectedDependencies);
 				this.dependenciesTableViewer.refresh();
+				onModify(null);
 			});
 			createDependencyActions(dependenciesComposite, toolkit, this.dependenciesTableViewer, addDependencySelectionListener, removeDependencySelectionListener);
 
@@ -221,6 +223,7 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 				if (dialog.open() == Dialog.OK) {
 					this.mavenDependencies.add(dialog.getResult());
 					this.mavenDependenciesTableViewer.refresh();
+					onModify(null);
 				}
 			});
 			final SelectionListener removeMavenDependencySelectionListener = SelectionListener.widgetSelectedAdapter(event -> {
@@ -229,6 +232,7 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 				final List<MavenDependency> selectedDependencies = structuredSelection.stream().map(MavenDependency.class::cast).toList();
 				this.mavenDependencies.removeAll(selectedDependencies);
 				this.mavenDependenciesTableViewer.refresh();
+				onModify(null);
 			});
 			createDependencyActions(mavenDependenciesComposite, toolkit, this.mavenDependenciesTableViewer, addMavenDependencySelectionListener, removeMavenDependencySelectionListener);
 

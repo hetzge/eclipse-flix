@@ -5,6 +5,7 @@ import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Platform;
@@ -27,11 +28,13 @@ import de.hetzge.eclipse.flix.utils.GsonUtils;
 public class FlixCompilerClient implements AutoCloseable {
 	private static final ILog LOG = Platform.getLog(FlixCompilerClient.class);
 
+	private final ScheduledThreadPoolExecutor executor;
 	private final WebSocket webSocket;
 	private final FlixCompilerProcessSocketListener listener;
 	private final Rollback rollback;
 
 	public FlixCompilerClient(WebSocket webSocket, FlixCompilerProcessSocketListener listener, Rollback rollback) {
+		this.executor = new ScheduledThreadPoolExecutor(1);
 		this.webSocket = webSocket;
 		this.listener = listener;
 		this.rollback = rollback;
@@ -40,6 +43,7 @@ public class FlixCompilerClient implements AutoCloseable {
 	@Override
 	public void close() {
 		this.rollback.run();
+		this.executor.shutdown();
 	}
 
 	public CompletableFuture<Void> sendAddUri(URI uri, String src) {
@@ -173,8 +177,18 @@ public class FlixCompilerClient implements AutoCloseable {
 	}
 
 	private CompletableFuture<Void> send(final String jsonString) {
-		return this.webSocket.sendText(jsonString, true).thenRun(() -> {
+		final CompletableFuture<Void> future = new CompletableFuture<>();
+		this.executor.submit(() -> {
+			this.webSocket.sendText(jsonString, true).handle((socket, exception) -> {
+				if (exception != null) {
+					future.completeExceptionally(exception);
+				} else {
+					future.complete(null);
+				}
+				return null;
+			});
 		});
+		return future;
 	}
 
 	public static synchronized FlixCompilerClient connect(int port) {
