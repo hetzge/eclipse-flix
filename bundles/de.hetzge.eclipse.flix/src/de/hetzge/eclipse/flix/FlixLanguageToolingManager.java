@@ -122,7 +122,7 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 			if (libHash != null && dependencyHash != null && (!Objects.equals(lastDependencyHash, dependencyHash) || !Objects.equals(lastLibHash, libHash))) {
 				project.setLastDependencyHash(dependencyHash);
 				project.setLastLibHash(libHash);
-				project.getLibraryFolder().delete(true, monitor);
+				project.deleteTemporaryFolders(monitor);
 				final Process process = FlixLauncher.launchOutdated(project);
 				Utils.waitForProcess(process);
 				project.refreshProjectFolders(monitor);
@@ -178,8 +178,8 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 		});
 	}
 
-	public synchronized Optional<LanguageServer> getLanguageServerApi(FlixProject flixProject) {
-		return Optional.ofNullable(this.connectedProjects.get(flixProject)).map(LanguageTooling::getLanguageServerApi);
+	private Optional<LanguageTooling> getLanguageTooling(FlixProject flixProject) {
+		return Optional.ofNullable(this.connectedProjects.get(flixProject));
 	}
 
 	public void compile(FlixProject project) {
@@ -205,7 +205,7 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 	}
 
 	public boolean isStarted(FlixProject project) {
-		return Optional.ofNullable(this.connectedProjects.get(project)).map(LanguageTooling::isStarted).orElse(false);
+		return getLanguageTooling(project).map(LanguageTooling::isStarted).orElse(false);
 	}
 
 	public EventEmitter<Status> onStatusChanged() {

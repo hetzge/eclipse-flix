@@ -66,6 +66,8 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 
 					final CreateProjectOperation projectOperation = new CreateProjectOperation(description, "Create Flix Eclipse project");
 					projectOperation.execute(monitor, WorkspaceUndoUtil.getUIInfoAdapter(getShell()));
+
+					ResourcesPlugin.getWorkspace().getRoot().getProject(projectName).setDefaultCharset("UTF-8", monitor); //$NON-NLS-1$
 				} catch (ExecutionException | CoreException | InterruptedException exception) {
 					// Rollback already created files
 					Utils.deleteFolder(newProjectFolder);

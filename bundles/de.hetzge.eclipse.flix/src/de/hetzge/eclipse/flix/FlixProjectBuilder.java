@@ -2,6 +2,7 @@ package de.hetzge.eclipse.flix;
 
 import java.util.Map;
 
+import org.eclipse.core.resources.IIncrementalProjectBuilder2;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
@@ -9,41 +10,39 @@ import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 
-import de.hetzge.eclipse.flix.launch.FlixLauncher;
-import de.hetzge.eclipse.flix.model.FlixModel;
 import de.hetzge.eclipse.flix.model.FlixProject;
 
-public class FlixProjectBuilder extends IncrementalProjectBuilder {
+public class FlixProjectBuilder extends IncrementalProjectBuilder implements IIncrementalProjectBuilder2 {
 	private static final ILog LOG = Platform.getLog(FlixProjectBuilder.class);
-
-	private final FlixModel model;
-
-	public FlixProjectBuilder() {
-		this.model = Flix.get().getModel();
-	}
 
 	@Override
 	protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
-		LOG.info("Run Flix project builder");
-		if (kind == IncrementalProjectBuilder.FULL_BUILD) {
-			final FlixProject flixProject = this.model.getFlixProjectOrThrowCoreException(getProject());
-			final String projectName = flixProject.getProject().getName();
-			monitor.subTask(String.format("Stop language tooling (%s)", projectName));
-			Flix.get().getLanguageToolingManager().disconnectProject(flixProject);
-			monitor.subTask(String.format("Delete temporary folders (%s)", projectName));
-			flixProject.deleteTemporaryFolders(monitor);
-			monitor.subTask(String.format("Build flix project (%s)", projectName));
-			try {
-				FlixLauncher.launchBuild(flixProject).waitFor();
-			} catch (final InterruptedException exception) {
-				throw new RuntimeException(exception);
-			}
-			monitor.subTask(String.format("Refresh project (%s)", projectName));
-			flixProject.getProject().refreshLocal(IProject.DEPTH_INFINITE, monitor);
-			monitor.subTask(String.format("Start language tooling (%s)", projectName));
-			Flix.get().getLanguageToolingManager().connectProject(flixProject);
+		LOG.info("Flix build kind " + kind);
+		if (kind == IncrementalProjectBuilder.FULL_BUILD || kind == IncrementalProjectBuilder.CLEAN_BUILD) {
+			clean(monitor);
+			return null;
+		} else if (kind == IncrementalProjectBuilder.AUTO_BUILD || kind == IncrementalProjectBuilder.INCREMENTAL_BUILD) {
+			fastBuild(monitor);
+			return null;
+		} else {
+			throw new IllegalStateException("Unsupported build kind: " + kind);
 		}
-		return null;
 	}
 
+	@Override
+	public void clean(Map<String, String> args, IProgressMonitor monitor) throws CoreException {
+		LOG.info("Clean Flix project");
+		final FlixProject flixProject = Flix.get().getModel().getFlixProjectOrThrowCoreException(getProject());
+		final String projectName = flixProject.getProject().getName();
+		monitor.subTask(String.format("Full/Clean build (%s)", projectName));
+		Flix.get().getLanguageToolingManager().reconnectProject(flixProject);
+	}
+
+	private void fastBuild(IProgressMonitor monitor) throws CoreException {
+		LOG.info("Fast build Flix project");
+		final FlixProject flixProject = Flix.get().getModel().getFlixProjectOrThrowCoreException(getProject());
+		final String projectName = flixProject.getProject().getName();
+		monitor.subTask(String.format("Auto/Incremental build (%s)", projectName));
+		Flix.get().getLanguageToolingManager().compile(flixProject);
+	}
 }

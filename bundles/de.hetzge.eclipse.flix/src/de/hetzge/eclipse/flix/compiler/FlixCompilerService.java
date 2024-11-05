@@ -3,7 +3,7 @@ package de.hetzge.eclipse.flix.compiler;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,7 +45,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
-import de.hetzge.eclipse.flix.FlixProjectBuilder;
 import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.flix.utils.GsonUtils;
@@ -54,18 +53,18 @@ import de.hetzge.eclipse.utils.Utils;
 // https://andzac.github.io/anwn/Development%20docs/Language%20Server/ClientServerHandshake/
 
 public final class FlixCompilerService {
-	private static final ILog LOG = Platform.getLog(FlixProjectBuilder.class);
+	private static final ILog LOG = Platform.getLog(FlixCompilerService.class);
 
 	private final FlixProject flixProject;
 	private final FlixCompilerClient compilerClient;
-	private final Map<String, PublishDiagnosticsParams> diagnosticsParamsByUri;
+	private final Set<String> diagnosticUris;
 	private LanguageClient client;
 	private final Throttler compileThrottler;
 
 	public FlixCompilerService(FlixProject flixProject, FlixCompilerClient compilerClient) {
 		this.flixProject = flixProject;
 		this.compilerClient = compilerClient;
-		this.diagnosticsParamsByUri = new HashMap<>();
+		this.diagnosticUris = new HashSet<>();
 		this.compileThrottler = new Throttler(Display.getDefault(), Duration.ofSeconds(1), this::compile);
 	}
 
@@ -183,13 +182,21 @@ public final class FlixCompilerService {
 		System.out.println("FlixCompilerService.compile()");
 		return this.compilerClient.sendCheck().thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
-				synchronized (this.diagnosticsParamsByUri) {
+				synchronized (this.diagnosticUris) {
 					final JsonArray jsonArray = response.getSuccessJsonElement().orElse(new JsonArray()).getAsJsonArray();
 					final Map<String, List<Diagnostic>> diagnosticsByUri = jsonArray.asList().stream()
 							.map(jsonElement -> GsonUtils.getGson().fromJson(jsonElement, PublishDiagnosticsParams.class))
 							.collect(Collectors.groupingBy(PublishDiagnosticsParams::getUri, Collectors.flatMapping(it -> it.getDiagnostics().stream(), Collectors.toList())));
-					for(final Entry<String, List<Diagnostic>> entry : diagnosticsByUri.entrySet()) {
+					final Set<String> diff = new HashSet<>(this.diagnosticUris);
+					// Set new diagnostics
+					for (final Entry<String, List<Diagnostic>> entry : diagnosticsByUri.entrySet()) {
 						this.client.publishDiagnostics(new PublishDiagnosticsParams(entry.getKey(), entry.getValue()));
+						this.diagnosticUris.add(entry.getKey());
+						diff.remove(entry.getKey());
+					}
+					// Unset all old diagnostics
+					for (final String uri : diff) {
+						this.client.publishDiagnostics(new PublishDiagnosticsParams(uri, List.of()));
 					}
 				}
 				return CompletableFuture.completedFuture(null);
@@ -218,8 +225,8 @@ public final class FlixCompilerService {
 		params.getTextDocument().setUri(unfixLibraryUri(params.getTextDocument().getUri().toString()));
 		return this.compilerClient.sendDocumentHighlight(params).thenCompose(response -> {
 			if (response.getSuccessJsonElement().isPresent()) {
-				return GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<DocumentHighlight>>() {
-				}.getType());
+				return CompletableFuture.completedFuture(GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<DocumentHighlight>>() {
+				}.getType()));
 			} else {
 				return handleError(response);
 			}

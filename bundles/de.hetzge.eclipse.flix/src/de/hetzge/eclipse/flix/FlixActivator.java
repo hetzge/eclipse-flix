@@ -35,8 +35,11 @@ import de.hetzge.eclipse.utils.Utils;
 // TODO embedd flix compiler
 // TODO create flix toml if missing
 // TODO use progress monitor in language tooling initialization
-// TODO fix websocket send pending
-// TODO fix deprecated warning overwrites errors
+
+// TODO :eval main()
+// TODO :eval selection
+// TODO :eval chat
+
 
 /**
  * The activator class controls the plug-in life cycle

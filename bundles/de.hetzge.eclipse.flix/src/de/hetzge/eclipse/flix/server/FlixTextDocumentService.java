@@ -84,12 +84,11 @@ public final class FlixTextDocumentService implements TextDocumentService {
 		return this.flixService.rename(params);
 	}
 
-
 	@Override
 	public void didSave(DidSaveTextDocumentParams params) {
 		System.out.println("FlixTextDocumentService.didSave()");
 		System.out.println("--------------\n" + params.getText() + "\n--------------");
-		this.flixService.syncCompile();
+//		this.flixService.syncCompile();
 	}
 
 	@Override
@@ -106,14 +105,12 @@ public final class FlixTextDocumentService implements TextDocumentService {
 	@Override
 	public void didChange(DidChangeTextDocumentParams params) {
 		System.out.println("FlixTextDocumentService.didChange()");
-		for (final TextDocumentContentChangeEvent contentChange : params.getContentChanges()) {
-			System.out.println("--------------\n" + contentChange.getText() + "\n--------------");
-		}
 		final List<TextDocumentContentChangeEvent> contentChangesEvents = params.getContentChanges();
 		for (final TextDocumentContentChangeEvent contentChangeEvent : contentChangesEvents) {
+			System.out.println("--------------\n" + contentChangeEvent.getText() + "\n--------------");
 			final URI uri = URI.create(params.getTextDocument().getUri());
 			this.flixService.addUri(uri, contentChangeEvent.getText());
 		}
-		this.flixService.asyncCompile();
+		this.flixService.syncCompile();
 	}
 }
