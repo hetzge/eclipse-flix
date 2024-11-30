@@ -40,6 +40,13 @@ import de.hetzge.eclipse.utils.Utils;
 // TODO :eval selection
 // TODO :eval chat
 
+// TODO tree icons https://stackoverflow.com/questions/27718357/how-to-change-file-folder-resource-icons-from-existing-eclipse-views
+
+// TODO execute flix command shortcut
+
+// TODO fix reference search (absolute uri)
+// TODO link into library folder
+// TODO refresh library if necessary (flix version)
 
 /**
  * The activator class controls the plug-in life cycle
@@ -84,13 +91,6 @@ public class FlixActivator extends AbstractUIPlugin {
 			rollback.add(this.flix.getCommandService().addCommand("flix.runMain", new FlixRunMainCommandHandler())::dispose);
 			rollback.add(this.flix.getCommandService().addCommand("flix.cmdRepl", new FlixRunReplCommandHandler())::dispose);
 
-			/*
-			 * Init model and projects ...
-			 */
-			for (final FlixProject flixProjects : Flix.get().getModel().getFlixProjects()) {
-				flixProjects.createStandardLibraryLinks();
-			}
-
 			this.flix.getLanguageToolingManager().connectProjects(Flix.get().getModel().getFlixProjects());
 			rollback.add(this.flix.getLanguageToolingManager().startMonitor()::dispose);
 
@@ -101,7 +101,11 @@ public class FlixActivator extends AbstractUIPlugin {
 			rollback.add(this.flix.getPostResourceMonitor().onDidCreateFiles().subscribe(fileCreateEvent -> {
 				for (final FileCreate create : fileCreateEvent.getFiles()) {
 					final IPath createPath = URIUtil.toPath(create.getUri());
-					final IProject project = EclipseUtils.project(createPath).orElseThrow();
+					final Optional<IProject> projectOptional = EclipseUtils.project(createPath);
+					if (projectOptional.isEmpty()) {
+                        return;
+                    }
+					final IProject project = projectOptional.get();
 					if (project.getFile("flix.jar").getLocation().equals(createPath)) {
 						this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
 							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
@@ -112,7 +116,11 @@ public class FlixActivator extends AbstractUIPlugin {
 			rollback.add(this.flix.getPostResourceMonitor().onDidDeleteFiles().subscribe(fileDeleteEvent -> {
 				for (final FileDelete delete : fileDeleteEvent.getFiles()) {
 					final IPath deletePath = URIUtil.toPath(delete.getUri());
-					final IProject project = EclipseUtils.project(deletePath).orElseThrow();
+					final Optional<IProject> projectOptional = EclipseUtils.project(deletePath);
+					if (projectOptional.isEmpty()) {
+						return;
+					}
+					final IProject project = projectOptional.get();
 					if (project.getFile("flix.jar").getLocation().equals(deletePath)) {
 						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getFlixProject(project);
 						if (flixProjectOptional.isPresent()) {
@@ -125,7 +133,11 @@ public class FlixActivator extends AbstractUIPlugin {
 			rollback.add(this.flix.getPostResourceMonitor().onDidChangeFiles().subscribe(fileChangeEvent -> {
 				for (final URI uri : fileChangeEvent.getFiles()) {
 					final IPath changePath = URIUtil.toPath(uri);
-					final IProject project = EclipseUtils.project(changePath).orElseThrow();
+					final Optional<IProject> projectOptional = EclipseUtils.project(changePath);
+					if (projectOptional.isEmpty()) {
+						return;
+					}
+					final IProject project = projectOptional.get();
 					if (project.getFile("flix.jar").getLocation().equals(changePath)) {
 						this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
 							this.flix.getLanguageToolingManager().reconnectProject(flixProject);

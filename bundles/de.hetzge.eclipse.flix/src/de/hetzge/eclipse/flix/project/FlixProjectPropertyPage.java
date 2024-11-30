@@ -25,9 +25,10 @@ public class FlixProjectPropertyPage extends PropertyPage implements IWorkbenchP
 
 	@Override
 	protected Control createContents(Composite parent) {
-		this.project = (IProject) getElement().getAdapter(IResource.class);
+		final IResource resource = getElement().getAdapter(IResource.class);
+		this.project = resource.getProject();
 		this.flixProject = Flix.get().getModel().getFlixProject(this.project).orElseThrow(() -> new IllegalStateException("Not a flix project"));
-		this.control = new FlixProjectPropertyPageControl(parent);
+		this.control = new FlixProjectPropertyPageControl(parent, this.flixProject);
 		return this.control;
 	}
 
@@ -44,9 +45,9 @@ public class FlixProjectPropertyPage extends PropertyPage implements IWorkbenchP
 		return true;
 	}
 
-	private class FlixProjectPropertyPageControl extends Composite {
+	private static class FlixProjectPropertyPageControl extends Composite {
 
-		public FlixProjectPropertyPageControl(Composite parent) {
+		public FlixProjectPropertyPageControl(Composite parent, FlixProject flixProject) {
 			super(parent, SWT.NONE);
 			setLayout(new GridLayout(2, true));
 
@@ -56,8 +57,16 @@ public class FlixProjectPropertyPage extends PropertyPage implements IWorkbenchP
 			GridDataFactory.swtDefaults().applyTo(versionLabel);
 
 			final Text versionText = new Text(informationsGroup, SWT.READ_ONLY);
-			versionText.setText(FlixProjectPropertyPage.this.flixProject.getFlixVersion().getKey());
+			versionText.setText(flixProject.getFlixVersion().getKey());
 			GridDataFactory.fillDefaults().grab(true, false).applyTo(versionText);
+
+			final Label flixJarLabel = new Label(informationsGroup, SWT.NONE);
+			flixJarLabel.setText("Flix compiler JAR");
+			GridDataFactory.swtDefaults().applyTo(flixJarLabel);
+
+			final Text flixJarText = new Text(informationsGroup, SWT.READ_ONLY);
+			flixJarText.setText(flixProject.getFlixCompilerJarFile().getAbsolutePath());
+			GridDataFactory.fillDefaults().grab(true, false).applyTo(flixJarText);
 		}
 	}
 

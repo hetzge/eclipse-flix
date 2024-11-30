@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.ICoreRunnable;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -72,6 +73,7 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 
 	public synchronized void connectProject(FlixProject project) {
 		refreshFlixDependencies(project);
+		project.createOrGetStandardLibraryFolder(new NullProgressMonitor());
 		final Job job = Job.create("Connect Flix language tooling: " + project.getProject().getName(), (ICoreRunnable) monitor -> {
 			this.connectedProjects.computeIfAbsent(project, ignore -> {
 				return SafeRun.runWithResult(rollback -> {
@@ -141,9 +143,12 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 	public synchronized void disconnectProject(FlixProject project) {
 		final Job job = Job.create("Disconnect Flix language tooling: " + project.getProject().getName(), (ICoreRunnable) monitor -> {
 			final LanguageTooling languageTooling = this.connectedProjects.remove(project);
+			// Close language tooling
 			if (languageTooling != null) {
 				languageTooling.close();
 			}
+			// Delete compiler folder
+			project.deleteFlixCompilerFolder(monitor);
 		});
 		job.setRule(project.getProject());
 		job.schedule();

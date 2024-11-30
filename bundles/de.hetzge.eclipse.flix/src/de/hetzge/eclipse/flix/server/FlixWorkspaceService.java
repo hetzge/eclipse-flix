@@ -62,13 +62,16 @@ public final class FlixWorkspaceService implements WorkspaceService {
 	@Override
 	public void didDeleteFiles(DeleteFilesParams params) {
 		System.out.println("FlixWorkspaceService.didDeleteFiles()");
+		boolean removed = false;
 		for (final FileDelete delete : params.getFiles()) {
 			final IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(URI.create(delete.getUri()));
 			for (final IFile file : files) {
-				this.flixService.removeFile(file);
+				removed |= this.flixService.removeFile(file);
 			}
 		}
-		this.flixService.syncCompile();
+		if (removed) {
+			this.flixService.syncCompile();
+		}
 	}
 
 	@Override
@@ -80,14 +83,17 @@ public final class FlixWorkspaceService implements WorkspaceService {
 	@Override
 	public void didCreateFiles(CreateFilesParams params) {
 		System.out.println("FlixWorkspaceService.didCreateFiles() " + params.getFiles().stream().map(FileCreate::getUri).collect(Collectors.joining(",")));
+		boolean added = false;
 		final List<FileCreate> fileCreates = params.getFiles();
 		for (final FileCreate fileCreate : fileCreates) {
 			final IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(URI.create(fileCreate.getUri()));
 			for (final IFile file : files) {
-				this.flixService.addFile(file);
+				added |= this.flixService.addFile(file);
 			}
 		}
-		this.flixService.syncCompile();
+		if(added) {
+			this.flixService.syncCompile();
+		}
 	}
 
 	@Override

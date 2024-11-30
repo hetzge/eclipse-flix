@@ -1,14 +1,19 @@
 package de.hetzge.eclipse.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -110,6 +115,34 @@ public final class Utils {
 				break;
 			}
 		}
+	}
+
+	public static String md5(File file) {
+		try (DigestInputStream digestInputStream = new DigestInputStream(new FileInputStream(file), MessageDigest.getInstance("MD5"))) {
+			while (digestInputStream.read() != -1) {
+			}
+			return new BigInteger(1, digestInputStream.getMessageDigest().digest()).toString(16);
+		} catch (final IOException | NoSuchAlgorithmException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	public static String md5(String input) {
+		try {
+			return new BigInteger(1, MessageDigest.getInstance("MD5").digest(input.getBytes())).toString(16);
+		} catch (final NoSuchAlgorithmException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	public static boolean deleteDirectory(File directoryToBeDeleted) {
+		final File[] allContents = directoryToBeDeleted.listFiles();
+		if (allContents != null) {
+			for (final File file : allContents) {
+				deleteDirectory(file);
+			}
+		}
+		return directoryToBeDeleted.delete();
 	}
 
 }

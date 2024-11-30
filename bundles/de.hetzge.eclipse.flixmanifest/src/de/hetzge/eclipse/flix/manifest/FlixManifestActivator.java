@@ -9,11 +9,6 @@ public class FlixManifestActivator implements BundleActivator {
 
 	@Override
 	public void start(BundleContext context) throws Exception {
-		try (MutableFlixManifestToml tomlFile = MutableFlixManifestToml.open("file.toml")) {
-			tomlFile.setValue(new String[] { "mvn-dependencies2", "test" }, "123");
-			tomlFile.setValue(new String[] { "mvn-dependencies2", "test2" }, "123");
-			System.out.println(tomlFile.getContent());
-		}
 	}
 
 	@Override

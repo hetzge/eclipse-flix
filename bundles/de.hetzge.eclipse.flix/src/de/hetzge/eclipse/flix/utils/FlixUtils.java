@@ -18,7 +18,9 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.jar.JarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SwtCallable;
@@ -29,6 +31,8 @@ import de.hetzge.eclipse.flix.core.model.FlixVersion;
 import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixUtils {
+	private static final ILog LOG = Platform.getLog(FlixUtils.class);
+
 	private FlixUtils() {
 	}
 
@@ -41,7 +45,7 @@ public final class FlixUtils {
 		}
 		flixJarFile.getParentFile().mkdirs();
 		if (!flixJarFile.exists()) {
-			System.out.println("Download " + flixJarName);
+			LOG.info("Download " + flixJarName);
 			try (final FileOutputStream outputStream = new FileOutputStream(flixJarFile)) {
 				final URL url = URI.create("https://github.com/flix/flix/releases/download/v" + version.getKey() + "/flix.jar").toURL();
 
@@ -97,31 +101,24 @@ public final class FlixUtils {
 		}
 	}
 
-	@Deprecated
-	public synchronized static File loadFlixLibraryFolder(FlixVersion version, IProgressMonitor monitor) {
-		return new File(loadFlixFolder(version, monitor), "src/library");
+	public synchronized static File getFlixCompilerFolder(FlixVersion version, File flixJarFile, IProgressMonitor monitor) {
+		final String versionString = Objects.equals(version, FlixVersion.CUSTOM_VERSION) ? Utils.md5(flixJarFile.getAbsolutePath()) : version.getKey();
+		return new File("_flix/flix." + versionString);
 	}
 
-	public synchronized static URI loadFlixJarUri(FlixVersion version, IProgressMonitor monitor) {
-		return URI.create("jar:" + loadFlixJarFile(version, monitor).toURI().toString());
-	}
-
-	@Deprecated
-	public synchronized static File loadFlixFolder(FlixVersion version, IProgressMonitor monitor) {
-		final File flixSourceFolder = new File("_flix/flix." + version.getKey());
-		final File flixJarFile = loadFlixJarFile(version, monitor);
-		if (!flixSourceFolder.exists()) {
+	public synchronized static File createOrGetFlixCompilerFolder(FlixVersion version, File flixJarFile, IProgressMonitor monitor) {
+		final File flixCompilerFolder = getFlixCompilerFolder(version, flixJarFile, monitor);
+		if (!flixCompilerFolder.exists()) {
 			try {
-				extract(flixJarFile, flixSourceFolder, monitor);
+				extract(flixJarFile, flixCompilerFolder, monitor);
 			} catch (final IOException exception) {
 				throw new RuntimeException(exception);
 			}
 		}
-		return flixSourceFolder;
+		return flixCompilerFolder;
 	}
 
 	private static void extract(File archiveFile, File flixSourceFolder, IProgressMonitor monitor) throws IOException {
-		System.out.println("FlixUtils.extract(" + archiveFile.getAbsolutePath() + ", " + flixSourceFolder.getAbsolutePath() + ")");
 		try (ArchiveInputStream inputStream = new JarArchiveInputStream(new BufferedInputStream(new FileInputStream(archiveFile)))) {
 			SubMonitor subMonitor;
 			if (monitor != null) {

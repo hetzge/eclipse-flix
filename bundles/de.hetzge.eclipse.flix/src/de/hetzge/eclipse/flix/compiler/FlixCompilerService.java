@@ -46,7 +46,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
 import de.hetzge.eclipse.flix.model.FlixProject;
-import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.flix.utils.GsonUtils;
 import de.hetzge.eclipse.utils.Utils;
 
@@ -80,29 +79,37 @@ public final class FlixCompilerService {
 		}
 	}
 
-	public void addFile(IFile file) {
+	public boolean addFile(IFile file) {
 		final URI uri = file.getLocationURI();
 		if (this.flixProject.isFlixSourceFile(file)) {
 			addUri(uri, Utils.readFileContent(file));
+			return true;
 		} else if (this.flixProject.isFlixFpkgLibraryFile(file)) {
 			addFpkg(file.getLocationURI());
+			return true;
 		} else if (this.flixProject.isFlixJarLibraryFile(file)) {
 			addJar(file.getLocationURI());
+			return true;
 		} else {
 			// ignore
+			return false;
 		}
 	}
 
-	public void removeFile(IFile file) {
+	public boolean removeFile(IFile file) {
 		final URI uri = file.getLocationURI();
 		if (this.flixProject.isFlixSourceFile(file)) {
 			removeUri(uri);
+			return true;
 		} else if (this.flixProject.isFlixFpkgLibraryFile(file)) {
 			removeFpkg(uri);
+			return true;
 		} else if (this.flixProject.isFlixJarLibraryFile(file)) {
 			removeJar(uri);
+			return true;
 		} else {
 			// ignore
+			return false;
 		}
 	}
 
@@ -310,14 +317,14 @@ public final class FlixCompilerService {
 	}
 
 	private String fixLibraryUri(String uri) {
-		if (uri.startsWith("file:")) {
+		if (uri.startsWith("file:")) { //$NON-NLS-1$
 			return uri;
 		}
-		return FlixUtils.loadFlixJarUri(this.flixProject.getFlixVersion(), null).toString() + "!/src/library/" + uri; //$NON-NLS-1$
+		return this.flixProject.getProject().getFolder("library").getLocationURI() + "/" + uri; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	private String unfixLibraryUri(String uri) {
-		final String libraryPrefix = FlixUtils.loadFlixJarUri(this.flixProject.getFlixVersion(), null).toString() + "!/src/library/"; // $NON-NLS-1$
+		final String libraryPrefix = this.flixProject.getProject().getFolder("library").getLocationURI().toString(); //$NON-NLS-1$
 		if (!uri.startsWith(libraryPrefix)) {
 			return uri;
 		}

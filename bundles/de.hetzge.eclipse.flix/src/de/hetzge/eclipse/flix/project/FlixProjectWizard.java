@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -15,7 +16,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.ide.undo.CreateProjectOperation;
 import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
 
-import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.core.model.FlixVersion;
 import de.hetzge.eclipse.flix.launch.FlixLauncher;
 import de.hetzge.eclipse.utils.EclipseUtils;
@@ -62,12 +62,12 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 
 					final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
 					EclipseUtils.addNature(description, FlixProjectNature.ID);
-					EclipseUtils.addBuilder(description, FlixConstants.FLIX_BUILDER_ID);
 
 					final CreateProjectOperation projectOperation = new CreateProjectOperation(description, "Create Flix Eclipse project");
 					projectOperation.execute(monitor, WorkspaceUndoUtil.getUIInfoAdapter(getShell()));
 
-					ResourcesPlugin.getWorkspace().getRoot().getProject(projectName).setDefaultCharset("UTF-8", monitor); //$NON-NLS-1$
+					final IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+					project.setDefaultCharset("UTF-8", monitor); //$NON-NLS-1$
 				} catch (ExecutionException | CoreException | InterruptedException exception) {
 					// Rollback already created files
 					Utils.deleteFolder(newProjectFolder);

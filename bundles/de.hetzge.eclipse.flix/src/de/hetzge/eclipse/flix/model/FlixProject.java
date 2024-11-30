@@ -14,9 +14,12 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.osgi.service.prefs.BackingStoreException;
@@ -30,6 +33,7 @@ import de.hetzge.eclipse.flix.project.FlixProjectNature;
 import de.hetzge.eclipse.flix.project.FlixProjectPreferences;
 import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
+import de.hetzge.eclipse.utils.Utils;
 
 public class FlixProject {
 
@@ -49,7 +53,7 @@ public class FlixProject {
 		if (getInProjectFolderFlixCompilerJarFile().isPresent()) {
 			return FlixVersion.CUSTOM_VERSION;
 		} else {
-			return getFlixToml().map(FlixManifestToml::getFlixVersion).orElse(FlixConstants.FLIX_DEFAULT_VERSION);
+			return getFlixToml().map(FlixManifestToml::getFlixVersion).orElse(FlixVersion.DEFAULT_VERSION);
 		}
 	}
 
@@ -64,31 +68,6 @@ public class FlixProject {
 
 	public boolean isActive() {
 		return isActiveFlixProject(this.project);
-	}
-
-	public void createStandardLibraryLinks() {
-//		try {
-//			final String jarBaseUri = FlixUtils.loadFlixJarUri(this.getFlixVersion(), null).toString();
-//			final FolderJarItem folder = JarUtils.indexJarFile(getFlixCompilerJarFile(), "src/library");
-//			for (final JarItem item : folder.getChildren()) {
-//				if (item instanceof FolderJarItem) {
-//					final FolderJarItem folderJarItem = (FolderJarItem) item;
-//
-//				} else if (item instanceof FileJarItem) {
-//					final FileJarItem fileJarItem = (FileJarItem) item;
-//					if (fileJarItem.getName().endsWith(".flix")) {
-////						getProject().getFile(fileJarItem.getPath()).delete(true, null);
-//						getProject().getFile(fileJarItem.getPath()).createLink(URI.create(jarBaseUri + "!/src/library/" + fileJarItem.getPath()), IResource.VIRTUAL, null);
-//					}
-//				}
-//			}
-//		} catch (final IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (final CoreException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 	}
 
 	public File getFlixCompilerJarFile() {
@@ -109,12 +88,35 @@ public class FlixProject {
 		}
 	}
 
-	public File getFlixFolder() {
-		final IFile flixJarInProjectFile = this.project.getFile("flix.jar");
-		if (flixJarInProjectFile.exists()) {
-			return FlixUtils.loadFlixFolder(FlixConstants.FLIX_DEFAULT_VERSION, null); // TODO unpack flix jar from project
+	public File getFlixCompilerFolder() {
+		final IProgressMonitor monitor = new NullProgressMonitor();
+		final Optional<File> jarFileOptional = getInProjectFolderFlixCompilerJarFile();
+		if (jarFileOptional.isPresent()) {
+			return FlixUtils.getFlixCompilerFolder(FlixVersion.DEFAULT_VERSION, jarFileOptional.get(), monitor);
 		} else {
-			return FlixUtils.loadFlixFolder(getFlixVersion(), null);
+			return FlixUtils.getFlixCompilerFolder(getFlixVersion(), FlixUtils.loadFlixJarFile(getFlixVersion(), monitor), monitor);
+		}
+	}
+
+	public void deleteFlixCompilerFolder(IProgressMonitor monitor) {
+		// Custom versions needs full refresh because content could have been changed
+		if (getFlixVersion() == FlixVersion.CUSTOM_VERSION) {
+			Utils.deleteDirectory(getFlixCompilerFolder());
+		}
+		try {
+			getStandardLibraryFolder().delete(true, monitor);
+		} catch (final CoreException exception) {
+			throw new RuntimeException(exception);
+		}
+	}
+
+	public File createOrGetFlixCompilerFolder(IProgressMonitor monitor) {
+		final Optional<File> jarFileOptional = getInProjectFolderFlixCompilerJarFile();
+		if (jarFileOptional.isPresent()) {
+			return FlixUtils.createOrGetFlixCompilerFolder(FlixVersion.DEFAULT_VERSION, jarFileOptional.get(), monitor);
+		} else {
+			final FlixVersion flixVersion = getFlixVersion();
+			return FlixUtils.createOrGetFlixCompilerFolder(flixVersion, FlixUtils.loadFlixJarFile(flixVersion, monitor), monitor);
 		}
 	}
 
@@ -262,6 +264,26 @@ public class FlixProject {
 		} catch (final CoreException exception) {
 			throw new RuntimeException("Failed to refresh project", exception);
 		}
+	}
+
+	public IFolder createOrGetStandardLibraryFolder(IProgressMonitor monitor) {
+		final IFolder libraryFolder = getStandardLibraryFolder();
+		if (!libraryFolder.exists()) {
+			try {
+				final File standardLibraryFolder = new File(createOrGetFlixCompilerFolder(monitor), "src/library"); //$NON-NLS-1$
+				libraryFolder.create(true, false, monitor);
+				libraryFolder.setDerived(true, monitor);
+				libraryFolder.createLink(Path.fromOSString(standardLibraryFolder.getAbsolutePath()), IResource.REPLACE, monitor);
+				libraryFolder.refreshLocal(IFile.DEPTH_INFINITE, monitor);
+			} catch (final CoreException exception) {
+				throw new RuntimeException("Failed to create standard library folder", exception);
+			}
+		}
+		return libraryFolder;
+	}
+
+	private IFolder getStandardLibraryFolder() {
+		return this.project.getFolder("library"); //$NON-NLS-1$
 	}
 
 	@Override

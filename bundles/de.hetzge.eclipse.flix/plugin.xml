@@ -97,11 +97,51 @@
 		<command id="de.hetzge.eclipse.flix.openSymbol" categoryId="org.eclipse.ui.category.navigate" name="Open Symbol (Flix)" description="Show a list of workspace-wide symbols" defaultHandler="de.hetzge.eclipse.flix.FlixSymbolSelectionHandler"></command>
 		<command id="de.hetzge.eclipse.flix.nature.create" defaultHandler="de.hetzge.eclipse.flix.project.FlixProjectNatureHandler" description="Converts the project to a Flix project" name="Add Flix project nature"></command>
 		<command id="de.hetzge.eclipse.flix.editor.findReferences" categoryId="org.eclipse.search.ui.category.search" name="Find References (Flix)" description="Find references to the selected symbol" defaultHandler="de.hetzge.eclipse.flix.editor.FlixFindReferencesHandler"></command>
-		<command defaultHandler="de.hetzge.eclipse.flix.FlixReconnectLanguageToolingHandler" id="de.hetzge.eclipse.flix.reconnectLanguageTooling" name="Reconnect Flix language tooling"></command>
+		<command defaultHandler="de.hetzge.eclipse.flix.handler.FlixReconnectLanguageToolingHandler" id="de.hetzge.eclipse.flix.reconnectLanguageTooling" name="Reconnect Flix language tooling"></command>
   <command
         defaultHandler="de.hetzge.eclipse.flix.compiler.FlixCompileHandler"
         id="de.hetzge.eclipse.flix.compile"
         name="Compile">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixOutdatedHandler"
+        id="de.hetzge.eclipse.flix.outdated"
+        name="Run &apos;outdated&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixCheckHandler"
+        id="de.hetzge.eclipse.flix.check"
+        name="Run &apos;check&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixBuildHandler"
+        id="de.hetzge.eclipse.flix.build"
+        name="Run &apos;build&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixBuildJarHandler"
+        id="de.hetzge.eclipse.flix.buildJar"
+        name="Run &apos;build-jar&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixBuildFatJarHandler"
+        id="de.hetzge.eclipse.flix.buildFatJar"
+        name="Run &apos;build-fatjar&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixBuildPackageHandler"
+        id="de.hetzge.eclipse.flix.buildPackage"
+        name="Run &apos;build-pkg&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixGenerateDocumentationHandler"
+        id="de.hetzge.eclipse.flix.documentation"
+        name="Run &apos;doc&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixLaunchReplHandler"
+        id="de.hetzge.eclipse.flix.repl"
+        name="Open REPL">
   </command>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
@@ -142,6 +182,54 @@
           style="push"
           tooltip="Executes the compiler">
     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.build"
+           icon="assets/icons/icon.png"
+           label="Run &apos;build&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.buildJar"
+           icon="assets/icons/icon.png"
+           label="Run &apos;build-jar&apos;"
+           style="push">
+     </command>    
+     <command
+           commandId="de.hetzge.eclipse.flix.buildFatJar"
+           icon="assets/icons/icon.png"
+           label="Run &apos;buildFatJar&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.buildPackage"
+           icon="assets/icons/icon.png"
+           label="Run &apos;build-pkg&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.documentation"
+           icon="assets/icons/icon.png"
+           label="Run &apos;doc&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.check"
+           icon="assets/icons/icon.png"
+           label="Run &apos;check&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.outdated"
+           icon="assets/icons/icon.png"
+           label="Run &apos;outdated&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.repl"
+           icon="assets/icons/icon.png"
+           label="Open REPL"
+           style="push">
+     </command>
     	<visibleWhen checkEnabled="false">
 						<with variable="selection">
 							<iterate>
@@ -234,24 +322,6 @@
   </extension>
   <extension
         point="org.eclipse.ui.navigator.navigatorContent">
-     <navigatorContent
-           activeByDefault="true"
-           appearsBefore="org.eclipse.ui.navigator.resourceContent"
-           contentProvider="aaa.MyContentProvider"
-           icon="assets/icons/icon.png"
-           id="de.hetzge.eclipse.flix.navigatorContent1"
-           labelProvider="aaa.MyLabelProvider"
-           name="name"
-           priority="normal"
-           providesSaveables="false">
-        <triggerPoints>
-        
-	               <instanceof value="org.eclipse.core.resources.IResource"/>
-        </triggerPoints>
-        <actionProvider
-              class="aaa.MyActionProvider">
-        </actionProvider>
-     </navigatorContent>
      <commonWizard
            type="new"
            wizardId="de.hetzge.eclipse.flix.newfile">
@@ -262,6 +332,23 @@
            wizardId="de.hetzge.eclipse.flix.newProject">
         <enablement></enablement>
      </commonWizard>
+     <navigatorContent
+           activeByDefault="true"
+           contentProvider="de.hetzge.eclipse.flix.FlixTreeContentProvider"
+           id="de.hetzge.eclipse.flix.navigatorContent1"
+           labelProvider="de.hetzge.eclipse.flix.FlixTreeContentLabelProvider"
+           name="name"
+           priority="highest">
+        <triggerPoints>
+           <instanceof
+                 value="org.eclipse.core.resources.IResource">
+           </instanceof>
+        </triggerPoints>
+        <override
+              policy="InvokeAlwaysRegardlessOfSuppressedExt"
+              suppressedExtensionId="org.eclipse.ui.navigator.resourceContent">
+        </override>
+     </navigatorContent>
   </extension>
    <extension
          point="org.eclipse.ui.navigator.viewer">

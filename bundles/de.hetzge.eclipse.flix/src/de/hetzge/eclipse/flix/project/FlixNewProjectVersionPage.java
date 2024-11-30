@@ -11,7 +11,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.core.model.FlixVersion;
 
 public class FlixNewProjectVersionPage extends WizardPage {
@@ -55,13 +54,13 @@ public class FlixNewProjectVersionPage extends WizardPage {
 		this.versionCombo = new Combo(versionGroup, SWT.VERTICAL | SWT.BORDER | SWT.READ_ONLY);
 		this.versionCombo.setEnabled(true);
 		this.versionCombo.setItems(FlixVersion.VERSIONS.stream().map(FlixVersion::getKey).collect(Collectors.toList()).toArray(new String[0]));
-		this.versionCombo.setText(FlixConstants.FLIX_DEFAULT_VERSION.getKey());
+		this.versionCombo.setText(FlixVersion.DEFAULT_VERSION.getKey());
 		this.versionCombo.setLayoutData(data);
 		this.versionCombo.setFont(parent.getFont());
 	}
 
 	public FlixVersion getVersionValue() {
-		return this.versionCombo != null ? FlixVersion.getVersionByName(this.versionCombo.getText()).orElseThrow() : FlixConstants.FLIX_DEFAULT_VERSION;
+		return this.versionCombo != null ? FlixVersion.getVersionByName(this.versionCombo.getText()).orElseThrow() : FlixVersion.DEFAULT_VERSION;
 	}
 
 }
