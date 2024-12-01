@@ -6,6 +6,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.ICoreRunnable;
@@ -22,8 +24,6 @@ import org.lxtk.util.connect.Connectable.ConnectionState;
 
 import de.hetzge.eclipse.flix.client.FlixLanguageClientController;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
-import de.hetzge.eclipse.flix.compiler.FlixCompilerLaunch;
-import de.hetzge.eclipse.flix.compiler.FlixCompilerLaunchConfigurationDelegate;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerService;
 import de.hetzge.eclipse.flix.launch.FlixLauncher;
 import de.hetzge.eclipse.flix.manifest.FlixManifestToml;
@@ -84,14 +84,32 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 					final FlixCompilerClient compilerClient;
 					if (!Objects.equals(System.getProperty("flix.debug"), "true")) {
 						final int compilerPort = Utils.queryPort();
-						final FlixCompilerLaunch launch = FlixCompilerLaunchConfigurationDelegate.launch(project, compilerPort);
-						isRunning = () -> launch.isRunning();
-						rollback.add(launch::dispose);
-						launch.waitUntilReady();
+
+						final CountDownLatch readyLatch = new CountDownLatch(1);
+						final CountDownLatch connectedLatch = new CountDownLatch(1);
+
+						final Process lspProcess = FlixLauncher.launchLsp(project, compilerPort, text -> {
+							if (text.startsWith("Listen on")) { //$NON-NLS-1$
+								readyLatch.countDown();
+							} else if (text.startsWith("Client at")) { //$NON-NLS-1$
+								connectedLatch.countDown();
+							}
+						});
+						isRunning = () -> lspProcess.isAlive();
+						rollback.add(lspProcess::destroyForcibly);
 						final int connectPort = compilerPort;
+						try {
+							readyLatch.await(1L, TimeUnit.MINUTES);
+						} catch (final InterruptedException exception) {
+							throw new RuntimeException("Failed to start Flix language server", exception);
+						}
 						compilerClient = FlixCompilerClient.connect(connectPort);
 						rollback.add(compilerClient::close);
-						launch.waitUntilConnected();
+						try {
+							connectedLatch.await(1L, TimeUnit.MINUTES);
+						} catch (final InterruptedException exception) {
+							throw new RuntimeException("Failed to connect to Flix compiler", exception);
+						}
 					} else {
 						compilerClient = FlixCompilerClient.connect(32323);
 						isRunning = () -> true;

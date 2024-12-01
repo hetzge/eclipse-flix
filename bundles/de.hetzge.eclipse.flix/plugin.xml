@@ -38,12 +38,6 @@
 	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
 		<launchConfigurationType name="Flix launch" delegate="de.hetzge.eclipse.flix.launch.FlixLaunchConfigurationDelegate" modes="run" id="de.hetzge.eclipse.flix.launchConfigurationType"></launchConfigurationType>
 		<launchConfigurationType name="Flix test launch" delegate="de.hetzge.eclipse.flix.launch.FlixTestLaunchConfigurationDelegate" modes="run" id="de.hetzge.eclipse.flix.testLaunchConfigurationType"></launchConfigurationType>
-  <launchConfigurationType
-        delegate="de.hetzge.eclipse.flix.compiler.FlixCompilerLaunchConfigurationDelegate"
-        id="de.hetzge.eclipse.flix.lspLaunchConfigurationType"
-        modes="run"
-        name="Flix LSP Server">
-  </launchConfigurationType>
 	</extension>
 	<extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
 		<launchConfigurationTypeImage id="de.hetzge.eclipse.flix.launchConfigurationType.image" configTypeID="de.hetzge.eclipse.flix.launchConfigurationType" icon="assets/icons/icon.png" />

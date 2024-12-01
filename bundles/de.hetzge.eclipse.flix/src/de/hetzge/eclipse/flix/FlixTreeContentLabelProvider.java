@@ -39,14 +39,12 @@ public class FlixTreeContentLabelProvider implements ICommonLabelProvider, IStyl
 
 	@Override
 	public Image getImage(Object element) {
-		System.out.println("FlixTreeContentLabelProvider.getImage()");
 
-		// TODO only for flix library folder
 		// TODO sort to the end?!
 
 		if (element instanceof IFolder) {
 			final IFolder folder = (IFolder) element;
-			if (Objects.equals("library", folder.getName())) {
+			if (Objects.equals(FlixProject.LIBRARY_FOLDER_NAME, folder.getName())) {
 				return FlixActivator.getImage(FlixImageKey.FLIX_ICON);
 			}
 		}
@@ -64,7 +62,7 @@ public class FlixTreeContentLabelProvider implements ICommonLabelProvider, IStyl
 
 		if (element instanceof IFolder) {
 			final IFolder folder = (IFolder) element;
-			if (Objects.equals("library", folder.getName())) {
+			if (Objects.equals(FlixProject.LIBRARY_FOLDER_NAME, folder.getName())) {
 
 				final Optional<FlixProject> flixProjectOptional = Flix.get().getModel().getFlixProject(folder.getProject());
 				if (flixProjectOptional.isPresent()) {

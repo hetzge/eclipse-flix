@@ -320,11 +320,11 @@ public final class FlixCompilerService {
 		if (uri.startsWith("file:")) { //$NON-NLS-1$
 			return uri;
 		}
-		return this.flixProject.getProject().getFolder("library").getLocationURI() + "/" + uri; //$NON-NLS-1$ //$NON-NLS-2$
+		return this.flixProject.getProject().getFolder(FlixProject.LIBRARY_FOLDER_NAME).getLocationURI() + "/" + uri; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	private String unfixLibraryUri(String uri) {
-		final String libraryPrefix = this.flixProject.getProject().getFolder("library").getLocationURI().toString(); //$NON-NLS-1$
+		final String libraryPrefix = this.flixProject.getProject().getFolder(FlixProject.LIBRARY_FOLDER_NAME).getLocationURI().toString(); //$NON-NLS-1$
 		if (!uri.startsWith(libraryPrefix)) {
 			return uri;
 		}

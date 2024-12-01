@@ -37,6 +37,8 @@ import de.hetzge.eclipse.utils.Utils;
 
 public class FlixProject {
 
+	public static final String LIBRARY_FOLDER_NAME = "zzzlibrary";
+
 	private final IProject project;
 	private final FlixProjectPreferences projectPreferences;
 
@@ -283,7 +285,7 @@ public class FlixProject {
 	}
 
 	private IFolder getStandardLibraryFolder() {
-		return this.project.getFolder("library"); //$NON-NLS-1$
+		return this.project.getFolder(LIBRARY_FOLDER_NAME); // $NON-NLS-1$
 	}
 
 	@Override
