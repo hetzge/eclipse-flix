@@ -97,7 +97,7 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 
 	@Override
 	public void doSave(IProgressMonitor monitor) {
-		if (this.formPage.getPartControl() != null) {
+		if (getActivePage() == this.formPageIndex && this.formPage.getPartControl() != null) {
 			this.formPage.syncToEditor();
 		}
 		this.editor.doSave(monitor);

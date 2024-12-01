@@ -22,7 +22,7 @@ public class FlixRunReplCommandHandler implements CommandHandler {
 	@Override
 	public CompletableFuture<Object> execute(ExecuteCommandParams params) {
 		final FlixModel model = Flix.get().getModel();
-		final FlixProject flixProject = EclipseUtils.activeFile().map(IFile::getProject).flatMap(model::getFlixProject).orElseThrow(() -> new IllegalStateException("No active flix project found"));
+		final FlixProject flixProject = EclipseUtils.activeFile().map(IFile::getProject).flatMap(model::getOrCreateFlixProject).orElseThrow(() -> new IllegalStateException("No active flix project found"));
 		FlixLauncher.launchRepl(flixProject);
 		return CompletableFuture.completedFuture(null);
 	}

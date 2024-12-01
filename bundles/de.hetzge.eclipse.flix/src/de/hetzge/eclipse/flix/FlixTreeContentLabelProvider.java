@@ -45,7 +45,7 @@ public class FlixTreeContentLabelProvider implements ICommonLabelProvider, IStyl
 		if (element instanceof IFolder) {
 			final IFolder folder = (IFolder) element;
 			if (Objects.equals(FlixProject.LIBRARY_FOLDER_NAME, folder.getName())) {
-				return FlixActivator.getImage(FlixImageKey.FLIX_ICON);
+				return FlixActivator.getImage(FlixImageKey.FLIX_LIBRARY_ICON);
 			}
 		}
 
@@ -64,7 +64,7 @@ public class FlixTreeContentLabelProvider implements ICommonLabelProvider, IStyl
 			final IFolder folder = (IFolder) element;
 			if (Objects.equals(FlixProject.LIBRARY_FOLDER_NAME, folder.getName())) {
 
-				final Optional<FlixProject> flixProjectOptional = Flix.get().getModel().getFlixProject(folder.getProject());
+				final Optional<FlixProject> flixProjectOptional = Flix.get().getModel().getOrCreateFlixProject(folder.getProject());
 				if (flixProjectOptional.isPresent()) {
 					final FlixProject flixProject = flixProjectOptional.get();
 

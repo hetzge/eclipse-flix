@@ -23,6 +23,7 @@ import org.osgi.framework.BundleContext;
 import de.hetzge.eclipse.flix.editor.FlixEditor;
 import de.hetzge.eclipse.flix.launch.FlixRunMainCommandHandler;
 import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
+import de.hetzge.eclipse.flix.manifest.FlixManifestToml;
 import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
@@ -45,7 +46,6 @@ import de.hetzge.eclipse.utils.Utils;
 // TODO execute flix command shortcut
 
 // TODO fix reference search (absolute uri)
-// TODO link into library folder
 // TODO refresh library if necessary (flix version)
 
 /**
@@ -91,7 +91,7 @@ public class FlixActivator extends AbstractUIPlugin {
 			rollback.add(this.flix.getCommandService().addCommand("flix.runMain", new FlixRunMainCommandHandler())::dispose);
 			rollback.add(this.flix.getCommandService().addCommand("flix.cmdRepl", new FlixRunReplCommandHandler())::dispose);
 
-			this.flix.getLanguageToolingManager().connectProjects(Flix.get().getModel().getFlixProjects());
+			this.flix.getLanguageToolingManager().connectProjects(Flix.get().getModel().getOrCreateFlixProjects());
 			rollback.add(this.flix.getLanguageToolingManager().startMonitor()::dispose);
 
 			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -103,11 +103,11 @@ public class FlixActivator extends AbstractUIPlugin {
 					final IPath createPath = URIUtil.toPath(create.getUri());
 					final Optional<IProject> projectOptional = EclipseUtils.project(createPath);
 					if (projectOptional.isEmpty()) {
-                        return;
-                    }
+						return;
+					}
 					final IProject project = projectOptional.get();
 					if (project.getFile("flix.jar").getLocation().equals(createPath)) {
-						this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
+						this.flix.getModel().getOrCreateFlixProject(project).ifPresent(flixProject -> {
 							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
 						});
 					}
@@ -121,8 +121,8 @@ public class FlixActivator extends AbstractUIPlugin {
 						return;
 					}
 					final IProject project = projectOptional.get();
-					if (project.getFile("flix.jar").getLocation().equals(deletePath)) {
-						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getFlixProject(project);
+					if (project.getFile(FlixProject.FLIX_JAR_FILE_NAME).getLocation().equals(deletePath)) {
+						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getOrCreateFlixProject(project);
 						if (flixProjectOptional.isPresent()) {
 							final FlixProject flixProject = flixProjectOptional.get();
 							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
@@ -138,26 +138,34 @@ public class FlixActivator extends AbstractUIPlugin {
 						return;
 					}
 					final IProject project = projectOptional.get();
-					if (project.getFile("flix.jar").getLocation().equals(changePath)) {
-						this.flix.getModel().getFlixProject(project).ifPresent(flixProject -> {
-							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
-						});
-					} else if (project.getFile("flix.toml").getLocation().equals(changePath)) {
-						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getFlixProject(project);
-						if (flixProjectOptional.isPresent()) {
-							final FlixProject flixProject = flixProjectOptional.get();
-							this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+					if (project.getFile(FlixProject.FLIX_JAR_FILE_NAME).getLocation().equals(changePath)) {
+						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getOrCreateFlixProject(project);
+						if (flixProjectOptional.isEmpty()) {
+							return;
 						}
+						final FlixProject flixProject = flixProjectOptional.get();
+						this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+					} else if (project.getFile(FlixManifestToml.FLIX_MANIFEST_TOML_FILE_NAME).getLocation().equals(changePath)) {
+						final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getOrCreateFlixProject(project);
+						if (flixProjectOptional.isEmpty()) {
+							return;
+						}
+						final FlixProject flixProject = flixProjectOptional.get();
+						flixProject.reloadManifest();
+						this.flix.getLanguageToolingManager().reconnectProject(flixProject);
 					}
 				}
 			})::dispose);
 			rollback.add(this.flix.getPostResourceMonitor().onDidOpenProject().subscribe(projectOpenEvent -> {
 				final IProject project = projectOpenEvent.getProject();
-				final FlixProject flixProject = new FlixProject(project);
-				if (project.isOpen()) {
-					this.flix.getLanguageToolingManager().reconnectProject(flixProject);
-				} else {
-					this.flix.getLanguageToolingManager().disconnectProject(flixProject);
+				final Optional<FlixProject> flixProjectOptional = this.flix.getModel().getOrCreateFlixProject(project);
+				if (flixProjectOptional.isPresent()) {
+					final FlixProject flixProject = flixProjectOptional.get();
+					if (project.isOpen()) {
+						this.flix.getLanguageToolingManager().reconnectProject(flixProject);
+					} else {
+						this.flix.getLanguageToolingManager().disconnectProject(flixProject);
+					}
 				}
 			})::dispose);
 
@@ -187,6 +195,7 @@ public class FlixActivator extends AbstractUIPlugin {
 		registerImage(registry, FlixImageKey.FLIX3_ICON, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "assets/icons/icon3.png"));
 		registerImage(registry, FlixImageKey.FOLDER_ICON, ImageDescriptor.createFromURL(Utils.createUrl("platform:/plugin/org.eclipse.ui.ide/icons/full/obj16/folder.png")));
 		registerImage(registry, FlixImageKey.FILE_ICON, ImageDescriptor.createFromURL(Utils.createUrl("platform:/plugin/org.eclipse.ui/icons/full/obj16/file_obj.png")));
+		registerImage(registry, FlixImageKey.FLIX_LIBRARY_ICON, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "assets/icons/libraryicon.png"));
 	}
 
 	private void registerImage(ImageRegistry registry, FlixImageKey imageKey, ImageDescriptor descriptor) {

@@ -191,7 +191,7 @@
      <command
            commandId="de.hetzge.eclipse.flix.buildFatJar"
            icon="assets/icons/icon.png"
-           label="Run &apos;buildFatJar&apos;"
+           label="Run &apos;build-fatjar&apos;"
            style="push">
      </command>
      <command

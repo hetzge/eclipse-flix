@@ -2,7 +2,6 @@ package de.hetzge.eclipse.flix.manifest;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
@@ -14,6 +13,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.tomlj.Toml;
@@ -23,6 +23,8 @@ import org.tomlj.TomlTable;
 import de.hetzge.eclipse.flix.core.model.FlixVersion;
 
 public final class FlixManifestToml {
+
+	public static final String FLIX_MANIFEST_TOML_FILE_NAME = "flix.toml";
 
 	private final TomlParseResult result;
 
@@ -89,13 +91,22 @@ public final class FlixManifestToml {
 		}
 	}
 
-	public static Optional<FlixManifestToml> load(IFile file) throws IOException {
+	public static Optional<FlixManifestToml> load(IProject project) {
+		if (project == null) {
+			return Optional.empty();
+		}
+		return load(project.getFile(FLIX_MANIFEST_TOML_FILE_NAME));
+	}
+
+	public static Optional<FlixManifestToml> load(IFile file) {
 		if (file == null) {
 			return Optional.empty();
 		}
-		final Path source = file.getLocation().makeAbsolute().toPath();
-		final TomlParseResult result = Toml.parse(source);
-		return Optional.of(new FlixManifestToml(result));
+		try {
+			return Optional.of(new FlixManifestToml(Toml.parse(file.getLocation().makeAbsolute().toPath())));
+		} catch (final IOException exception) {
+			throw new RuntimeException("Failed to load flix manifest from file " + file.getFullPath().toOSString(), exception);
+		}
 	}
 
 	public static Optional<FlixManifestToml> load(String content) {

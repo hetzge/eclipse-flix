@@ -16,6 +16,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -108,12 +109,12 @@ public final class Utils {
 	}
 
 	public static void waitForProcess(Process process) {
-		while (process.isAlive()) {
-			try {
-				Thread.sleep(100L);
-			} catch (final InterruptedException exception) {
-				break;
-			}
+		try {
+			process.onExit().get();
+		} catch (final ExecutionException exception) {
+			throw new RuntimeException(exception);
+		} catch (final InterruptedException exception) {
+			// ignore
 		}
 	}
 

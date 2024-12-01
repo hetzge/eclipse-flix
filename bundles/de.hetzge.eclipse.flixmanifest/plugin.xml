@@ -7,7 +7,7 @@
 	        contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
 	        default="true"
 	        filenames="flix.toml"
-	        icon="assets/icons/icon.png"
+	        icon="assets/icons/buildicon.png"
 	        id="de.hetzge.eclipse.flix.toml.editor"
 	        name="Flix Toml Editor">
 	  </editor>

@@ -25,12 +25,12 @@ final class FlixHandlerUtils {
 		if (selection instanceof IStructuredSelection) {
 			final Object item = ((IStructuredSelection) selection).getFirstElement();
 			final IProject project = Adapters.adapt(item, IProject.class);
-			return Flix.get().getModel().getFlixProject(project).orElseThrow(() -> new ExecutionException("Not a valid flix project")); //$NON-NLS-1$
+			return Flix.get().getModel().getOrCreateFlixProject(project).orElseThrow(() -> new ExecutionException("Not a valid flix project")); //$NON-NLS-1$
 		}
 
 		final Optional<FlixProject> projectOptional = EclipseUtils.activeResource()
 				.map(IResource::getProject)
-				.flatMap(Flix.get().getModel()::getFlixProject);
+				.flatMap(Flix.get().getModel()::getOrCreateFlixProject);
 		if (projectOptional.isPresent()) {
 			return projectOptional.get();
 		}

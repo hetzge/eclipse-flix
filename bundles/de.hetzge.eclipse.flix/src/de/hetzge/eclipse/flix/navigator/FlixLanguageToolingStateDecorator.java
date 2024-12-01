@@ -15,7 +15,7 @@ public class FlixLanguageToolingStateDecorator implements ILabelDecorator {
 	public String decorateText(String text, Object element) {
 		if (element instanceof IProject) {
 			final IProject project = (IProject) element;
-			if (Flix.get().getModel().getFlixProject(project).map(FlixProject::isLanguageToolingStarted).orElse(false)) {
+			if (Flix.get().getModel().getOrCreateFlixProject(project).map(FlixProject::isLanguageToolingStarted).orElse(false)) {
 				return text + " (LSP)";
 			}
 		}

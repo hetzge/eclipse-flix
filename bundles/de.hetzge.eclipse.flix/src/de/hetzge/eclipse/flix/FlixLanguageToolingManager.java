@@ -11,7 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.ICoreRunnable;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -26,7 +25,6 @@ import de.hetzge.eclipse.flix.client.FlixLanguageClientController;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerClient;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerService;
 import de.hetzge.eclipse.flix.launch.FlixLauncher;
-import de.hetzge.eclipse.flix.manifest.FlixManifestToml;
 import de.hetzge.eclipse.flix.model.FlixModel;
 import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.navigator.FlixLanguageToolingStateDecorator;
@@ -73,8 +71,8 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 
 	public synchronized void connectProject(FlixProject project) {
 		refreshFlixDependencies(project);
-		project.createOrGetStandardLibraryFolder(new NullProgressMonitor());
 		final Job job = Job.create("Connect Flix language tooling: " + project.getProject().getName(), (ICoreRunnable) monitor -> {
+			project.createOrGetStandardLibraryFolder(monitor);
 			this.connectedProjects.computeIfAbsent(project, ignore -> {
 				return SafeRun.runWithResult(rollback -> {
 					rollback.setLogger(FlixLogger::logError);
@@ -136,9 +134,8 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 			project.refreshProjectFolders(monitor);
 			final String libHash = project.calculateLibHash();
 			final String lastLibHash = project.getLastLibHash().orElse(null);
-			final String dependencyHash = project.getFlixToml().map(FlixManifestToml::calculateDependencyHash).orElse(null);
+			final String dependencyHash = project.getFlixToml().calculateDependencyHash();
 			final String lastDependencyHash = project.getLastDependencyHash().orElse(null);
-			System.out.println("Lib hash: " + libHash + ", lastLib hash: " + lastLibHash + ", dependency hash: " + dependencyHash + ", last dependency hash: " + lastDependencyHash);
 			if (libHash != null && dependencyHash != null && (!Objects.equals(lastDependencyHash, dependencyHash) || !Objects.equals(lastLibHash, libHash))) {
 				project.setLastDependencyHash(dependencyHash);
 				project.setLastLibHash(libHash);

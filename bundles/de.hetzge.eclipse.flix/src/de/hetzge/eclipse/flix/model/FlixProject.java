@@ -1,7 +1,6 @@
 package de.hetzge.eclipse.flix.model;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -26,8 +25,8 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixConstants;
-import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.core.model.FlixVersion;
+import de.hetzge.eclipse.flix.manifest.DefaultFlixManifestToml;
 import de.hetzge.eclipse.flix.manifest.FlixManifestToml;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
 import de.hetzge.eclipse.flix.project.FlixProjectPreferences;
@@ -35,16 +34,23 @@ import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
-public class FlixProject {
+public final class FlixProject {
 
 	public static final String LIBRARY_FOLDER_NAME = "zzzlibrary";
+	public static final String FLIX_JAR_FILE_NAME = "flix.jar";
 
 	private final IProject project;
 	private final FlixProjectPreferences projectPreferences;
+	private FlixManifestToml flixManifestToml;
 
-	public FlixProject(IProject project) {
-		this.project = project;
+	public FlixProject(IProject project, FlixManifestToml flixManifestToml) {
+		this.project = Objects.requireNonNull(project, "'project' is null");
 		this.projectPreferences = new FlixProjectPreferences(project);
+		this.flixManifestToml = Objects.requireNonNull(flixManifestToml, "'flixManifestToml' is null");
+	}
+
+	public void reloadManifest() {
+		this.flixManifestToml = FlixManifestToml.load(this.project).orElseGet(() -> DefaultFlixManifestToml.createDefaultManifestToml(this.project.getName(), getFlixVersion().getKey()));
 	}
 
 	public IProject getProject() {
@@ -55,17 +61,12 @@ public class FlixProject {
 		if (getInProjectFolderFlixCompilerJarFile().isPresent()) {
 			return FlixVersion.CUSTOM_VERSION;
 		} else {
-			return getFlixToml().map(FlixManifestToml::getFlixVersion).orElse(FlixVersion.DEFAULT_VERSION);
+			return this.flixManifestToml.getFlixVersion();
 		}
 	}
 
-	public Optional<FlixManifestToml> getFlixToml() {
-		try {
-			return FlixManifestToml.load(this.getProject().getFile("flix.toml"));
-		} catch (final IOException exception) {
-			FlixLogger.logError(String.format("Failed to read flix.toml in project '%s'", getProject().getName()), exception);
-			return Optional.empty();
-		}
+	public FlixManifestToml getFlixToml() {
+		return this.flixManifestToml;
 	}
 
 	public boolean isActive() {
