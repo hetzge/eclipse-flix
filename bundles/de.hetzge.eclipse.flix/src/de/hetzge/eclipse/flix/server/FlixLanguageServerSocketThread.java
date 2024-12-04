@@ -9,7 +9,7 @@ import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 import org.eclipse.lsp4j.jsonrpc.Launcher;
-import org.eclipse.lsp4j.launch.LSPLauncher.Builder;
+import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.lxtk.util.SafeRun;
 
@@ -50,7 +50,7 @@ public final class FlixLanguageServerSocketThread extends Thread implements Auto
 							FlixLogger.logError(exception);
 						}
 					});
-					final Launcher<LanguageClient> launcher = new Builder<LanguageClient>()
+					final Launcher<LanguageClient> launcher = new LSPLauncher.Builder<LanguageClient>()
 							.setLocalService(this.server)
 							.setRemoteInterface(LanguageClient.class)
 							.setInput(socket.getInputStream())

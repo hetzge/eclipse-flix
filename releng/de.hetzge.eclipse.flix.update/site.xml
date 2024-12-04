@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/de.hetzge.eclipse.flix.feature_0.0.1.qualifier.jar" id="de.hetzge.eclipse.flix.feature" version="0.0.1.qualifier">
+      <category name="de.hetzge.eclipse.flix.site.category.main"/>
+   </feature>
+   <category-def name="de.hetzge.eclipse.flix.site.category.main" label="Flix Language Support"/>
+</site>

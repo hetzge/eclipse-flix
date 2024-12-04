@@ -56,6 +56,11 @@
 				</dependency>
 			</dependencies>
 		</location>
+		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://lxtk.org/downloads/releases/v0.5/repository/"/>
+			<unit id="org.lxtk.feature.group" version="0.5.0.v20240917-1437"/>
+			<unit id="org.lxtk.lx4e.feature.group" version="0.5.0.v20240917-1437"/>
+		</location>
 	</locations>
 	<environment>
 		<arch>x86_64</arch>

@@ -10,6 +10,8 @@
 	</parent>
 	<modules>
 		<module>de.hetzge.eclipse.flix</module>
+		<module>de.hetzge.eclipse.flix.core</module>
+		<module>de.hetzge.eclipse.flixmanifest</module>
 		<module>de.hetzge.eclipse.toml</module>
 	</modules>
 </project>

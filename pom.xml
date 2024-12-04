@@ -13,7 +13,7 @@
 		<module>mavendependencies</module>
 	</modules>
 	<properties>
-		<tycho.version>2.7.4</tycho.version>
+		<tycho.version>4.0.10</tycho.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<build>
@@ -57,7 +57,7 @@
 						<artifact>
 							<groupId>${project.groupId}</groupId>
 							<artifactId>base</artifactId>
-							<version>${project.version}</version>
+							<version>0.0.1-SNAPSHOT</version>
 						</artifact>
 					</target>
 				</configuration>
