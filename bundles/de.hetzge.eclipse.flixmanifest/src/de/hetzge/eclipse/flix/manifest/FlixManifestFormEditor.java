@@ -21,7 +21,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.util.Throttler;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -198,14 +197,21 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 				}
 			});
 			final SelectionListener removeDependencySelectionListener = SelectionListener.widgetSelectedAdapter(event -> {
-				final ISelection selection = this.dependenciesTableViewer.getSelection();
-				final IStructuredSelection structuredSelection = (IStructuredSelection) selection;
-				final List<FlixDependency> selectedDependencies = structuredSelection.stream().map(FlixDependency.class::cast).toList();
-				this.dependencies.removeAll(selectedDependencies);
+				this.dependencies.removeAll(this.dependenciesTableViewer.getSelectedDependencies());
 				this.dependenciesTableViewer.refresh();
 				onModify(null);
 			});
-			createDependencyActions(dependenciesComposite, toolkit, this.dependenciesTableViewer, addDependencySelectionListener, removeDependencySelectionListener);
+			final SelectionListener editDependencySelectionListener = SelectionListener.widgetSelectedAdapter(event -> {
+				final FlixDependency dependency = this.dependenciesTableViewer.getSelectedDependencies().stream().findFirst().orElseThrow();
+				final EditDependencyDialog dialog = new EditDependencyDialog(Display.getDefault().getActiveShell(), dependency);
+				if (dialog.open() == Dialog.OK) {
+					this.dependencies.replaceAll(in -> in.equals(dependency) ? dialog.getResult() : in);
+					this.dependenciesTableViewer.refresh();
+					onModify(null);
+				}
+			});
+			this.dependenciesTableViewer.addDoubleClickListener(event -> editDependencySelectionListener.widgetSelected(null));
+			createDependencyActions(dependenciesComposite, toolkit, this.dependenciesTableViewer, addDependencySelectionListener, removeDependencySelectionListener, editDependencySelectionListener);
 
 			toolkit.createLabel(form.getBody(), "Maven dependencies:");
 			toolkit.createLabel(form.getBody(), "");
@@ -227,18 +233,24 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 				}
 			});
 			final SelectionListener removeMavenDependencySelectionListener = SelectionListener.widgetSelectedAdapter(event -> {
-				final ISelection selection = this.mavenDependenciesTableViewer.getSelection();
-				final IStructuredSelection structuredSelection = (IStructuredSelection) selection;
-				final List<MavenDependency> selectedDependencies = structuredSelection.stream().map(MavenDependency.class::cast).toList();
-				this.mavenDependencies.removeAll(selectedDependencies);
+				this.mavenDependencies.removeAll(this.mavenDependenciesTableViewer.getSelectedDependencies());
 				this.mavenDependenciesTableViewer.refresh();
 				onModify(null);
 			});
-			createDependencyActions(mavenDependenciesComposite, toolkit, this.mavenDependenciesTableViewer, addMavenDependencySelectionListener, removeMavenDependencySelectionListener);
-
+			final SelectionListener editMavenDependencySelectionListener = SelectionListener.widgetSelectedAdapter(event -> {
+				final MavenDependency dependency = this.mavenDependenciesTableViewer.getSelectedDependencies().stream().findFirst().orElseThrow();
+				final EditMavenDependencyDialog dialog = new EditMavenDependencyDialog(Display.getDefault().getActiveShell(), dependency);
+				if (dialog.open() == Dialog.OK) {
+					this.mavenDependencies.replaceAll(in -> in.equals(dependency) ? dialog.getResult() : in);
+					this.mavenDependenciesTableViewer.refresh();
+					onModify(null);
+				}
+			});
+			this.mavenDependenciesTableViewer.addDoubleClickListener(event -> editMavenDependencySelectionListener.widgetSelected(null));
+			createDependencyActions(mavenDependenciesComposite, toolkit, this.mavenDependenciesTableViewer, addMavenDependencySelectionListener, removeMavenDependencySelectionListener, editMavenDependencySelectionListener);
 		}
 
-		public void createDependencyActions(Composite parent, FormToolkit toolkit, TableViewer tableViewer, SelectionListener onAdd, SelectionListener onRemove) {
+		public void createDependencyActions(Composite parent, FormToolkit toolkit, TableViewer tableViewer, SelectionListener onAdd, SelectionListener onRemove, SelectionListener onEdit) {
 			final Composite dependenciesButtonsComposite = toolkit.createComposite(parent);
 			dependenciesButtonsComposite.setLayoutData(GridDataFactory.fillDefaults().hint(200, SWT.DEFAULT).create());
 			dependenciesButtonsComposite.setLayout(GridLayoutFactory.fillDefaults().numColumns(1).create());
@@ -251,6 +263,13 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 			removeSelectedDependenciesButton.addSelectionListener(onRemove);
 			tableViewer.addSelectionChangedListener(event -> {
 				removeSelectedDependenciesButton.setEnabled(!event.getSelection().isEmpty());
+			});
+			final Button editSelectedDependencyButton = toolkit.createButton(dependenciesButtonsComposite, "Edit selected", SWT.NONE);
+			editSelectedDependencyButton.setEnabled(false);
+			editSelectedDependencyButton.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
+			editSelectedDependencyButton.addSelectionListener(onEdit);
+			tableViewer.addSelectionChangedListener(event -> {
+				editSelectedDependencyButton.setEnabled(!event.getSelection().isEmpty());
 			});
 		}
 
@@ -346,6 +365,10 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 			table.setLinesVisible(true);
 			table.setHeaderVisible(true);
 		}
+
+		public List<FlixDependency> getSelectedDependencies() {
+			return ((IStructuredSelection) getSelection()).stream().map(FlixDependency.class::cast).toList();
+		}
 	}
 
 	private static class MavenDependencyTableViewer extends TableViewer {
@@ -371,6 +394,10 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 			final Table table = this.getTable();
 			table.setLinesVisible(true);
 			table.setHeaderVisible(true);
+		}
+
+		public List<MavenDependency> getSelectedDependencies() {
+			return ((IStructuredSelection) getSelection()).stream().map(MavenDependency.class::cast).toList();
 		}
 	}
 

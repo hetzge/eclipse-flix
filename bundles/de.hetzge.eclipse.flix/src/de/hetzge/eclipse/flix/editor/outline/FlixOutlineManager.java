@@ -1,22 +1,22 @@
 package de.hetzge.eclipse.flix.editor.outline;
 
 import java.net.URI;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.DocumentFilter;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.lxtk.DocumentSymbolProvider;
 import org.lxtk.LanguageService;
-import org.lxtk.util.Disposable;
+import org.lxtk.util.SafeRun;
 
 public final class FlixOutlineManager {
 
@@ -29,29 +29,25 @@ public final class FlixOutlineManager {
 	}
 
 	public CompletableFuture<Outline> queryOutline(URI uri) {
-		final CompletableFuture<DocumentSymbolProvider> future = new CompletableFuture<>();
-		for (final DocumentSymbolProvider provider : this.languageService.getDocumentSymbolProviders()) {
-			future.complete(provider);
-			break;
-		}
-		if (!future.isDone()) {
-			final Disposable[] disposable = new Disposable[1];
-			disposable[0] = this.languageService.getDocumentSymbolProviders().onDidAdd().subscribe(provider -> {
-				try {
-					future.complete(provider);
-				} finally {
-					if (disposable[0] != null) {
-						disposable[0].dispose();
-					}
-				}
-			});
-		}
-		return future.thenCompose(provider -> {
-			return provider.getDocumentSymbols(new DocumentSymbolParams(new TextDocumentIdentifier(uri.toString())));
-		}).thenApply(result -> {
-			final Outline outline = new Outline(result.stream().map(Either::getRight).collect(Collectors.toList()));
-			this.cache.put(uri, outline);
-			return outline;
+		return SafeRun.runWithResult(rollback -> {
+			final CompletableFuture<DocumentSymbolProvider> future = new CompletableFuture<>();
+			future.thenRun(rollback::run);
+			final Optional<DocumentSymbolProvider> providerOptional = getProvider(uri);
+			if (providerOptional.isPresent()) {
+				future.complete(providerOptional.get());
+			} else {
+				// Wait for the provider to be available
+				rollback.add(this.languageService.getDocumentSymbolProviders().onDidAdd().subscribe(provider -> {
+					getProvider(uri).ifPresent(future::complete);
+				})::dispose);
+			}
+			return future.thenCompose(provider -> {
+				return provider.getDocumentSymbols(new DocumentSymbolParams(new TextDocumentIdentifier(uri.toString())));
+			}).thenApply(result -> {
+				final Outline outline = new Outline(result.stream().map(Either::getRight).collect(Collectors.toList()));
+				this.cache.put(uri, outline);
+				return outline;
+			}).orTimeout(10L, TimeUnit.SECONDS);
 		});
 	}
 
@@ -60,34 +56,21 @@ public final class FlixOutlineManager {
 		return cachedOutline != null ? CompletableFuture.completedFuture(cachedOutline) : queryOutline(uri);
 	}
 
-	public static class Outline {
-		private final List<DocumentSymbol> rootSymbols;
-
-		public Outline(List<DocumentSymbol> rootSymbols) {
-			this.rootSymbols = rootSymbols.stream().sorted(Comparator.comparingInt(it -> it.getRange().getStart().getLine())).collect(Collectors.toList());
-		}
-
-		public List<DocumentSymbol> getRootSymbols() {
-			return this.rootSymbols;
-		}
-
-		public void visitPaths(Consumer<LinkedList<DocumentSymbol>> consumer) {
-			for (final DocumentSymbol documentSymbol : this.rootSymbols) {
-				visitPaths(List.of(documentSymbol), consumer);
+	private Optional<DocumentSymbolProvider> getProvider(URI uri) {
+		for (final DocumentSymbolProvider provider : this.languageService.getDocumentSymbolProviders()) {
+			if (matchesProvider(provider, uri)) {
+				return Optional.of(provider);
 			}
 		}
+		return Optional.empty();
+	}
 
-		private void visitPaths(List<DocumentSymbol> parents, Consumer<LinkedList<DocumentSymbol>> consumer) {
-			if (parents.isEmpty()) {
-				return;
-			}
-			consumer.accept(new LinkedList<DocumentSymbol>(parents));
-			for (final DocumentSymbol child : parents.get(parents.size() - 1).getChildren()) {
-				final LinkedList<DocumentSymbol> newParents = new LinkedList<>();
-				newParents.addAll(parents);
-				newParents.add(child);
-				visitPaths(newParents, consumer);
+	private static boolean matchesProvider(DocumentSymbolProvider provider, URI uri) {
+		for (final DocumentFilter documentSelector : provider.getDocumentSelector()) {
+			if (FileSystems.getDefault().getPathMatcher("glob:" + documentSelector.getPattern()).matches(Path.of(uri))) {
+				return true;
 			}
 		}
+		return false;
 	}
 }

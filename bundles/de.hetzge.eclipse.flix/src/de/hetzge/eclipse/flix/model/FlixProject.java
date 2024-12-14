@@ -176,6 +176,10 @@ public final class FlixProject {
 		return getLibraryFolder().getFolder("cache");
 	}
 
+	public IFolder getLibraryGithubFolder() {
+		return getLibraryFolder().getFolder("github");
+	}
+
 	public IFolder getLibraryFolder() {
 		return this.project.getFolder("lib");
 	}
@@ -185,14 +189,18 @@ public final class FlixProject {
 	}
 
 	public void deleteTemporaryFolders(IProgressMonitor progressMonitor) throws CoreException {
-		deleteLibraryCacheFolder(progressMonitor);
+		deleteLibraryFolders(progressMonitor);
 		deleteBuildFolder(progressMonitor);
 	}
 
-	public void deleteLibraryCacheFolder(IProgressMonitor progressMonitor) throws CoreException {
+	public void deleteLibraryFolders(IProgressMonitor progressMonitor) throws CoreException {
 		final IFolder libraryCacheFolder = getLibraryCacheFolder();
 		if (libraryCacheFolder.exists()) {
 			libraryCacheFolder.delete(true, progressMonitor);
+		}
+		final IFolder libraryGithubFolder = getLibraryGithubFolder();
+		if (libraryGithubFolder.exists()) {
+			libraryGithubFolder.delete(true, progressMonitor);
 		}
 	}
 

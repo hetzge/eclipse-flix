@@ -22,6 +22,15 @@ public final class FlixOutlineContentProvider implements ITreeContentProvider {
 	}
 
 	@Override
+	public boolean hasChildren(Object element) {
+		if (!(element instanceof DocumentSymbol)) {
+			return false;
+		}
+		final DocumentSymbol documentSymbol = (DocumentSymbol) element;
+		return !documentSymbol.getChildren().isEmpty();
+	}
+
+	@Override
 	public Object[] getChildren(Object parentElement) {
 		if (!(parentElement instanceof DocumentSymbol)) {
 			return new Object[] {};
@@ -34,14 +43,4 @@ public final class FlixOutlineContentProvider implements ITreeContentProvider {
 	public Object getParent(Object element) {
 		return null;
 	}
-
-	@Override
-	public boolean hasChildren(Object element) {
-		if (!(element instanceof DocumentSymbol)) {
-			return false;
-		}
-		final DocumentSymbol documentSymbol = (DocumentSymbol) element;
-		return !documentSymbol.getChildren().isEmpty();
-	}
-
 }

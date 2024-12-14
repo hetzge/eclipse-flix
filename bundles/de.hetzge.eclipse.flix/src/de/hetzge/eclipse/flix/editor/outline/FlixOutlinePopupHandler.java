@@ -16,6 +16,10 @@ public class FlixOutlinePopupHandler extends OutlinePopupHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
+		final IOutlinePopupHost host = getOutlinePopupHost(event);
+		if (host == null) {
+			return null;
+		}
 		final IEditorPart editor = HandlerUtil.getActiveEditor(event);
 		if (!(editor instanceof FlixEditor)) {
 			return null;
@@ -24,10 +28,6 @@ public class FlixOutlinePopupHandler extends OutlinePopupHandler {
 		Flix.get().getOutlineManager().queryOutline(flixEditor.getUri())
 				.thenAccept(outline -> {
 					PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
-						final IOutlinePopupHost host = getOutlinePopupHost(event);
-						if (host == null) {
-							return;
-						}
 						final FlixOutlinePopup flixOutlinePopup = new FlixOutlinePopup(flixEditor, outline);
 						flixOutlinePopup.init(host, getInvokingKeyStroke(event));
 						flixOutlinePopup.open();

@@ -11,7 +11,6 @@ import org.lxtk.lx4e.DocumentUtil;
 import org.lxtk.lx4e.ui.DefaultEditorHelper;
 
 import de.hetzge.eclipse.flix.editor.FlixEditor;
-import de.hetzge.eclipse.flix.editor.outline.FlixOutlineManager.Outline;
 
 public final class FlixOutlinePopup extends FilteringOutlinePopup {
 
@@ -47,9 +46,6 @@ public final class FlixOutlinePopup extends FilteringOutlinePopup {
 	@Override
 	protected Object getCorrespondingElement(ISelection hostSelection) {
 		System.out.println("FlixOutlinePopup.getCorrespondingElement() " + hostSelection); // TODO TextSelection
-
-
-
 		return null; // TODO
 	}
 
