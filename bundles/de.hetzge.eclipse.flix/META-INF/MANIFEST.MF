@@ -29,7 +29,6 @@ Require-Bundle: com.google.gson,
  org.eclipse.ui.console,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.ui.views,
- org.apache.commons.compress,
  org.eclipse.ltk.core.refactoring,
  org.eclipse.jdt.junit,
  org.eclipse.jdt.junit.core,
@@ -46,6 +45,7 @@ Require-Bundle: com.google.gson,
  org.eclipse.ui.forms,
  de.hetzge.eclipse.toml,
  de.hetzge.eclipse.flix.core,
- de.hetzge.eclipse.flixmanifest
+ de.hetzge.eclipse.flixmanifest,
+ org.apache.commons.commons-compress;bundle-version="1.27.1"
 utomatic-Module-Name: eclipse.flix
 Bundle-ActivationPolicy: lazy
