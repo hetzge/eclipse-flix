@@ -4,8 +4,11 @@ import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
@@ -112,5 +115,10 @@ public final class FlixTextDocumentService implements TextDocumentService {
 			this.flixService.addUri(uri, contentChangeEvent.getText());
 		}
 		this.flixService.syncCompile();
+	}
+
+	@Override
+	public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params) {
+		return this.flixService.codeAction(params);
 	}
 }

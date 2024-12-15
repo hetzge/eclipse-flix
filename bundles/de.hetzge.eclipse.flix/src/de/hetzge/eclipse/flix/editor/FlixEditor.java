@@ -16,9 +16,7 @@ import org.eclipse.tm4e.languageconfiguration.internal.LanguageConfigurationChar
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
-import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.lxtk.LanguageOperationTarget;
@@ -64,9 +62,9 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 	@Override
 	protected void initializeEditor() {
 		final FlixDocumentProvider documentProvider = Flix.get().getDocumentProvider();
-		setPreferenceStore(getPreferenceStores());
+		setPreferenceStore(FlixActivator.getCombinedPreferenceStore());
 		setDocumentProvider(documentProvider);
-		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(getPreferenceStores(), this));
+		setSourceViewerConfiguration(new FlixSourceViewerConfiguration(FlixActivator.getCombinedPreferenceStore(), this));
 		setEditorContextMenuId("#FlixEditorContext"); //$NON-NLS-1$
 		setRulerContextMenuId("#FlixRulerContext"); //$NON-NLS-1$
 	}
@@ -83,6 +81,15 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 	}
 
 	@Override
+	protected void createActions() {
+		super.createActions();
+
+//		final FlixStructureSelectEnclosingAction action = new FlixStructureSelectEnclosingAction(this);
+//		action.setActionDefinitionId(FlixStructureSelectEnclosingAction.ACTION_DEFINITION_ID);
+//		setAction("SelectEnclosingElement", action);
+	}
+
+	@Override
 	protected void handleCursorPositionChanged() {
 		super.handleCursorPositionChanged();
 		this.syncOutlineThrottler.throttledExec();
@@ -90,10 +97,6 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 
 	private void syncOutline() {
 		this.outlinePage.update(getSelectionProvider().getSelection());
-	}
-
-	private ChainedPreferenceStore getPreferenceStores() {
-		return new ChainedPreferenceStore(new IPreferenceStore[] { FlixActivator.getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
 	}
 
 	@Override

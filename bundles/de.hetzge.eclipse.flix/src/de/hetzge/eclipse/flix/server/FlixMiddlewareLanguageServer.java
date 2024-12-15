@@ -72,6 +72,7 @@ public class FlixMiddlewareLanguageServer implements LanguageServer {
 			capabilities.setWorkspaceSymbolProvider(true);
 			capabilities.setRenameProvider(true);
 			capabilities.setCodeLensProvider(new CodeLensOptions(true));
+			capabilities.setCodeActionProvider(true);
 			final InitializeResult initializeResult = new InitializeResult();
 			initializeResult.setCapabilities(capabilities);
 			initializeResult.setServerInfo(new ServerInfo("Flix Eclipse Language Server", "0.1"));

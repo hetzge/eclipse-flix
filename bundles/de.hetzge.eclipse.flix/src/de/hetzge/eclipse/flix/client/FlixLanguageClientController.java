@@ -21,6 +21,7 @@ import org.lxtk.client.CompletionFeature;
 import org.lxtk.client.DeclarationFeature;
 import org.lxtk.client.DocumentHighlightFeature;
 import org.lxtk.client.DocumentSymbolFeature;
+import org.lxtk.client.ExecuteCommandFeature;
 import org.lxtk.client.Feature;
 import org.lxtk.client.FileOperationsFeature;
 import org.lxtk.client.HoverFeature;
@@ -67,7 +68,7 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		final TextDocumentSyncFeature textDocumentSyncFeature = new TextDocumentSyncFeature(documentService);
 		textDocumentSyncFeature.setChangeEventMergeStrategy(new EclipseTextDocumentChangeEventMergeStrategy());
 		final List<Feature<? super LanguageServer>> features = new ArrayList<>();
-		features.add(new CompletionFeature(languageService));
+		features.add(new CompletionFeature(languageService, commandService));
 		features.add(FileOperationsFeature.newInstance(Flix.get().getPostResourceMonitor()));
 		features.add(textDocumentSyncFeature);
 		features.add(new ReferencesFeature(languageService));
@@ -80,6 +81,7 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		features.add(new CodeLensFeature(languageService, commandService));
 		features.add(new CodeActionFeature(languageService, commandService));
 		features.add(new DocumentHighlightFeature(languageService));
+		features.add(new ExecuteCommandFeature(commandService));
 		this.flixEclipseLanguageClient = new FlixEclipseLanguageClient(this.log, project, this.diagnosticConsumer, features);
 	}
 

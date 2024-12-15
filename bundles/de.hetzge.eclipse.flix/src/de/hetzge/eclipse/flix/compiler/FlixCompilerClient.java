@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
@@ -159,6 +160,10 @@ public class FlixCompilerClient implements AutoCloseable {
 
 	public CompletableFuture<FlixCompilerResponse> sendCodeLens(CodeLensParams params) {
 		return send("lsp/codelens", params); //$NON-NLS-1$
+	}
+
+	public CompletableFuture<FlixCompilerResponse> sendCodeAction(CodeActionParams params) {
+		return send("lsp/codeAction", params); //$NON-NLS-1$
 	}
 
 	public CompletableFuture<FlixCompilerResponse> send(String request, Object params) {

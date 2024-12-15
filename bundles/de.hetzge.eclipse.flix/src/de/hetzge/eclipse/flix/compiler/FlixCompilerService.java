@@ -16,8 +16,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.util.Throttler;
+import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.DeclarationParams;
@@ -312,6 +315,18 @@ public final class FlixCompilerService {
 		});
 	}
 
+	public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams codeActionParams) {
+		return this.compilerClient.sendCodeAction(codeActionParams).thenCompose(response -> {
+			if (response.getSuccessJsonElement().isPresent()) {
+				final List<CodeAction> actions = GsonUtils.getGson().fromJson(response.getSuccessJsonElement().get(), new TypeToken<List<CodeAction>>() {
+				}.getType());
+				return CompletableFuture.completedFuture(actions.stream().map(Either::<Command, CodeAction>forRight).collect(Collectors.toList()));
+			} else {
+				return handleError(response);
+			}
+		});
+	}
+
 	public void setClient(LanguageClient client) {
 		this.client = client;
 	}
@@ -324,7 +339,7 @@ public final class FlixCompilerService {
 	}
 
 	private String unfixLibraryUri(String uri) {
-		final String libraryPrefix = this.flixProject.getProject().getFolder(FlixProject.LIBRARY_FOLDER_NAME).getLocationURI().toString(); //$NON-NLS-1$
+		final String libraryPrefix = this.flixProject.getProject().getFolder(FlixProject.LIBRARY_FOLDER_NAME).getLocationURI().toString(); // $NON-NLS-1$
 		if (!uri.startsWith(libraryPrefix)) {
 			return uri;
 		}

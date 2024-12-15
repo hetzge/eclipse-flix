@@ -91,7 +91,7 @@ public final class FlixWorkspaceService implements WorkspaceService {
 				added |= this.flixService.addFile(file);
 			}
 		}
-		if(added) {
+		if (added) {
 			this.flixService.syncCompile();
 		}
 	}
