@@ -25,7 +25,7 @@ public class FlixCompileHandler extends AbstractHandler {
 		if (selection instanceof IStructuredSelection) {
 			final Object item = ((IStructuredSelection) selection).getFirstElement();
 			final IProject project = Adapters.adapt(item, IProject.class);
-			return Flix.get().getModel().getOrCreateFlixProject(project).orElseThrow(() -> new ExecutionException("Not a valid Flix project: " + project.getName())); //$NON-NLS-1$
+			return Flix.get().getModel().getFlixProjectOrThrowExecutionException(project);
 		} else {
 			throw new ExecutionException("No project found"); //$NON-NLS-1$
 		}

@@ -47,6 +47,7 @@ import de.hetzge.eclipse.flix.FlixConstants;
 import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator;
 import de.hetzge.eclipse.flix.model.FlixProject;
+import de.hetzge.eclipse.flix.utils.ResourceMonitor;
 
 public class FlixLanguageClientController extends EclipseLanguageClientController<LanguageServer> {
 
@@ -65,11 +66,12 @@ public class FlixLanguageClientController extends EclipseLanguageClientControlle
 		final DocumentService documentService = Flix.get().getDocumentService();
 		final WorkspaceService workspaceService = Flix.get().getWorkspaceService();
 		final CommandService commandService = Flix.get().getCommandService();
+		final ResourceMonitor postResourceMonitor = Flix.get().getPostResourceMonitor();
 		final TextDocumentSyncFeature textDocumentSyncFeature = new TextDocumentSyncFeature(documentService);
 		textDocumentSyncFeature.setChangeEventMergeStrategy(new EclipseTextDocumentChangeEventMergeStrategy());
 		final List<Feature<? super LanguageServer>> features = new ArrayList<>();
 		features.add(new CompletionFeature(languageService, commandService));
-		features.add(FileOperationsFeature.newInstance(Flix.get().getPostResourceMonitor()));
+		features.add(FileOperationsFeature.newInstance(postResourceMonitor));
 		features.add(textDocumentSyncFeature);
 		features.add(new ReferencesFeature(languageService));
 		features.add(new DeclarationFeature(languageService));

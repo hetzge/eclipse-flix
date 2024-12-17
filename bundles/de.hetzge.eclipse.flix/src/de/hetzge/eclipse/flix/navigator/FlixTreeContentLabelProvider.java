@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix;
+package de.hetzge.eclipse.flix.navigator;
 
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -8,6 +8,8 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.navigator.ICommonContentExtensionSite;
 import org.eclipse.ui.navigator.ICommonLabelProvider;
 
+import de.hetzge.eclipse.flix.FlixActivator;
+import de.hetzge.eclipse.flix.FlixImageKey;
 import de.hetzge.eclipse.flix.compiler.FlixCompilerProject;
 
 public class FlixTreeContentLabelProvider implements ICommonLabelProvider, IStyledLabelProvider {

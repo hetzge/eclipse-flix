@@ -21,20 +21,17 @@ final class FlixHandlerUtils {
 
 	public static FlixProject getFlixProject() throws ExecutionException {
 		final ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
-
 		if (selection instanceof IStructuredSelection) {
 			final Object item = ((IStructuredSelection) selection).getFirstElement();
 			final IProject project = Adapters.adapt(item, IProject.class);
-			return Flix.get().getModel().getOrCreateFlixProject(project).orElseThrow(() -> new ExecutionException("Not a valid flix project")); //$NON-NLS-1$
+			return Flix.get().getModel().getFlixProjectOrThrowExecutionException(project);
 		}
-
 		final Optional<FlixProject> projectOptional = EclipseUtils.activeResource()
 				.map(IResource::getProject)
-				.flatMap(Flix.get().getModel()::getOrCreateFlixProject);
+				.flatMap(Flix.get().getModel()::getFlixProject);
 		if (projectOptional.isPresent()) {
 			return projectOptional.get();
 		}
-
 		throw new ExecutionException("No project found"); //$NON-NLS-1$
 	}
 }

@@ -17,7 +17,7 @@ public class FlixLanguageToolingStateDecorator implements ILabelDecorator {
 	public String decorateText(String text, Object element) {
 		if (element instanceof IProject) {
 			final IProject project = (IProject) element;
-			final Optional<FlixProject> flixProjectOptional = Flix.get().getModel().getOrCreateFlixProject(project);
+			final Optional<FlixProject> flixProjectOptional = Flix.get().getModel().getFlixProject(project);
 			if (flixProjectOptional.isPresent()) {
 				final FlixProject flixProject = flixProjectOptional.get();
 				if (flixProjectOptional.get().isLanguageToolingStarted()) {

@@ -25,20 +25,26 @@ public class ResourceMonitor implements IResourceChangeListener, FileCreateEvent
 	private final EventEmitter<FileDeleteEvent> onDidDeleteFiles;
 	private final EventEmitter<FileChangeEvent> onDidChangeFiles;
 	private final EventEmitter<ProjectOpenEvent> onDidOpenProject;
+	private final EventEmitter<IProject> onDeleteProject;
 
 	public ResourceMonitor() {
 		this.onDidCreateFiles = new EventEmitter<>();
 		this.onDidDeleteFiles = new EventEmitter<>();
 		this.onDidChangeFiles = new EventEmitter<>();
 		this.onDidOpenProject = new EventEmitter<>();
+		this.onDeleteProject = new EventEmitter<>();
 	}
 
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
-		handle(event.getDelta());
+		if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+			handlePostChange(event.getDelta());
+		} else if (event.getType() == IResourceChangeEvent.PRE_DELETE) {
+			handlePreDelete(event.getResource());
+		}
 	}
 
-	private void handle(IResourceDelta delta) {
+	private void handlePostChange(IResourceDelta delta) {
 		final IResource resource = delta.getResource();
 		if (resource instanceof IFile) {
 			final IFile file = (IFile) resource;
@@ -64,7 +70,14 @@ public class ResourceMonitor implements IResourceChangeListener, FileCreateEvent
 		}
 		final IResourceDelta[] affectedChildren = delta.getAffectedChildren();
 		for (final IResourceDelta childrenResourceDelta : affectedChildren) {
-			handle(childrenResourceDelta);
+			handlePostChange(childrenResourceDelta);
+		}
+	}
+
+	private void handlePreDelete(IResource resource) {
+		if (resource instanceof IProject) {
+			final IProject project = (IProject) resource;
+			this.onDeleteProject.emit(project, FlixLogger::logError);
 		}
 	}
 
@@ -85,6 +98,10 @@ public class ResourceMonitor implements IResourceChangeListener, FileCreateEvent
 	public EventEmitter<ProjectOpenEvent> onDidOpenProject() {
 		return this.onDidOpenProject;
 	}
+
+	public EventEmitter<IProject> onDeleteProject() {
+        return this.onDeleteProject;
+    }
 
 	public static class ProjectOpenEvent {
 		private final IProject project;

@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix;
+package de.hetzge.eclipse.flix.navigator;
 
 import java.util.Set;
 
@@ -32,6 +32,7 @@ public class FlixTreeContentProvider implements IPipelinedTreeContentProvider2 {
 
 	@Override
 	public void getPipelinedElements(Object anInput, Set theCurrentElements) {
+		System.out.println("FlixTreeContentProvider.getPipelinedElements()");
 //
 //		final HashSet children = new HashSet<>(theCurrentElements);
 //		theCurrentElements.clear();

@@ -60,7 +60,6 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 					if (code != 0) {
 						throw new CoreException(Status.error("Init flix project process failed with code: " + code));
 					}
-
 					final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
 					EclipseUtils.addNature(description, FlixProjectNature.ID);
 

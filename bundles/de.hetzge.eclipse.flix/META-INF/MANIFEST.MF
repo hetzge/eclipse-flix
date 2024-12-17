@@ -40,13 +40,13 @@ Require-Bundle: com.google.gson,
  org.eclipse.ui.navigator.resources,
  org.eclipse.jdt.launching,
  wrapped.org.tomlj.tomlj,
+ org.antlr.antlr4-runtime,
  org.eclipse.search,
  org.eclipse.jdt.debug.ui,
  org.eclipse.ui.forms,
  de.hetzge.eclipse.toml,
  de.hetzge.eclipse.flix.core,
  de.hetzge.eclipse.flixmanifest,
- org.antlr.antlr4-runtime,
  org.apache.commons.commons-compress;bundle-version="1.27.1"
 utomatic-Module-Name: eclipse.flix
 Bundle-ActivationPolicy: lazy

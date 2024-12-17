@@ -30,8 +30,6 @@ import de.hetzge.eclipse.utils.EclipseUtils;
 
 public final class FlixProject {
 
-	public static final String FLIX_JAR_FILE_NAME = "flix.jar";
-
 	private final IProject project;
 	private final FlixProjectPreferences projectPreferences;
 	private FlixManifestToml flixManifestToml;
@@ -61,25 +59,6 @@ public final class FlixProject {
 	public boolean isActive() {
 		return isActiveFlixProject(this.project);
 	}
-
-//	public File getFlixCompilerJarFile() {
-//		final Optional<File> inProjectFolderFlixCompilerJarFileOptional = getInProjectFolderFlixCompilerJarFile();
-//		if (inProjectFolderFlixCompilerJarFileOptional.isPresent()) {
-//			return inProjectFolderFlixCompilerJarFileOptional.get();
-//		} else {
-//			return FlixUtils.loadFlixJarFile(getFlixVersion(), null);
-//		}
-//	}
-//
-//	public File getFlixCompilerFolder() {
-//		final IProgressMonitor monitor = new NullProgressMonitor();
-//		final Optional<File> jarFileOptional = getInProjectFolderFlixCompilerJarFile();
-//		if (jarFileOptional.isPresent()) {
-//			return FlixUtils.getFlixCompilerFolder(FlixVersion.DEFAULT_VERSION, jarFileOptional.get(), monitor);
-//		} else {
-//			return FlixUtils.getFlixCompilerFolder(getFlixVersion(), FlixUtils.loadFlixJarFile(getFlixVersion(), monitor), monitor);
-//		}
-//	}
 
 	public List<IFile> getFlixSourceFiles() {
 		if (getSourceFolder().exists()) {

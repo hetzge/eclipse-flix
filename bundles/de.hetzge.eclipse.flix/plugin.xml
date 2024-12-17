@@ -340,14 +340,18 @@
      </commonWizard>
      <navigatorContent
            activeByDefault="true"
-           contentProvider="de.hetzge.eclipse.flix.FlixTreeContentProvider"
-           id="de.hetzge.eclipse.flix.navigatorContent1"
-           labelProvider="de.hetzge.eclipse.flix.FlixTreeContentLabelProvider"
-           name="name"
-           priority="highest">
+           appearsBefore="org.eclipse.ui.navigator.resourceContent"
+           contentProvider="de.hetzge.eclipse.flix.navigator.FlixTreeContentProvider"
+           icon="assets/icons/icon.png"
+           id="de.hetzge.eclipse.flix.navigatorContent"
+           labelProvider="de.hetzge.eclipse.flix.navigator.FlixTreeContentLabelProvider"
+           name="Flix Navigator Content"
+           priority="highest"
+           providesSaveables="false"
+           sortOnly="false">
         <triggerPoints>
            <instanceof
-                 value="org.eclipse.core.resources.IResource">
+                 value="org.eclipse.core.resources.IProject">
            </instanceof>
         </triggerPoints>
         <override
@@ -355,12 +359,27 @@
               suppressedExtensionId="org.eclipse.ui.navigator.resourceContent">
         </override>
      </navigatorContent>
+     <navigatorContent
+           activeByDefault="true"
+           appearsBefore="de.hetzge.eclipse.flix.navigatorContent"
+           icon="assets/icons/icon.png"
+           id="de.hetzge.eclipse.flix.navigatorOrder"
+           name="Flix Navigator Order"
+           priority="highest"
+           sortOnly="true">
+        <commonSorter
+              class="de.hetzge.eclipse.flix.navigator.FlixViewerComparator">
+        </commonSorter>
+     </navigatorContent>
   </extension>
    <extension
          point="org.eclipse.ui.navigator.viewer">
       <viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
          <includes>
-            <contentExtension pattern="de.hetzge.eclipse.flix.navigatorContent1"/>
+            <contentExtension pattern="de.hetzge.eclipse.flix.navigatorContent"/>
+            <contentExtension
+                  pattern="de.hetzge.eclipse.flix.navigatorOrder">
+            </contentExtension>
          </includes>
       </viewerContentBinding>
    </extension>

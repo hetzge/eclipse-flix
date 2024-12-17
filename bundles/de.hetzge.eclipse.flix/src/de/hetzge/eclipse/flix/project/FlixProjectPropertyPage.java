@@ -27,7 +27,7 @@ public class FlixProjectPropertyPage extends PropertyPage implements IWorkbenchP
 	protected Control createContents(Composite parent) {
 		final IResource resource = getElement().getAdapter(IResource.class);
 		this.project = resource.getProject();
-		this.flixProject = Flix.get().getModel().getOrCreateFlixProject(this.project).orElseThrow(() -> new IllegalStateException("Not a flix project"));
+		this.flixProject = Flix.get().getModel().getFlixProjectOrThrowRuntimeException(this.project);
 		this.control = new FlixProjectPropertyPageControl(parent, this.flixProject);
 		return this.control;
 	}
