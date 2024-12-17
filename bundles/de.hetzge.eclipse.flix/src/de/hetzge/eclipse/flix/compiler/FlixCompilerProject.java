@@ -127,7 +127,7 @@ public final class FlixCompilerProject {
 	}
 
 	private IFolder getFlixCompilerFolder(FlixVersion version, IProgressMonitor monitor) {
-		return this.project.getFolder("flix." + version.getKey());
+		return this.project.getFolder(version.getKey());
 	}
 
 	private static void confirmDownload(FlixVersion version, URL url) {

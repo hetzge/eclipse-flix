@@ -351,7 +351,7 @@
            sortOnly="false">
         <triggerPoints>
            <instanceof
-                 value="org.eclipse.core.resources.IProject">
+                 value="org.eclipse.core.resources.IResource">
            </instanceof>
         </triggerPoints>
         <override
@@ -369,6 +369,11 @@
            sortOnly="true">
         <commonSorter
               class="de.hetzge.eclipse.flix.navigator.FlixViewerComparator">
+           <parentExpression>
+              <instanceof
+                    value="org.eclipse.core.resources.IWorkspaceRoot">
+              </instanceof>
+           </parentExpression>
         </commonSorter>
      </navigatorContent>
   </extension>

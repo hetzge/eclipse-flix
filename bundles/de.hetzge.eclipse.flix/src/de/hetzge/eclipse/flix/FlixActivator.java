@@ -1,6 +1,8 @@
 package de.hetzge.eclipse.flix;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -102,7 +104,6 @@ public class FlixActivator extends AbstractUIPlugin {
 			workspace.addResourceChangeListener(postResourceMonitor, IResourceChangeEvent.POST_CHANGE | IResourceChangeEvent.PRE_DELETE);
 			rollback.add(() -> workspace.removeResourceChangeListener(postResourceMonitor));
 
-
 			rollback.add(postResourceMonitor.onDidChangeFiles().subscribe(fileChangeEvent -> {
 				for (final URI uri : fileChangeEvent.getFiles()) {
 					final IPath changePath = URIUtil.toPath(uri);
@@ -173,6 +174,13 @@ public class FlixActivator extends AbstractUIPlugin {
 		registerImage(registry, FlixImageKey.FOLDER_ICON, ImageDescriptor.createFromURL(Utils.createUrl("platform:/plugin/org.eclipse.ui.ide/icons/full/obj16/folder.png")));
 		registerImage(registry, FlixImageKey.FILE_ICON, ImageDescriptor.createFromURL(Utils.createUrl("platform:/plugin/org.eclipse.ui/icons/full/obj16/file_obj.png")));
 		registerImage(registry, FlixImageKey.FLIX_LIBRARY_ICON, imageDescriptorFromPlugin(FlixConstants.PLUGIN_ID, "assets/icons/libraryicon.png"));
+		try {
+			registerImage(registry, FlixImageKey.SRC_ICON, ImageDescriptor.createFromURL(new URL("platform:/plugin/org.eclipse.jdt.ui/icons/full/obj16/packagefolder_obj.png")));
+			registerImage(registry, FlixImageKey.LIB_ICON, ImageDescriptor.createFromURL(new URL("platform:/plugin/org.eclipse.jdt.ui/icons/full/obj16/library_obj.png")));
+			registerImage(registry, FlixImageKey.TEST_ICON, ImageDescriptor.createFromURL(new URL("platform:/plugin/org.eclipse.jdt.ui/icons/full/elcl16/th_single.png")));
+		} catch (final MalformedURLException exception) {
+			throw new RuntimeException(exception);
+		}
 	}
 
 	private void registerImage(ImageRegistry registry, FlixImageKey imageKey, ImageDescriptor descriptor) {
