@@ -1,6 +1,5 @@
 package de.hetzge.eclipse.flix.model;
 
-import java.io.File;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -13,12 +12,9 @@ import java.util.stream.Stream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SafeRunner;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.osgi.service.prefs.BackingStoreException;
@@ -30,13 +26,10 @@ import de.hetzge.eclipse.flix.manifest.DefaultFlixManifestToml;
 import de.hetzge.eclipse.flix.manifest.FlixManifestToml;
 import de.hetzge.eclipse.flix.project.FlixProjectNature;
 import de.hetzge.eclipse.flix.project.FlixProjectPreferences;
-import de.hetzge.eclipse.flix.utils.FlixUtils;
 import de.hetzge.eclipse.utils.EclipseUtils;
-import de.hetzge.eclipse.utils.Utils;
 
 public final class FlixProject {
 
-	public static final String LIBRARY_FOLDER_NAME = "zzzlibrary";
 	public static final String FLIX_JAR_FILE_NAME = "flix.jar";
 
 	private final IProject project;
@@ -58,11 +51,7 @@ public final class FlixProject {
 	}
 
 	public FlixVersion getFlixVersion() {
-		if (getInProjectFolderFlixCompilerJarFile().isPresent()) {
-			return FlixVersion.CUSTOM_VERSION;
-		} else {
-			return this.flixManifestToml.getFlixVersion();
-		}
+		return this.flixManifestToml.getFlixVersion();
 	}
 
 	public FlixManifestToml getFlixToml() {
@@ -73,55 +62,24 @@ public final class FlixProject {
 		return isActiveFlixProject(this.project);
 	}
 
-	public File getFlixCompilerJarFile() {
-		final Optional<File> inProjectFolderFlixCompilerJarFileOptional = getInProjectFolderFlixCompilerJarFile();
-		if (inProjectFolderFlixCompilerJarFileOptional.isPresent()) {
-			return inProjectFolderFlixCompilerJarFileOptional.get();
-		} else {
-			return FlixUtils.loadFlixJarFile(getFlixVersion(), null);
-		}
-	}
-
-	private Optional<File> getInProjectFolderFlixCompilerJarFile() {
-		final IFile flixJarInProjectFile = this.project.getFile("flix.jar");
-		if (flixJarInProjectFile.exists()) {
-			return Optional.of(flixJarInProjectFile.getRawLocation().toFile());
-		} else {
-			return Optional.empty();
-		}
-	}
-
-	public File getFlixCompilerFolder() {
-		final IProgressMonitor monitor = new NullProgressMonitor();
-		final Optional<File> jarFileOptional = getInProjectFolderFlixCompilerJarFile();
-		if (jarFileOptional.isPresent()) {
-			return FlixUtils.getFlixCompilerFolder(FlixVersion.DEFAULT_VERSION, jarFileOptional.get(), monitor);
-		} else {
-			return FlixUtils.getFlixCompilerFolder(getFlixVersion(), FlixUtils.loadFlixJarFile(getFlixVersion(), monitor), monitor);
-		}
-	}
-
-	public void deleteFlixCompilerFolder(IProgressMonitor monitor) {
-		// Custom versions needs full refresh because content could have been changed
-		if (getFlixVersion() == FlixVersion.CUSTOM_VERSION) {
-			Utils.deleteDirectory(getFlixCompilerFolder());
-		}
-		try {
-			getStandardLibraryFolder().delete(true, monitor);
-		} catch (final CoreException exception) {
-			throw new RuntimeException(exception);
-		}
-	}
-
-	public File createOrGetFlixCompilerFolder(IProgressMonitor monitor) {
-		final Optional<File> jarFileOptional = getInProjectFolderFlixCompilerJarFile();
-		if (jarFileOptional.isPresent()) {
-			return FlixUtils.createOrGetFlixCompilerFolder(FlixVersion.DEFAULT_VERSION, jarFileOptional.get(), monitor);
-		} else {
-			final FlixVersion flixVersion = getFlixVersion();
-			return FlixUtils.createOrGetFlixCompilerFolder(flixVersion, FlixUtils.loadFlixJarFile(flixVersion, monitor), monitor);
-		}
-	}
+//	public File getFlixCompilerJarFile() {
+//		final Optional<File> inProjectFolderFlixCompilerJarFileOptional = getInProjectFolderFlixCompilerJarFile();
+//		if (inProjectFolderFlixCompilerJarFileOptional.isPresent()) {
+//			return inProjectFolderFlixCompilerJarFileOptional.get();
+//		} else {
+//			return FlixUtils.loadFlixJarFile(getFlixVersion(), null);
+//		}
+//	}
+//
+//	public File getFlixCompilerFolder() {
+//		final IProgressMonitor monitor = new NullProgressMonitor();
+//		final Optional<File> jarFileOptional = getInProjectFolderFlixCompilerJarFile();
+//		if (jarFileOptional.isPresent()) {
+//			return FlixUtils.getFlixCompilerFolder(FlixVersion.DEFAULT_VERSION, jarFileOptional.get(), monitor);
+//		} else {
+//			return FlixUtils.getFlixCompilerFolder(getFlixVersion(), FlixUtils.loadFlixJarFile(getFlixVersion(), monitor), monitor);
+//		}
+//	}
 
 	public List<IFile> getFlixSourceFiles() {
 		if (getSourceFolder().exists()) {
@@ -275,26 +233,6 @@ public final class FlixProject {
 		} catch (final CoreException exception) {
 			throw new RuntimeException("Failed to refresh project", exception);
 		}
-	}
-
-	public IFolder createOrGetStandardLibraryFolder(IProgressMonitor monitor) {
-		final IFolder libraryFolder = getStandardLibraryFolder();
-		if (!libraryFolder.exists()) {
-			try {
-				final File standardLibraryFolder = new File(createOrGetFlixCompilerFolder(monitor), "src/library"); //$NON-NLS-1$
-				libraryFolder.create(true, false, monitor);
-				libraryFolder.setDerived(true, monitor);
-				libraryFolder.createLink(Path.fromOSString(standardLibraryFolder.getAbsolutePath()), IResource.REPLACE, monitor);
-				libraryFolder.refreshLocal(IFile.DEPTH_INFINITE, monitor);
-			} catch (final CoreException exception) {
-				throw new RuntimeException("Failed to create standard library folder", exception);
-			}
-		}
-		return libraryFolder;
-	}
-
-	private IFolder getStandardLibraryFolder() {
-		return this.project.getFolder(LIBRARY_FOLDER_NAME); // $NON-NLS-1$
 	}
 
 	@Override

@@ -6,10 +6,9 @@ import java.util.Optional;
 
 public final class FlixVersion {
 
-	public static final FlixVersion VERSION_0_54_0 = new FlixVersion("0.54.0", "de5d9cce2489784824b58cce76c4e413");
+	public static final FlixVersion VERSION_0_54_0 = new FlixVersion("0.54.0", "dbd8e63de44c5ae59efdf2c5e610b568");
 	public static final List<FlixVersion> VERSIONS = List.of(VERSION_0_54_0);
 	public static final FlixVersion DEFAULT_VERSION = FlixVersion.VERSION_0_54_0;
-	public static final FlixVersion CUSTOM_VERSION = new FlixVersion("<project>/flix.jar", null);
 
 	private final String key;
 

@@ -59,14 +59,6 @@ public class FlixProjectPropertyPage extends PropertyPage implements IWorkbenchP
 			final Text versionText = new Text(informationsGroup, SWT.READ_ONLY);
 			versionText.setText(flixProject.getFlixVersion().getKey());
 			GridDataFactory.fillDefaults().grab(true, false).applyTo(versionText);
-
-			final Label flixJarLabel = new Label(informationsGroup, SWT.NONE);
-			flixJarLabel.setText("Flix compiler JAR");
-			GridDataFactory.swtDefaults().applyTo(flixJarLabel);
-
-			final Text flixJarText = new Text(informationsGroup, SWT.READ_ONLY);
-			flixJarText.setText(flixProject.getFlixCompilerJarFile().getAbsolutePath());
-			GridDataFactory.fillDefaults().grab(true, false).applyTo(flixJarText);
 		}
 	}
 

@@ -1,4 +1,4 @@
-package de.hetzge.eclipse.flix.utils;
+package de.hetzge.eclipse.flix.compiler;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -15,36 +15,58 @@ import java.security.MessageDigest;
 import java.util.Objects;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.jar.JarArchiveInputStream;
 import org.apache.commons.compress.utils.IOUtils;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SwtCallable;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.undo.CreateProjectOperation;
+import org.eclipse.ui.ide.undo.WorkspaceUndoUtil;
 
 import de.hetzge.eclipse.flix.core.model.FlixVersion;
 import de.hetzge.eclipse.utils.Utils;
 
-public final class FlixUtils {
-	private static final ILog LOG = Platform.getLog(FlixUtils.class);
+public final class FlixCompilerProject {
 
-	private FlixUtils() {
+	private static final ILog LOG = Platform.getLog(FlixCompilerProject.class);
+
+	public static final String FLIX_COMPILER_PRJECT_NAME = "ZZZFlix";
+
+	private final IProject project;
+
+	private FlixCompilerProject(IProject project) {
+		this.project = project;
 	}
 
-	public synchronized static File loadFlixJarFile(FlixVersion version, IProgressMonitor monitor) {
+	public IResource getLibraryFolder(FlixVersion flixVersion) {
+		return createOrGetFlixCompilerFolder(flixVersion, new NullProgressMonitor()).getFolder("src/library");
+	}
+
+	public synchronized File loadFlixJarFile(FlixVersion version, IProgressMonitor monitor) {
 		final String flixJarName = "flix.v" + version.getKey() + ".jar";
-		final File flixJarFile = new File("_flix", flixJarName);
+		final File flixJarFile = this.project.getFile(flixJarName).getRawLocation().makeAbsolute().toFile();
 		// delete file if it is corrupt
 		if (flixJarFile.exists() && flixJarFile.length() == 0) {
 			flixJarFile.delete();
 		}
-		flixJarFile.getParentFile().mkdirs();
 		if (!flixJarFile.exists()) {
+			flixJarFile.getParentFile().mkdirs();
 			LOG.info("Download " + flixJarName);
 			try (final FileOutputStream outputStream = new FileOutputStream(flixJarFile)) {
 				final URL url = URI.create("https://github.com/flix/flix/releases/download/v" + version.getKey() + "/flix.jar").toURL();
@@ -86,8 +108,25 @@ public final class FlixUtils {
 				}
 				throw new RuntimeException(exception);
 			}
+			createOrGetFlixCompilerFolder(version, monitor);
 		}
 		return flixJarFile;
+	}
+
+	public synchronized IFolder createOrGetFlixCompilerFolder(FlixVersion version, IProgressMonitor monitor) {
+		final IFolder flixCompilerFolder = getFlixCompilerFolder(version, monitor);
+		if (!flixCompilerFolder.exists()) {
+			try {
+				extract(loadFlixJarFile(version, monitor), flixCompilerFolder.getRawLocation().makeAbsolute().toFile(), monitor);
+			} catch (final IOException exception) {
+				throw new RuntimeException(exception);
+			}
+		}
+		return flixCompilerFolder;
+	}
+
+	private IFolder getFlixCompilerFolder(FlixVersion version, IProgressMonitor monitor) {
+		return this.project.getFolder("flix." + version.getKey());
 	}
 
 	private static void confirmDownload(FlixVersion version, URL url) {
@@ -101,25 +140,8 @@ public final class FlixUtils {
 		}
 	}
 
-	public synchronized static File getFlixCompilerFolder(FlixVersion version, File flixJarFile, IProgressMonitor monitor) {
-		final String versionString = Objects.equals(version, FlixVersion.CUSTOM_VERSION) ? Utils.md5(flixJarFile.getAbsolutePath()) : version.getKey();
-		return new File("_flix/flix." + versionString);
-	}
-
-	public synchronized static File createOrGetFlixCompilerFolder(FlixVersion version, File flixJarFile, IProgressMonitor monitor) {
-		final File flixCompilerFolder = getFlixCompilerFolder(version, flixJarFile, monitor);
-		if (!flixCompilerFolder.exists()) {
-			try {
-				extract(flixJarFile, flixCompilerFolder, monitor);
-			} catch (final IOException exception) {
-				throw new RuntimeException(exception);
-			}
-		}
-		return flixCompilerFolder;
-	}
-
 	private static void extract(File archiveFile, File flixSourceFolder, IProgressMonitor monitor) throws IOException {
-		try (ArchiveInputStream inputStream = new JarArchiveInputStream(new BufferedInputStream(new FileInputStream(archiveFile)))) {
+		try (JarArchiveInputStream inputStream = new JarArchiveInputStream(new BufferedInputStream(new FileInputStream(archiveFile)))) {
 			SubMonitor subMonitor;
 			if (monitor != null) {
 				subMonitor = SubMonitor.convert(monitor, IProgressMonitor.UNKNOWN);
@@ -130,6 +152,9 @@ public final class FlixUtils {
 			ArchiveEntry entry = null;
 			while ((entry = inputStream.getNextEntry()) != null) {
 				if (inputStream.canReadEntryData(entry)) {
+					if (!entry.getName().startsWith("src/library")) {
+						continue;
+					}
 					if (subMonitor != null) {
 						final SubMonitor subSubMonitor = subMonitor.setWorkRemaining(100).split(1);
 						subSubMonitor.setTaskName("Extract " + entry.getName());
@@ -162,4 +187,54 @@ public final class FlixUtils {
 		}
 	}
 
+	public static FlixCompilerProject createFlixCompilerProjectIfNotExists() {
+		final IProject project = getFlixCompilerProject();
+		if (project.exists()) {
+			return new FlixCompilerProject(project);
+		}
+		final Job job = Job.create("Create Flix Compiler Project", monitor -> {
+			try {
+				createFlixCompilerProject(monitor);
+			} catch (final ExecutionException exception) {
+				throw new CoreException(Status.error("Failed to create Flix Compiler Project", exception));
+			}
+		});
+		job.schedule();
+		try {
+			job.join();
+		} catch (final InterruptedException exception) {
+			Thread.currentThread().interrupt();
+		}
+		return createFlixCompilerProjectIfNotExists();
+	}
+
+	private static void createFlixCompilerProject(IProgressMonitor monitor) throws ExecutionException, CoreException {
+		Display.getDefault().syncExec(() -> {
+			final Shell shell = Display.getDefault().getActiveShell();
+			try {
+				final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(FLIX_COMPILER_PRJECT_NAME);
+				final CreateProjectOperation projectOperation = new CreateProjectOperation(description, "Create Flix Compiler Eclipse project");
+				projectOperation.execute(monitor, WorkspaceUndoUtil.getUIInfoAdapter(shell));
+				final IProject project = getFlixCompilerProject();
+				project.setDefaultCharset("UTF-8", monitor); //$NON-NLS-1$
+			} catch (final CoreException | ExecutionException exception) {
+				throw new RuntimeException(exception);
+			}
+		});
+	}
+
+	private static IProject getFlixCompilerProject() {
+		return ResourcesPlugin.getWorkspace().getRoot().getProject(FLIX_COMPILER_PRJECT_NAME);
+	}
+
+	public static boolean isFlixCompilerProject(Object element) {
+		if (!(element instanceof IProject)) {
+			return false;
+		}
+		final IProject project = (IProject) element;
+		if (!Objects.equals(project.getName(), FlixCompilerProject.FLIX_COMPILER_PRJECT_NAME)) {
+			return false;
+		}
+		return true;
+	}
 }

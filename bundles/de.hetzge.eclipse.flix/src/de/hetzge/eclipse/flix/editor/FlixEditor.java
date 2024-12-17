@@ -84,9 +84,9 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 	protected void createActions() {
 		super.createActions();
 
-//		final FlixStructureSelectEnclosingAction action = new FlixStructureSelectEnclosingAction(this);
-//		action.setActionDefinitionId(FlixStructureSelectEnclosingAction.ACTION_DEFINITION_ID);
-//		setAction("SelectEnclosingElement", action);
+		final FlixStructureSelectEnclosingAction action = new FlixStructureSelectEnclosingAction(this);
+		action.setActionDefinitionId(FlixStructureSelectEnclosingAction.ACTION_DEFINITION_ID);
+		setAction("SelectEnclosingElement", action);
 	}
 
 	@Override

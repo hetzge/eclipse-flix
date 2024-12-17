@@ -72,7 +72,6 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 	public synchronized void connectProject(FlixProject project) {
 		refreshFlixDependencies(project);
 		final Job job = Job.create("Connect Flix language tooling: " + project.getProject().getName(), (ICoreRunnable) monitor -> {
-			project.createOrGetStandardLibraryFolder(monitor);
 			this.connectedProjects.computeIfAbsent(project, ignore -> {
 				return SafeRun.runWithResult(rollback -> {
 					rollback.setLogger(FlixLogger::logError);
@@ -162,8 +161,6 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 			if (languageTooling != null) {
 				languageTooling.close();
 			}
-			// Delete compiler folder
-			project.deleteFlixCompilerFolder(monitor);
 		});
 		job.setRule(project.getProject());
 		job.schedule();

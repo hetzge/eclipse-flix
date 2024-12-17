@@ -23,6 +23,7 @@ import org.lxtk.util.SafeRun;
 import org.lxtk.util.SafeRun.Rollback;
 import org.osgi.framework.BundleContext;
 
+import de.hetzge.eclipse.flix.compiler.FlixCompilerProject;
 import de.hetzge.eclipse.flix.editor.FlixEditor;
 import de.hetzge.eclipse.flix.launch.FlixRunMainCommandHandler;
 import de.hetzge.eclipse.flix.launch.FlixRunReplCommandHandler;
@@ -31,14 +32,11 @@ import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
 
-// TODO https://github.com/mlutze/fcwg
-// TODO LSP Workspace functionality?!
 // TODO Document service per project?! -> we have DocumentFilter
 // TODO Reregister documents on LSP ready?
 // TODO Catch checked exceptions with SafeRunner.run(...)
 // TODO embedd flix compiler
 // TODO create flix toml if missing
-// TODO use progress monitor in language tooling initialization
 
 // TODO :eval main()
 // TODO :eval selection
@@ -46,10 +44,9 @@ import de.hetzge.eclipse.utils.Utils;
 
 // TODO tree icons https://stackoverflow.com/questions/27718357/how-to-change-file-folder-resource-icons-from-existing-eclipse-views
 
-// TODO execute flix command shortcut
+// TODO fix duplicate workspace symbols
 
-// TODO fix reference search (absolute uri)
-// TODO refresh library if necessary (flix version)
+// TODO manage flix versions, flix version selection ui, model
 
 /**
  * The activator class controls the plug-in life cycle
@@ -80,6 +77,8 @@ public class FlixActivator extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+
+		FlixCompilerProject.createFlixCompilerProjectIfNotExists();
 
 		SafeRun.run(rollback -> {
 			this.flix = new Flix();

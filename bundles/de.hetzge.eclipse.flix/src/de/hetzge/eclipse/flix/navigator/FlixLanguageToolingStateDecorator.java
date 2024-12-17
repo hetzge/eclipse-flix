@@ -1,5 +1,7 @@
 package de.hetzge.eclipse.flix.navigator;
 
+import java.util.Optional;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.ILabelProviderListener;
@@ -15,8 +17,12 @@ public class FlixLanguageToolingStateDecorator implements ILabelDecorator {
 	public String decorateText(String text, Object element) {
 		if (element instanceof IProject) {
 			final IProject project = (IProject) element;
-			if (Flix.get().getModel().getOrCreateFlixProject(project).map(FlixProject::isLanguageToolingStarted).orElse(false)) {
-				return text + " (LSP)";
+			final Optional<FlixProject> flixProjectOptional = Flix.get().getModel().getOrCreateFlixProject(project);
+			if (flixProjectOptional.isPresent()) {
+				final FlixProject flixProject = flixProjectOptional.get();
+				if (flixProjectOptional.get().isLanguageToolingStarted()) {
+					return text + " (Flix " + flixProject.getFlixVersion().getKey() + ")";
+				}
 			}
 		}
 		return text;

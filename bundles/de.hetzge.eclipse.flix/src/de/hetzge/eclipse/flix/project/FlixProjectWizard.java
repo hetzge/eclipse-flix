@@ -9,6 +9,7 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -45,12 +46,12 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 
 	@Override
 	public boolean performFinish() {
+		final FlixNewProjectPage page = (FlixNewProjectPage) getStartingPage();
+		final FlixNewProjectVersionPage versionPage = (FlixNewProjectVersionPage) page.getNextPage();
+		final String projectName = page.getProjectName();
+		final FlixVersion flixVersion = versionPage.getVersionValue();
+		final File newProjectFolder = new File(page.getLocationPath().toFile(), projectName);
 		try {
-			final FlixNewProjectPage page = (FlixNewProjectPage) getStartingPage();
-			final FlixNewProjectVersionPage versionPage = (FlixNewProjectVersionPage) page.getNextPage();
-			final String projectName = page.getProjectName();
-			final FlixVersion flixVersion = versionPage.getVersionValue();
-			final File newProjectFolder = new File(page.getLocationPath().toFile(), projectName);
 			getContainer().run(true, true, monitor -> {
 				try {
 					monitor.subTask("Init Flix project");
@@ -69,16 +70,20 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 					final IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 					project.setDefaultCharset("UTF-8", monitor); //$NON-NLS-1$
 				} catch (ExecutionException | CoreException | InterruptedException exception) {
-					// Rollback already created files
-					Utils.deleteFolder(newProjectFolder);
-					throw new InvocationTargetException(exception);
+					throw new InvocationTargetException(exception, exception.getMessage());
 				}
 			});
-		} catch (InvocationTargetException | InterruptedException exception) {
-			throw new RuntimeException(exception);
+			return true;
+		} catch (final InvocationTargetException exception) {
+			Utils.deleteFolder(newProjectFolder);
+			final Throwable targetException = exception.getTargetException();
+			ErrorDialog.openError(getShell(), "Error", null, Status.error(targetException.getMessage(), targetException));
+			return false;
+		} catch (final InterruptedException exception) {
+			Utils.deleteFolder(newProjectFolder);
+			Thread.currentThread().interrupt();
+			return false;
 		}
-
-		return true;
 	}
 
 }

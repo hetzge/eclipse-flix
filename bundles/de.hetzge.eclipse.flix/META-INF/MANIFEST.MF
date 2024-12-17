@@ -46,6 +46,7 @@ Require-Bundle: com.google.gson,
  de.hetzge.eclipse.toml,
  de.hetzge.eclipse.flix.core,
  de.hetzge.eclipse.flixmanifest,
+ org.antlr.antlr4-runtime,
  org.apache.commons.commons-compress;bundle-version="1.27.1"
 utomatic-Module-Name: eclipse.flix
 Bundle-ActivationPolicy: lazy

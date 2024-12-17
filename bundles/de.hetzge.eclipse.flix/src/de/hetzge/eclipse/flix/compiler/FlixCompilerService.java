@@ -48,6 +48,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 
+import de.hetzge.eclipse.flix.core.model.FlixVersion;
 import de.hetzge.eclipse.flix.model.FlixProject;
 import de.hetzge.eclipse.flix.utils.GsonUtils;
 import de.hetzge.eclipse.utils.Utils;
@@ -335,11 +336,13 @@ public final class FlixCompilerService {
 		if (uri.startsWith("file:")) { //$NON-NLS-1$
 			return uri;
 		}
-		return this.flixProject.getProject().getFolder(FlixProject.LIBRARY_FOLDER_NAME).getLocationURI() + "/" + uri; //$NON-NLS-1$ //$NON-NLS-2$
+		final FlixVersion flixVersion = this.flixProject.getFlixVersion();
+		return FlixCompilerProject.createFlixCompilerProjectIfNotExists().getLibraryFolder(flixVersion).getLocationURI() + "/" + uri; //$NON-NLS-1$
 	}
 
 	private String unfixLibraryUri(String uri) {
-		final String libraryPrefix = this.flixProject.getProject().getFolder(FlixProject.LIBRARY_FOLDER_NAME).getLocationURI().toString(); // $NON-NLS-1$
+		final FlixVersion flixVersion = this.flixProject.getFlixVersion();
+		final String libraryPrefix = FlixCompilerProject.createFlixCompilerProjectIfNotExists().getLibraryFolder(flixVersion).getLocationURI().toString(); // $NON-NLS-1$
 		if (!uri.startsWith(libraryPrefix)) {
 			return uri;
 		}

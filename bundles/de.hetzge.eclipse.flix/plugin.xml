@@ -33,7 +33,7 @@
 		<target id="de.hetzge.eclipse.flix.editor" name="Flix Hyperlink Target"></target>
 	</extension>
 	<extension point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
-		<hyperlinkDetector activate="true" class="org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector" id="asdasdasdadas" name="name" targetId="de.hetzge.eclipse.flix.editor"></hyperlinkDetector>
+		<hyperlinkDetector activate="true" class="org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector" id="de.hetzge.eclipse.flix.editor.hyperlinkDetector" name="Flix Hyperlink Detector" targetId="de.hetzge.eclipse.flix.editor"></hyperlinkDetector>
 	</extension>
 	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
 		<launchConfigurationType name="Flix launch" delegate="de.hetzge.eclipse.flix.launch.FlixLaunchConfigurationDelegate" modes="run" id="de.hetzge.eclipse.flix.launchConfigurationType"></launchConfigurationType>

@@ -78,6 +78,9 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 		assistant.setSorter(new CompletionProposalSorter());
 		assistant.setInformationControlCreator(parent -> new DefaultInformationControl(parent, true));
 		assistant.enableColoredLabels(true);
+		assistant.enableAutoActivateCompletionOnType(true);
+		assistant.enableAutoActivation(true);
+		assistant.setAutoActivationDelay(0);
 		return assistant;
 	}
 
