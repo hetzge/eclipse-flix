@@ -2,3 +2,5 @@ bin/
 target/
 .metadata/
 .gitstats
+.polyglot.build.properties
+org.eclipse.m2e.core.prefs
