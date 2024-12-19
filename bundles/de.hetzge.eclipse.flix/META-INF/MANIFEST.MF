@@ -5,7 +5,6 @@ Bundle-SymbolicName: de.hetzge.eclipse.flix;singleton:=true
 Automatic-Module-Name: de.hetzge.eclipse.flix
 Bundle-Version: 0.0.1.qualifier
 Bundle-Activator: de.hetzge.eclipse.flix.FlixActivator
-Bundle-Vendor: hetzge
 Require-Bundle: com.google.gson,
  org.lxtk,
  org.lxtk.lx4e,

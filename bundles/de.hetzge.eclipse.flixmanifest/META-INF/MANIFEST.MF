@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Flixmanifest
+Bundle-Name: Flix Manifest
 Bundle-SymbolicName: de.hetzge.eclipse.flixmanifest;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 0.0.1.qualifier
 Export-Package: de.hetzge.eclipse.flix.manifest
 Require-Bundle: com.sun.jna,
  wrapped.org.extism.sdk.extism,
@@ -24,4 +24,6 @@ Require-Bundle: com.sun.jna,
  org.eclipse.ui.ide,
  org.eclipse.jface.text
 Automatic-Module-Name: de.hetzge.eclipse.flixmanifest
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: de.hetzge.eclipse.flix.manifest.FlixManifestActivator
 Bundle-RequiredExecutionEnvironment: JavaSE-21

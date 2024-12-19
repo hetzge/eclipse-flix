@@ -57,6 +57,26 @@ public class FlixEditor extends AbstractDecoratedTextEditor {
 		this.highlighter = new Highlighter(viewer, getSelectionProvider(), () -> FlixOperationTargetProvider.getOperationTarget(this));
 		this.highlighter.install();
 		viewer.doOperation(ProjectionViewer.TOGGLE);
+
+//		 final IAnnotationAccess iaccess = new IAnnotationAccess() {
+//
+//             @Override
+//             public boolean isTemporary(Annotation annotation) {
+//                 return true;
+//             }
+//
+//             @Override
+//             public boolean isMultiLine(Annotation annotation) {
+//                 return false;
+//             }
+//
+//             @Override
+//             public Object getType(Annotation annotation) {
+//                 return "de.hetzge.eclipse.flix.annotationType";
+//             }
+//         };
+
+
 	}
 
 	@Override

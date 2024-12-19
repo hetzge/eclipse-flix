@@ -10,6 +10,8 @@ import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
+import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
+import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
 import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.tm4e.languageconfiguration.internal.LanguageConfigurationAutoEditStrategy;
@@ -20,7 +22,10 @@ import org.lxtk.DocumentService;
 import org.lxtk.LanguageOperationTarget;
 import org.lxtk.lx4e.ui.completion.CompletionProposalSorter;
 import org.lxtk.lx4e.ui.completion.ContentAssistProcessor;
+import org.lxtk.lx4e.ui.hover.AnnotationHover;
 import org.lxtk.lx4e.ui.hover.DocumentHover;
+import org.lxtk.lx4e.ui.hover.FirstMatchHover;
+import org.lxtk.lx4e.ui.hover.ProblemHover;
 import org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector;
 
 import de.hetzge.eclipse.flix.Flix;
@@ -39,8 +44,22 @@ public class FlixSourceViewerConfiguration extends TextSourceViewerConfiguration
 	}
 
 	@Override
+	public IQuickAssistAssistant getQuickAssistAssistant(ISourceViewer sourceViewer) {
+		if (this.editor == null || !this.editor.isEditable()) {
+			return null;
+		}
+		final QuickAssistAssistant assistant = new QuickAssistAssistant();
+		assistant.setQuickAssistProcessor(new FlixQuickAssistProcessor(this::getLanguageOperationTarget));
+		assistant.enableColoredLabels(true);
+		return assistant;
+	}
+
+	@Override
 	public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType) {
-		return new DocumentHover(this::getLanguageOperationTarget);
+		return new FirstMatchHover(
+				new ProblemHover(this.fPreferenceStore, new FlixQuickAssistProcessor(this::getLanguageOperationTarget)),
+				new DocumentHover(this::getLanguageOperationTarget),
+				new AnnotationHover(this.fPreferenceStore));
 	}
 
 	@Override
