@@ -388,4 +388,25 @@
          </includes>
       </viewerContentBinding>
    </extension>
+   <extension
+         point="org.eclipse.ui.importWizards">
+      <category
+            id="de.hetzge.eclipse.flix.import.category"
+            name="Flix">
+      </category>
+      <wizard
+            category="de.hetzge.eclipse.flix.import.category"
+            class="de.hetzge.eclipse.flix.project.FlixImportWizard"
+            icon="assets/icons/icon.png"
+            id="de.hetzge.eclipse.flix.import.wizard"
+            name="Flix Project">
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.ide.projectConfigurators">
+      <projectConfigurator
+            class="de.hetzge.eclipse.flix.project.FlixProjectConfigurator"
+            label="Flix Project">
+      </projectConfigurator>
+   </extension>
 </plugin>
