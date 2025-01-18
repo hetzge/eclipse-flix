@@ -112,7 +112,7 @@ public final class FlixLauncher {
 		final FlixVersion flixVersion = flixProject.getFlixVersion();
 		final String name = String.format("Flix LSP %s %s", flixVersion.getKey(), flixProject.getProject().getName());
 		final File flixJarFile = FlixCompilerProject.createFlixCompilerProjectIfNotExists().loadFlixJarFile(flixVersion, null);
-		final Process process = startProcess(new File("."), flixJarFile, List.of("-XX:+UseG1GC", "-XX:+UseStringDeduplication", "-Xss4m", "-Xms100m", "-Xmx2G"), List.of("lsp", port + ""), true);
+		final Process process = startProcess(new File("."), flixJarFile, List.of("-XX:+UseG1GC", "-XX:+UseStringDeduplication", "-Xss4m", "-Xms100m", "-Xmx2G"), List.of("lsp-vscode", port + ""), true);
 		EclipseConsoleUtils.startWriteToConsoleThread(process, EclipseConsoleUtils.findConsole(name), lineConsumer);
 		return process;
 	}

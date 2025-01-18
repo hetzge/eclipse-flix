@@ -9,6 +9,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
 
 import de.hetzge.eclipse.flix.model.FlixProject;
 
@@ -36,6 +37,11 @@ public class FlixProjectBuilder extends IncrementalProjectBuilder implements IIn
 		final String projectName = flixProject.getProject().getName();
 		monitor.subTask(String.format("Full/Clean build (%s)", projectName));
 		Flix.get().getLanguageToolingManager().reconnectProject(flixProject);
+	}
+
+	@Override
+	public ISchedulingRule getRule(int kind, Map<String, String> args) {
+		return getProject();
 	}
 
 	private void fastBuild(IProgressMonitor monitor) throws CoreException {

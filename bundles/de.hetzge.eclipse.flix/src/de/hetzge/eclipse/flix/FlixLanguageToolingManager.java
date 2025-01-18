@@ -98,6 +98,7 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 						try {
 							readyLatch.await(1L, TimeUnit.MINUTES);
 						} catch (final InterruptedException exception) {
+							Thread.interrupted();
 							throw new RuntimeException("Failed to start Flix language server", exception);
 						}
 						compilerClient = FlixCompilerClient.connect(connectPort);
@@ -105,6 +106,7 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 						try {
 							connectedLatch.await(1L, TimeUnit.MINUTES);
 						} catch (final InterruptedException exception) {
+							Thread.interrupted();
 							throw new RuntimeException("Failed to connect to Flix compiler", exception);
 						}
 					} else {

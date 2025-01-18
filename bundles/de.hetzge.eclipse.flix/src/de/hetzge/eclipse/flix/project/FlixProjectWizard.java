@@ -61,13 +61,13 @@ public class FlixProjectWizard extends Wizard implements INewWizard {
 						throw new CoreException(Status.error("Init flix project process failed with code: " + code));
 					}
 					final IProjectDescription description = ResourcesPlugin.getWorkspace().newProjectDescription(projectName);
-					EclipseUtils.addNature(description, FlixProjectNature.ID);
-
 					final CreateProjectOperation projectOperation = new CreateProjectOperation(description, "Create Flix Eclipse project");
 					projectOperation.execute(monitor, WorkspaceUndoUtil.getUIInfoAdapter(getShell()));
 
 					final IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 					project.setDefaultCharset("UTF-8", monitor); //$NON-NLS-1$
+
+					EclipseUtils.addNature(project, FlixProjectNature.ID);
 				} catch (ExecutionException | CoreException | InterruptedException exception) {
 					throw new InvocationTargetException(exception, exception.getMessage());
 				}

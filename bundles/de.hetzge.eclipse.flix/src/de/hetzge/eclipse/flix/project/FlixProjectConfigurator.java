@@ -14,6 +14,7 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.wizards.datatransfer.ProjectConfigurator;
 
+import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.manifest.FlixManifestToml;
 import de.hetzge.eclipse.utils.EclipseUtils;
 
@@ -44,6 +45,7 @@ public class FlixProjectConfigurator implements ProjectConfigurator {
 		try {
 			EclipseUtils.addNature(project, FlixProjectNature.ID);
 		} catch (final CoreException exception) {
+			FlixLogger.logError("Failed to add flix project nature", exception); //$NON-NLS-1$
 			Display.getDefault().syncExec(() -> {
 				ErrorDialog.openError(Display.getDefault().getActiveShell(), "Error", null, exception.getStatus());
 			});

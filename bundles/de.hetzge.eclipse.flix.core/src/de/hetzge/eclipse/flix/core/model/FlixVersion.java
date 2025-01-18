@@ -6,9 +6,9 @@ import java.util.Optional;
 
 public final class FlixVersion {
 
-	public static final FlixVersion VERSION_0_54_0 = new FlixVersion("0.54.0", "dbd8e63de44c5ae59efdf2c5e610b568");
-	public static final List<FlixVersion> VERSIONS = List.of(VERSION_0_54_0);
-	public static final FlixVersion DEFAULT_VERSION = FlixVersion.VERSION_0_54_0;
+	public static final FlixVersion VERSION_0_56_0 = new FlixVersion("0.56.0", "dbd8e63de44c5ae59efdf2c5e610b568");
+	public static final List<FlixVersion> VERSIONS = List.of(VERSION_0_56_0);
+	public static final FlixVersion DEFAULT_VERSION = FlixVersion.VERSION_0_56_0;
 
 	private final String key;
 

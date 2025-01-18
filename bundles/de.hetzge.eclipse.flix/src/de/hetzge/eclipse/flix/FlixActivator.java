@@ -11,14 +11,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
@@ -34,7 +31,6 @@ import de.hetzge.eclipse.flix.manifest.FlixManifestToml;
 import de.hetzge.eclipse.flix.model.FlixModel;
 import de.hetzge.eclipse.flix.model.FlixModelFactory;
 import de.hetzge.eclipse.flix.model.FlixProject;
-import de.hetzge.eclipse.flix.project.FlixProjectNature;
 import de.hetzge.eclipse.flix.utils.ResourceMonitor;
 import de.hetzge.eclipse.utils.EclipseUtils;
 import de.hetzge.eclipse.utils.Utils;
@@ -130,24 +126,14 @@ public class FlixActivator extends AbstractUIPlugin {
 			rollback.add(postResourceMonitor.onDidOpenProject().subscribe(projectOpenEvent -> {
 				final IProject project = projectOpenEvent.getProject();
 				if (project.isOpen()) {
-					if (!FlixProject.isActiveFlixProject(project)) {
-						try {
-							EclipseUtils.addNature(project, FlixProjectNature.ID);
-						} catch (final CoreException exception) {
-							Display.getDefault().syncExec(() -> {
-								ErrorDialog.openError(Display.getDefault().getActiveShell(), "Error", null, exception.getStatus());
-							});
-						}
+					if (FlixProject.isActiveFlixProject(project)) {
+
 					}
-					final FlixProject flixProject = FlixModelFactory.createFlixProject(project);
-					flixModel.addFlixProject(flixProject);
-					this.flix.getLanguageToolingManager().reconnectProject(flixProject);
 				} else {
 					final Optional<FlixProject> flixProjectOptional = flixModel.getFlixProject(project);
 					if (flixProjectOptional.isPresent()) {
-						final FlixProject flixProject = flixProjectOptional.get();
-						this.flix.getLanguageToolingManager().disconnectProject(flixProject);
-						flixModel.removeProject(flixProject);
+
+
 					}
 				}
 			})::dispose);
