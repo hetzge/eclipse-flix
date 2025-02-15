@@ -14,13 +14,13 @@ import org.lxtk.lx4e.EclipseLog;
 import org.lxtk.lx4e.ui.EclipseLanguageClient;
 
 import de.hetzge.eclipse.flix.Flix;
-import de.hetzge.eclipse.flix.model.api.IFlixProject;
+import de.hetzge.eclipse.flix.model.FlixProject;
 
 class FlixEclipseLanguageClient extends EclipseLanguageClient<LanguageServer> {
 
-	private final IFlixProject flixProject;
+	private final FlixProject flixProject;
 
-	public FlixEclipseLanguageClient(EclipseLog log, IFlixProject flixProject, Consumer<PublishDiagnosticsParams> diagnosticConsumer, Collection<Feature<? super LanguageServer>> features) {
+	public FlixEclipseLanguageClient(EclipseLog log, FlixProject flixProject, Consumer<PublishDiagnosticsParams> diagnosticConsumer, Collection<Feature<? super LanguageServer>> features) {
 		super(log, diagnosticConsumer, Flix.get().getChangeFactory(), features);
 		this.flixProject = flixProject;
 	}

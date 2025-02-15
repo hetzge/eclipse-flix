@@ -3,14 +3,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>de.hetzge.eclipse.flix.bundles</artifactId>
 	<packaging>pom</packaging>
-
 	<parent>
 		<groupId>de.hetzge.eclipse.flix</groupId>
 		<artifactId>de.hetzge.eclipse.flix.root</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-
 	<modules>
 		<module>de.hetzge.eclipse.flix</module>
+		<module>de.hetzge.eclipse.flix.core</module>
+		<module>de.hetzge.eclipse.flixmanifest</module>
+		<module>de.hetzge.eclipse.toml</module>
 	</modules>
 </project>

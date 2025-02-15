@@ -9,10 +9,12 @@ public final class FlixCompilerResponse {
 
 	private final JsonElement successJsonElement;
 	private final JsonElement failureJsonElement;
+	private final boolean invalidRequest;
 
-	public FlixCompilerResponse(JsonElement successJsonElement, JsonElement failureJsonElement) {
+	public FlixCompilerResponse(JsonElement successJsonElement, JsonElement failureJsonElement, boolean invalidRequest) {
 		this.successJsonElement = successJsonElement;
 		this.failureJsonElement = failureJsonElement;
+		this.invalidRequest = invalidRequest;
 	}
 
 	public Optional<JsonElement> getSuccessJsonElement() {
@@ -23,9 +25,13 @@ public final class FlixCompilerResponse {
 		return Optional.ofNullable(this.failureJsonElement);
 	}
 
+	public boolean isInvalidRequest() {
+		return this.invalidRequest;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.failureJsonElement, this.successJsonElement);
+		return Objects.hash(this.failureJsonElement, this.invalidRequest, this.successJsonElement);
 	}
 
 	@Override
@@ -40,11 +46,11 @@ public final class FlixCompilerResponse {
 			return false;
 		}
 		final FlixCompilerResponse other = (FlixCompilerResponse) obj;
-		return Objects.equals(this.failureJsonElement, other.failureJsonElement) && Objects.equals(this.successJsonElement, other.successJsonElement);
+		return Objects.equals(this.failureJsonElement, other.failureJsonElement) && this.invalidRequest == other.invalidRequest && Objects.equals(this.successJsonElement, other.successJsonElement);
 	}
 
 	@Override
 	public String toString() {
-		return "FlixCompilerResponse [successJsonElement=" + this.successJsonElement + ", failureJsonElement=" + this.failureJsonElement + "]";
+		return "FlixCompilerResponse [successJsonElement=" + this.successJsonElement + ", failureJsonElement=" + this.failureJsonElement + ", invalidRequest=" + this.invalidRequest + "]";
 	}
 }

@@ -22,7 +22,6 @@ public class FlixRunMainCommandHandler implements CommandHandler {
 
 	@Override
 	public CompletableFuture<Object> execute(ExecuteCommandParams params) {
-		System.out.println("FlixRunMainCommandHandler.execute(" + params + ")");
 		final IFile file = EclipseUtils.activeFile().orElseThrow(() -> new IllegalStateException("No active file"));
 		final String entrypoint = params.getArguments().stream().findFirst().filter(JsonPrimitive.class::isInstance).map(JsonPrimitive.class::cast).map(JsonPrimitive::getAsString).orElseThrow(() -> new IllegalArgumentException("Illegal entrypoint parameter"));
 		FlixLaunchUtils.launchProject(file, ILaunchManager.RUN_MODE, FlixConstants.LAUNCH_CONFIGURATION_TYPE_ID, entrypoint);

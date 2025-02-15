@@ -30,12 +30,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -61,6 +59,7 @@ import org.osgi.framework.Bundle;
 
 import de.hetzge.eclipse.flix.FlixActivator;
 import de.hetzge.eclipse.flix.FlixConstants;
+import de.hetzge.eclipse.flix.FlixImageKey;
 
 public final class EclipseUtils {
 
@@ -102,6 +101,16 @@ public final class EclipseUtils {
 			final Object firstElement = ((IStructuredSelection) selection).getFirstElement();
 			if (firstElement instanceof IFile) {
 				return Optional.of((IFile) firstElement);
+			}
+		}
+		return Optional.empty();
+	}
+
+	public static Optional<IProject> getProject(ISelection selection) {
+		if (selection instanceof IStructuredSelection) {
+			final Object firstElement = ((IStructuredSelection) selection).getFirstElement();
+			if (firstElement instanceof IProject) {
+				return Optional.of((IProject) firstElement);
 			}
 		}
 		return Optional.empty();
@@ -169,7 +178,7 @@ public final class EclipseUtils {
 		}
 
 		// no console found, so create a new one
-		final MessageConsole newConsole = new MessageConsole(name, "de.hetzge.eclipse.flix.consoleType", FlixActivator.getImageDescriptor(FlixConstants.FLIX_ICON_IMAGE_KEY), true);
+		final MessageConsole newConsole = new MessageConsole(name, "de.hetzge.eclipse.flix.consoleType", FlixActivator.getImageDescriptor(FlixImageKey.FLIX_ICON), true);
 		consoleManager.addConsoles(new IConsole[] { newConsole });
 		return newConsole;
 	}
@@ -225,11 +234,6 @@ public final class EclipseUtils {
 		} else {
 			return Optional.empty();
 		}
-	}
-
-	public static Image createImage(String path) {
-		final Bundle bundle = Platform.getBundle(FlixConstants.PLUGIN_ID);
-		return ImageDescriptor.createFromURL(bundle.getEntry(path)).createImage();
 	}
 
 	public static IPath createResourcePath(String path) throws IOException {
@@ -303,9 +307,9 @@ public final class EclipseUtils {
 		project.setDescription(description, null);
 	}
 
-	public static void addBuilder(final IProjectDescription description, String flixBuilderId) {
+	public static void addBuilder(final IProjectDescription description, String builderId) {
 		final ICommand buildCommand = description.newCommand();
-		buildCommand.setBuilderName(flixBuilderId);
+		buildCommand.setBuilderName(builderId);
 
 		final List<ICommand> commands = new ArrayList<>();
 		commands.addAll(Arrays.asList(description.getBuildSpec()));
@@ -314,14 +318,14 @@ public final class EclipseUtils {
 		description.setBuildSpec(commands.toArray(new ICommand[commands.size()]));
 	}
 
-	public static void removeBuilder(IProject project, String flixBuilderId) throws CoreException {
+	public static void removeBuilder(IProject project, String builderId) throws CoreException {
 		final IProjectDescription description = project.getDescription();
-		removeBuilder(description, flixBuilderId);
+		removeBuilder(description, builderId);
 		project.setDescription(description, null);
 	}
 
-	private static void removeBuilder(final IProjectDescription description, String flixBuilderId) {
-		final List<ICommand> commands = Arrays.asList(description.getBuildSpec()).stream().filter(command -> !flixBuilderId.equals(command.getBuilderName())).collect(Collectors.toList());
+	private static void removeBuilder(final IProjectDescription description, String builderId) {
+		final List<ICommand> commands = Arrays.asList(description.getBuildSpec()).stream().filter(command -> !builderId.equals(command.getBuilderName())).collect(Collectors.toList());
 		description.setBuildSpec(commands.toArray(new ICommand[commands.size()]));
 	}
 

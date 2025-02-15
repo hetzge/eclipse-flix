@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
    <feature id="de.hetzge.eclipse.flix.feature">
-      <category name="de.hetzge.eclipse.flix.category"/>
+      <category name="de.hetzge.eclipse.flix.site.category.main"/>
    </feature>
-   <category-def name="de.hetzge.eclipse.flix.category" label="Flix"/>
+   <category-def name="de.hetzge.eclipse.flix.site.category.main" label="Flix Language Support"/>
+   <category-def name="de.hetzge.eclipse.flix.site.category.dependencies" label="Dependencies"/>
 </site>

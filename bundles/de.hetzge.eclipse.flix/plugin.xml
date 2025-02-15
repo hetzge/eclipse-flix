@@ -24,7 +24,7 @@
 		<languageConfiguration contentTypeId="de.hetzge.eclipse.flix" path="language-configuration.json"></languageConfiguration>
 	</extension>
 	<extension point="org.eclipse.tm4e.ui.themes">
-		<themeAssociation scopeName="source.flix" themeId="org.eclipse.tm4e.ui.themes.Light"></themeAssociation>
+		<themeAssociation scopeName="source.flix" themeId="org.eclipse.tm4e.ui.themes.EclipseLight"></themeAssociation>
 	</extension>
 	<extension point="org.eclipse.ui.ide.markerResolution">
 		<markerResolutionGenerator class="de.hetzge.eclipse.flix.FlixMarkerResolutionGenerator" markerType="de.hetzge.eclipse.flix.problem"></markerResolutionGenerator>
@@ -33,7 +33,7 @@
 		<target id="de.hetzge.eclipse.flix.editor" name="Flix Hyperlink Target"></target>
 	</extension>
 	<extension point="org.eclipse.ui.workbench.texteditor.hyperlinkDetectors">
-		<hyperlinkDetector activate="true" class="org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector" id="asdasdasdadas" name="name" targetId="de.hetzge.eclipse.flix.editor"></hyperlinkDetector>
+		<hyperlinkDetector activate="true" class="org.lxtk.lx4e.ui.hyperlinks.DeclarationHyperlinkDetector" id="de.hetzge.eclipse.flix.editor.hyperlinkDetector" name="Flix Hyperlink Detector" targetId="de.hetzge.eclipse.flix.editor"></hyperlinkDetector>
 	</extension>
 	<extension point="org.eclipse.debug.core.launchConfigurationTypes">
 		<launchConfigurationType name="Flix launch" delegate="de.hetzge.eclipse.flix.launch.FlixLaunchConfigurationDelegate" modes="run" id="de.hetzge.eclipse.flix.launchConfigurationType"></launchConfigurationType>
@@ -45,7 +45,7 @@
 	</extension>
 	<extension point="org.eclipse.ui.newWizards">
 		<category id="de.hetzge.eclipse.flix.wizards" name="Flix"></category>
-		<wizard category="de.hetzge.eclipse.flix.wizards" class="de.hetzge.eclipse.flix.project.FlixFileWizard" icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix..newfile" name="Flix File">
+		<wizard category="de.hetzge.eclipse.flix.wizards" class="de.hetzge.eclipse.flix.project.FlixFileWizard" icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix.newfile" name="Flix File">
 			<description>
 				Create a Flix file
 			</description>
@@ -86,18 +86,71 @@
 		<launchGroup bannerImage="assets/icons/icon3.png" id="de.hetzge.eclipse.flix.testLaunchGroup" image="assets/icons/icon3.png" label="Flix Test Launch Group" mode="run"></launchGroup>
 	</extension>
 	<extension point="org.eclipse.ui.commands">
-		<command id="de.hetzge.eclipse.flix.editor.quickOutline" categoryId="org.eclipse.ui.category.navigate" name="Quick Outline (Flix)" description="Show the quick outline for the editor input" defaultHandler="de.hetzge.eclipse.flix.editor.FlixOutlinePopupHandler"></command>
+		<command id="de.hetzge.eclipse.flix.editor.quickOutline" categoryId="org.eclipse.ui.category.navigate" name="Quick Outline (Flix)" description="Show the quick outline for the editor input" defaultHandler="de.hetzge.eclipse.flix.editor.outline.FlixOutlinePopupHandler"></command>
 		<command id="de.hetzge.eclipse.flix.editor.rename" categoryId="org.eclipse.ltk.ui.category.refactoring" name="Rename (Flix)" description="Rename the selected symbol" defaultHandler="de.hetzge.eclipse.flix.editor.FlixRenameHandler"></command>
 		<command id="de.hetzge.eclipse.flix.openSymbol" categoryId="org.eclipse.ui.category.navigate" name="Open Symbol (Flix)" description="Show a list of workspace-wide symbols" defaultHandler="de.hetzge.eclipse.flix.FlixSymbolSelectionHandler"></command>
 		<command id="de.hetzge.eclipse.flix.nature.create" defaultHandler="de.hetzge.eclipse.flix.project.FlixProjectNatureHandler" description="Converts the project to a Flix project" name="Add Flix project nature"></command>
 		<command id="de.hetzge.eclipse.flix.editor.findReferences" categoryId="org.eclipse.search.ui.category.search" name="Find References (Flix)" description="Find references to the selected symbol" defaultHandler="de.hetzge.eclipse.flix.editor.FlixFindReferencesHandler"></command>
-		<command defaultHandler="de.hetzge.eclipse.flix.FlixReconnectLanguageToolingHandler" id="de.hetzge.eclipse.flix.reconnectLanguageTooling" name="Reconnect Flix language tooling"></command>
+		<command id="de.hetzge.eclipse.flix.reconnectLanguageTooling" name="Reconnect Flix language tooling" defaultHandler="de.hetzge.eclipse.flix.handler.FlixReconnectLanguageToolingHandler"></command>
+		<command
+        categoryId="org.eclipse.ui.category.edit"
+        defaultHandler="de.hetzge.eclipse.flix.editor.SelectEnclosingElementHandler"
+        description="Select enclosing element"
+        id="de.hetzge.eclipse.flix.editor.selectEnclosing"
+        name="Select enclosing element">
+      </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.compiler.FlixCompileHandler"
+        id="de.hetzge.eclipse.flix.compile"
+        name="Compile">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixOutdatedHandler"
+        id="de.hetzge.eclipse.flix.outdated"
+        name="Run &apos;outdated&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixCheckHandler"
+        id="de.hetzge.eclipse.flix.check"
+        name="Run &apos;check&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixBuildHandler"
+        id="de.hetzge.eclipse.flix.build"
+        name="Run &apos;build&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixBuildJarHandler"
+        id="de.hetzge.eclipse.flix.buildJar"
+        name="Run &apos;build-jar&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixBuildFatJarHandler"
+        id="de.hetzge.eclipse.flix.buildFatJar"
+        name="Run &apos;build-fatjar&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixBuildPackageHandler"
+        id="de.hetzge.eclipse.flix.buildPackage"
+        name="Run &apos;build-pkg&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixGenerateDocumentationHandler"
+        id="de.hetzge.eclipse.flix.documentation"
+        name="Run &apos;doc&apos;">
+  </command>
+  <command
+        defaultHandler="de.hetzge.eclipse.flix.handler.FlixLaunchReplHandler"
+        id="de.hetzge.eclipse.flix.repl"
+        name="Open REPL">
+  </command>
 	</extension>
 	<extension point="org.eclipse.ui.bindings">
 		<key sequence="M1+O" commandId="de.hetzge.eclipse.flix.editor.quickOutline" contextId="de.hetzge.eclipse.flix.editor.scope" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"></key>
 		<key sequence="M2+M3+R" commandId="de.hetzge.eclipse.flix.editor.rename" contextId="de.hetzge.eclipse.flix.editor.scope" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"></key>
 		<key sequence="M1+M2+T" commandId="de.hetzge.eclipse.flix.openSymbol" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"></key>
 		<key sequence="M1+M2+G" commandId="de.hetzge.eclipse.flix.editor.findReferences" contextId="de.hetzge.eclipse.flix.editor.scope" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"></key>
+        <key sequence="M2+M3+ARROW_UP" commandId="de.hetzge.eclipse.flix.editor.selectEnclosing" contextId="de.hetzge.eclipse.flix.editor.scope" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"></key>
 	</extension>
 	<extension point="org.eclipse.ui.menus">
 		<menuContribution locationURI="popup:#FlixEditorContext?after=group.open">
@@ -111,6 +164,9 @@
 			<menu id="de.hetzge.eclipse.flix.editor.refactoring.menu" label="Refactoring">
 				<command commandId="de.hetzge.eclipse.flix.editor.rename" style="push"></command>
 			</menu>
+			<menu id="de.hetzge.eclipse.flix.editor.codeActions.menu" label="Code Actions">
+            	<dynamic id="de.hetzge.eclipse.flix.editor.codeActions.items" class="de.hetzge.eclipse.flix.editor.FlixCodeActionsMenu"></dynamic>
+         	</menu>
 		</menuContribution>
 		<menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.projectConfigure">
 			<command commandId="de.hetzge.eclipse.flix.nature.create" icon="assets/icons/icon.png" label="Convert to Flix project" style="push" tooltip="Convert to Flix project"></command>
@@ -122,7 +178,64 @@
 			<!-- https://blogs.itemis.com/auf-einen-blick-eclipse-actions-f%C3%BCr-project-und-package-explorer -->
 			<menu icon="assets/icons/icon.png" label="Flix">
 				<command commandId="de.hetzge.eclipse.flix.reconnectLanguageTooling" icon="assets/icons/icon.png" label="Reconnect Flix language tooling" style="push" tooltip="Reconnect Flix language tooling">
-					<visibleWhen checkEnabled="false">
+				
+				</command>
+    <command
+          commandId="de.hetzge.eclipse.flix.compile"
+          icon="assets/icons/icon.png"
+          label="Compile project"
+          style="push"
+          tooltip="Executes the compiler">
+    </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.build"
+           icon="assets/icons/icon.png"
+           label="Run &apos;build&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.buildJar"
+           icon="assets/icons/icon.png"
+           label="Run &apos;build-jar&apos;"
+           style="push">
+     </command>    
+     <command
+           commandId="de.hetzge.eclipse.flix.buildFatJar"
+           icon="assets/icons/icon.png"
+           label="Run &apos;build-fatjar&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.buildPackage"
+           icon="assets/icons/icon.png"
+           label="Run &apos;build-pkg&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.documentation"
+           icon="assets/icons/icon.png"
+           label="Run &apos;doc&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.check"
+           icon="assets/icons/icon.png"
+           label="Run &apos;check&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.outdated"
+           icon="assets/icons/icon.png"
+           label="Run &apos;outdated&apos;"
+           style="push">
+     </command>
+     <command
+           commandId="de.hetzge.eclipse.flix.repl"
+           icon="assets/icons/icon.png"
+           label="Open REPL"
+           style="push">
+     </command>
+    	<visibleWhen checkEnabled="false">
 						<with variable="selection">
 							<iterate>
 								<adapt type="org.eclipse.core.resources.IProject">
@@ -133,7 +246,6 @@
 							</iterate>
 						</with>
 					</visibleWhen>
-				</command>
 			</menu>
 		</menuContribution>
 	</extension>
@@ -147,7 +259,7 @@
 		<image icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix.natureImage" natureId="de.hetzge.eclipse.flix.nature"></image>
 	</extension>
 	<extension point="org.eclipse.tm.terminal.view.ui.launcherDelegates">
-		<delegate class="org.eclipse.tm.terminal.connector.process.ProcessLauncherDelegate" hidden="true" id="de.hetzge.eclipse.flix.processLauncherDelegate" label="Flix Process Launch"></delegate>
+		<delegate class="org.eclipse.tm.terminal.connector.local.launcher.LocalLauncherDelegate" hidden="true" id="de.hetzge.eclipse.flix.processLauncherDelegate" label="Flix Process Launch"></delegate>
 	</extension>
 	<extension id="flixBuilder" name="Flix Builder" point="org.eclipse.core.resources.builders">
 		<builder callOnEmptyDelta="true" hasNature="true" isConfigurable="true" supportsConfigurations="true">
@@ -177,4 +289,124 @@
 	       <run class="de.hetzge.eclipse.flix.FlixJarFileSystem"></run>
 	    </filesystem>
 	 </extension>
+  <extension
+        point="org.eclipse.ui.decorators">
+     <decorator
+           class="de.hetzge.eclipse.flix.navigator.FlixLanguageToolingStateDecorator"
+           id="de.hetzge.eclipse.flix.decorator.languageTooling"
+           label="Flix Language Tooling State"
+           state="true">
+        <enablement>
+           <objectClass
+                 name="org.eclipse.core.resources.IProject">
+           </objectClass>
+        </enablement>
+     </decorator>
+  </extension>
+  <extension
+        point="org.eclipse.jdt.junit.internal_testKinds">
+     <kind
+           displayName="displayName"
+           finderClass="de.hetzge.eclipse.flix.test.TestFinder1"
+           id="de.hetzge.eclipse.flix.kind1"
+           loaderClass="de.hetzge.eclipse.flix.kind1"
+           loaderPluginId="de.hetzge.eclipse.flix.kind1">
+        <runtimeClasspathEntry
+              pluginId="de.hetzge.eclipse.flix.runtimeClasspathEntry1">
+        </runtimeClasspathEntry>
+     </kind>
+  </extension>
+  <extension
+        point="org.eclipse.ui.perspectives">
+     <perspective
+           class="de.hetzge.eclipse.flix.FlixPerspectiveFactory"
+           fixed="false"
+           icon="assets/icons/icon.png"
+           id="de.hetzge.eclipse.flix.perspective"
+           name="Flix">
+     </perspective>
+  </extension>
+  <extension
+        point="org.eclipse.ui.navigator.navigatorContent">
+     <commonWizard
+           type="new"
+           wizardId="de.hetzge.eclipse.flix.newfile">
+        <enablement></enablement>
+     </commonWizard>
+     <commonWizard
+           type="new"
+           wizardId="de.hetzge.eclipse.flix.newProject">
+        <enablement></enablement>
+     </commonWizard>
+     <navigatorContent
+           activeByDefault="true"
+           appearsBefore="org.eclipse.ui.navigator.resourceContent"
+           contentProvider="de.hetzge.eclipse.flix.navigator.FlixTreeContentProvider"
+           icon="assets/icons/icon.png"
+           id="de.hetzge.eclipse.flix.navigatorContent"
+           labelProvider="de.hetzge.eclipse.flix.navigator.FlixTreeContentLabelProvider"
+           name="Flix Navigator Content"
+           priority="highest"
+           providesSaveables="false"
+           sortOnly="false">
+        <triggerPoints>
+           <instanceof
+                 value="org.eclipse.core.resources.IResource">
+           </instanceof>
+        </triggerPoints>
+        <override
+              policy="InvokeAlwaysRegardlessOfSuppressedExt"
+              suppressedExtensionId="org.eclipse.ui.navigator.resourceContent">
+        </override>
+     </navigatorContent>
+     <navigatorContent
+           activeByDefault="true"
+           appearsBefore="de.hetzge.eclipse.flix.navigatorContent"
+           icon="assets/icons/icon.png"
+           id="de.hetzge.eclipse.flix.navigatorOrder"
+           name="Flix Navigator Order"
+           priority="highest"
+           sortOnly="true">
+        <commonSorter
+              class="de.hetzge.eclipse.flix.navigator.FlixViewerComparator">
+           <parentExpression>
+              <instanceof
+                    value="org.eclipse.core.resources.IWorkspaceRoot">
+              </instanceof>
+           </parentExpression>
+        </commonSorter>
+     </navigatorContent>
+  </extension>
+   <extension
+         point="org.eclipse.ui.navigator.viewer">
+      <viewerContentBinding viewerId="org.eclipse.ui.navigator.ProjectExplorer">
+         <includes>
+            <contentExtension pattern="de.hetzge.eclipse.flix.navigatorContent"/>
+            <contentExtension
+                  pattern="de.hetzge.eclipse.flix.navigatorOrder">
+            </contentExtension>
+         </includes>
+      </viewerContentBinding>
+   </extension>
+   <extension
+         point="org.eclipse.ui.importWizards">
+      <category
+            id="de.hetzge.eclipse.flix.import.category"
+            name="Flix">
+      </category>
+      <wizard
+            category="de.hetzge.eclipse.flix.import.category"
+            class="de.hetzge.eclipse.flix.project.FlixImportWizard"
+            icon="assets/icons/icon.png"
+            id="de.hetzge.eclipse.flix.import.wizard"
+            name="Flix Project">
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.ide.projectConfigurators">
+      <projectConfigurator
+            class="de.hetzge.eclipse.flix.project.FlixProjectConfigurator"
+            label="Flix Project">
+      </projectConfigurator>
+   </extension>
 </plugin>

@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Flix Core
+Bundle-SymbolicName: de.hetzge.eclipse.flix.core;singleton:=true
+Bundle-Version: 0.0.1.qualifier
+Export-Package: de.hetzge.eclipse.flix.core.model
+Bundle-Activator: de.hetzge.eclipse.flix.core.FlixCoreActivator
+Require-Bundle: org.eclipse.core.runtime
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Automatic-Module-Name: de.hetzge.eclipse.flix.core
+Bundle-ActivationPolicy: lazy

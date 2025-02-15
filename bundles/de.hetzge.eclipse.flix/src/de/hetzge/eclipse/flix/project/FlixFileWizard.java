@@ -15,7 +15,6 @@ import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
@@ -28,8 +27,8 @@ import org.eclipse.ui.ide.IDE;
 import de.hetzge.eclipse.utils.StatusUtils;
 
 public class FlixFileWizard extends Wizard implements INewWizard {
-
 	private static final ILog LOG = Platform.getLog(FlixFileWizard.class);
+	public static final String ID = "de.hetzge.eclipse.flix.newfile"; //$NON-NLS-1$
 
 	private FlixFilePage flixFilePage;
 	private IStructuredSelection selection;

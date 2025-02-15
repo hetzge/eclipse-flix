@@ -11,7 +11,6 @@ mvn clean verify
 
 ## Useful links
 
-* [Eclipse Handly Tutorial](https://github.com/pisv/gethandly/wiki)
 * [LXTK LSP Eclipse Integration](https://github.com/lxtk-org/lxtk)
 * [Flix Visual Studio Code Plugin](https://github.com/flix/vscode-flix)
 
@@ -23,8 +22,9 @@ Under the `de.hetzge.eclipse.flix` package the following packages can be found:
 * **server**: The **L**anguage **S**erver **P**rotocol server implementation that uses the Flix compiler internally to answer language requests
 * **editor**: Provides an Eclipse text editor with Flix editing support (Hover, Autocomplete, Highlighting ...)
 * **launch**: Allows to run Flix applications. Provide Eclipse UI extensions and commands for this purpose
-* **model**: The [Eclipse Handly](https://projects.eclipse.org/projects/technology.handly) language model
+* **model**: A model that represents relevant Flix elements (like Flix project and version)
 * **project**: Extends Eclipse with functions to manage Flix projects (create projects and files)
 * **utils**: Collection of useful functions
 * **compiler**: Provide client to interact with the Flix compiler
+* **navigator**: Extension to the Eclipse Project Explorer
 

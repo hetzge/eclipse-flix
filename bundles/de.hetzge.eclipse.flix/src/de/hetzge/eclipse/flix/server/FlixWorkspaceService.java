@@ -3,6 +3,7 @@ package de.hetzge.eclipse.flix.server;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -21,11 +22,13 @@ import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.WorkspaceService;
 
+import de.hetzge.eclipse.flix.compiler.FlixCompilerService;
+
 public final class FlixWorkspaceService implements WorkspaceService {
 
-	private final FlixServerService flixService;
+	private final FlixCompilerService flixService;
 
-	public FlixWorkspaceService(FlixServerService flixService) {
+	public FlixWorkspaceService(FlixCompilerService flixService) {
 		this.flixService = flixService;
 	}
 
@@ -59,13 +62,16 @@ public final class FlixWorkspaceService implements WorkspaceService {
 	@Override
 	public void didDeleteFiles(DeleteFilesParams params) {
 		System.out.println("FlixWorkspaceService.didDeleteFiles()");
+		boolean removed = false;
 		for (final FileDelete delete : params.getFiles()) {
 			final IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(URI.create(delete.getUri()));
 			for (final IFile file : files) {
-				this.flixService.removeFile(file);
+				removed |= this.flixService.removeFile(file);
 			}
 		}
-		this.flixService.compile();
+		if (removed) {
+			this.flixService.syncCompile();
+		}
 	}
 
 	@Override
@@ -76,15 +82,18 @@ public final class FlixWorkspaceService implements WorkspaceService {
 
 	@Override
 	public void didCreateFiles(CreateFilesParams params) {
-		System.out.println("FlixWorkspaceService.didCreateFiles()");
+		System.out.println("FlixWorkspaceService.didCreateFiles() " + params.getFiles().stream().map(FileCreate::getUri).collect(Collectors.joining(",")));
+		boolean added = false;
 		final List<FileCreate> fileCreates = params.getFiles();
 		for (final FileCreate fileCreate : fileCreates) {
 			final IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(URI.create(fileCreate.getUri()));
 			for (final IFile file : files) {
-				this.flixService.addFile(file);
+				added |= this.flixService.addFile(file);
 			}
 		}
-		this.flixService.compile();
+		if (added) {
+			this.flixService.syncCompile();
+		}
 	}
 
 	@Override

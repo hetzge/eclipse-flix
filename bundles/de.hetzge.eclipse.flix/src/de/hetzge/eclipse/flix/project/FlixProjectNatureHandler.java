@@ -23,7 +23,6 @@ public class FlixProjectNatureHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		System.out.println("FlixProjectNatureHandler.execute()");
 		final ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
 		if (!(currentSelection instanceof IStructuredSelection)) {
 			LOG.warn("Skip add Flix nature because not a structured selection");

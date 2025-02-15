@@ -10,9 +10,9 @@ import org.lxtk.lx4e.refactoring.rename.RenameRefactoring;
 import org.lxtk.lx4e.ui.refactoring.rename.AbstractRenameHandler;
 import org.lxtk.lx4e.util.DefaultWordFinder;
 
+import de.hetzge.eclipse.flix.Flix;
 import de.hetzge.eclipse.flix.FlixLogger;
 import de.hetzge.eclipse.flix.FlixOperationTargetProvider;
-import de.hetzge.eclipse.flix.FlixWorkspaceEditChangeFactory;
 
 /**
  * A handler that starts a {@link RenameRefactoring} for Flix.
@@ -42,6 +42,6 @@ public class FlixRenameHandler extends AbstractRenameHandler {
 
 	@Override
 	protected IWorkspaceEditChangeFactory getWorkspaceEditChangeFactory() {
-		return FlixWorkspaceEditChangeFactory.INSTANCE;
+		return Flix.get().getChangeFactory();
 	}
 }
