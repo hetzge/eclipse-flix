@@ -197,7 +197,4 @@ public class FlixActivator extends AbstractUIPlugin {
 	public static ChainedPreferenceStore getCombinedPreferenceStore() {
 		return new ChainedPreferenceStore(new IPreferenceStore[] { getDefault().getPreferenceStore(), EditorsUI.getPreferenceStore() });
 	}
-
-	private void dispose() {
-	}
 }

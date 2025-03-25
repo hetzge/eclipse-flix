@@ -39,16 +39,16 @@ public class FlixProjectBuilder extends IncrementalProjectBuilder implements IIn
 		Flix.get().getLanguageToolingManager().reconnectProject(flixProject);
 	}
 
-	@Override
-	public ISchedulingRule getRule(int kind, Map<String, String> args) {
-		return getProject();
-	}
-
 	private void fastBuild(IProgressMonitor monitor) throws CoreException {
 		LOG.info("Fast build Flix project");
 		final FlixProject flixProject = Flix.get().getModel().getFlixProjectOrThrowCoreException(getProject());
 		final String projectName = flixProject.getProject().getName();
 		monitor.subTask(String.format("Auto/Incremental build (%s)", projectName));
 		Flix.get().getLanguageToolingManager().compile(flixProject);
+	}
+
+	@Override
+	public ISchedulingRule getRule(int kind, Map<String, String> args) {
+		return getProject();
 	}
 }

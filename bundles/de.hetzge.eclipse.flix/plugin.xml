@@ -61,18 +61,30 @@
 		<shortcut class="de.hetzge.eclipse.flix.launch.FlixLaunchShortcut" icon="assets/icons/icon.png" id="de.hetzge.eclipse.flix.launchShortcut" label="Flix run" modes="run">
 			<contextualLaunch>
 				<enablement>
-					<with variable="selection">
-						<count value="+"></count>
-					</with>
+	               <with variable="selection">
+	                  <count value="1" />
+	                  <iterate>
+	                     <and>
+	                        <adapt type="org.eclipse.core.resources.IFile" />
+	                        <test property="org.eclipse.debug.ui.matchesPattern" value="*.flix" />
+	                     </and>
+	                  </iterate>
+	              </with>
 				</enablement>
 			</contextualLaunch>
 		</shortcut>
 		<shortcut class="de.hetzge.eclipse.flix.launch.FlixTestLaunchShortcut" icon="assets/icons/icon3.png" id="de.hetzge.eclipse.flix.testLaunchShortcut" label="Flix test run" modes="run">
 			<contextualLaunch>
 				<enablement>
-					<with variable="selection">
-						<count value="+"></count>
-					</with>
+	               <with variable="selection">
+	                  <count value="1" />
+	                  <iterate>
+	                     <and>
+	                        <adapt type="org.eclipse.core.resources.IFile" />
+	                        <test property="org.eclipse.debug.ui.matchesPattern" value="*.flix" />
+	                     </and>
+	                  </iterate>
+	              </with>
 				</enablement>
 			</contextualLaunch>
 		</shortcut>

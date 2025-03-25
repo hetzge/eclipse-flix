@@ -2,6 +2,10 @@ package de.hetzge.eclipse.flix.manifest;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -14,6 +18,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.egit.ui.internal.clone.GitCloneWizard;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -24,9 +29,11 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
+import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
@@ -37,6 +44,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
@@ -364,10 +373,57 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 			final Table table = this.getTable();
 			table.setLinesVisible(true);
 			table.setHeaderVisible(true);
+
+			final Menu menu = new Menu(table);
+			final MenuItem openGithubMenuItem = new MenuItem(menu, SWT.NONE);
+			openGithubMenuItem.setText("Open Github");
+			openGithubMenuItem.setImage(FlixManifestActivator.getImage(FlixManifestImageKey.GITHUB));
+			openGithubMenuItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+				final List<FlixDependency> selectedDependencies = getSelectedDependencies();
+				if (selectedDependencies.isEmpty()) {
+					return;
+				}
+				openGithub(selectedDependencies.getFirst());
+			}));
+			final MenuItem cloneMenuItem = new MenuItem(menu, SWT.NONE);
+			cloneMenuItem.setText("Clone Github");
+			cloneMenuItem.setImage(FlixManifestActivator.getImage(FlixManifestImageKey.GITHUB));
+			cloneMenuItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+				final List<FlixDependency> selectedDependencies = getSelectedDependencies();
+				if (selectedDependencies.isEmpty()) {
+					return;
+				}
+				cloneGithub(selectedDependencies.getFirst());
+			}));
+			menu.addMenuListener(MenuListener.menuShownAdapter(event -> {
+				final List<FlixDependency> selectedDependencies = getSelectedDependencies();
+				if (selectedDependencies.isEmpty()) {
+					return;
+				}
+				final boolean isGithub = Objects.equals(selectedDependencies.getFirst().getType(), "github");
+				openGithubMenuItem.setEnabled(isGithub);
+				cloneMenuItem.setEnabled(isGithub);
+			}));
+			table.setMenu(menu);
 		}
 
 		public List<FlixDependency> getSelectedDependencies() {
 			return ((IStructuredSelection) getSelection()).stream().map(FlixDependency.class::cast).toList();
+		}
+
+		private void openGithub(FlixDependency dependency) {
+			try {
+				final URL url = URI.create(String.format("https://github.com/%s", dependency.getPath())).toURL();
+				PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);
+			} catch (final PartInitException | MalformedURLException exception) {
+				throw new RuntimeException(exception);
+			}
+		}
+
+		private void cloneGithub(FlixDependency dependency) {
+			// GitCloneWizard
+
+			new WizardDialog(Display.getDefault().getActiveShell(), new GitCloneWizard(String.format("https://github.com/%s.git", dependency.getPath()))).open();
 		}
 	}
 
@@ -394,10 +450,36 @@ public class FlixManifestFormEditor extends SharedHeaderFormEditor {
 			final Table table = this.getTable();
 			table.setLinesVisible(true);
 			table.setHeaderVisible(true);
+
+			final Menu menu = new Menu(table);
+			final MenuItem openInMavenRepositoryMenuItem = new MenuItem(menu, SWT.NONE);
+			openInMavenRepositoryMenuItem.setText("Open mvnrepository.com");
+			openInMavenRepositoryMenuItem.setImage(FlixManifestActivator.getImage(FlixManifestImageKey.MAVEN_REPOSITORY_COM));
+			openInMavenRepositoryMenuItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+				final List<MavenDependency> selectedDependencies = getSelectedDependencies();
+				if (selectedDependencies.isEmpty()) {
+					return;
+				}
+				openMvnRepositoryCom(selectedDependencies.getFirst());
+			}));
+			table.setMenu(menu);
 		}
 
 		public List<MavenDependency> getSelectedDependencies() {
 			return ((IStructuredSelection) getSelection()).stream().map(MavenDependency.class::cast).toList();
+		}
+
+		private void openMvnRepositoryCom(final MavenDependency dependency) {
+			try {
+				final URL url = URI.create(String.format("https://mvnrepository.com/artifact/%s/%s/%s",
+						URLEncoder.encode(dependency.getGroupId(), StandardCharsets.UTF_8),
+						URLEncoder.encode(dependency.getArtifactId(), StandardCharsets.UTF_8),
+						URLEncoder.encode(dependency.getVersion(), StandardCharsets.UTF_8)))
+						.toURL();
+				PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(url);
+			} catch (final PartInitException | MalformedURLException exception) {
+				throw new RuntimeException(exception);
+			}
 		}
 	}
 

@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import org.eclipse.core.runtime.ICoreRunnable;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.lsp4j.services.LanguageServer;
@@ -34,6 +36,7 @@ import de.hetzge.eclipse.flix.server.FlixMiddlewareLanguageServer;
 import de.hetzge.eclipse.utils.Utils;
 
 public class FlixLanguageToolingManager implements AutoCloseable {
+	private static final ILog LOG = Platform.getLog(FlixLanguageToolingManager.class);
 
 	private final Map<FlixProject, LanguageTooling> connectedProjects;
 	private final EventEmitter<Status> statusChangedEventEmitter;
@@ -81,10 +84,8 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 					final FlixCompilerClient compilerClient;
 					if (!Objects.equals(System.getProperty("flix.debug"), "true")) {
 						final int compilerPort = Utils.queryPort();
-
 						final CountDownLatch readyLatch = new CountDownLatch(1);
 						final CountDownLatch connectedLatch = new CountDownLatch(1);
-
 						final Process lspProcess = FlixLauncher.launchLsp(project, compilerPort, text -> {
 							if (text.startsWith("Listen on")) { //$NON-NLS-1$
 								readyLatch.countDown();
@@ -213,6 +214,47 @@ public class FlixLanguageToolingManager implements AutoCloseable {
 		job.setRule(project.getProject());
 		job.schedule();
 	}
+
+//	public void compile(FlixProject project, IResourceDelta delta) throws CoreException {
+//		if (delta == null) {
+//			LOG.warn("Null flix build delta");
+//			return;
+//		}
+//
+//		final LanguageTooling languageTooling = this.connectedProjects.get(project);
+//		if (languageTooling == null) {
+//			LOG.warn("Null language tooling");
+//			return;
+//		}
+//
+//		delta.accept(subDelta -> {
+//			if ((subDelta.getFlags() & IResourceDelta.CONTENT) == 0) {
+//				return true; // ignore no content change happened
+//			}
+//			final IResource resource = subDelta.getResource();
+//			switch (subDelta.getKind()) {
+//			case IResourceDelta.ADDED:
+//			case IResourceDelta.CHANGED:
+//			case IResourceDelta.MOVED_TO:
+//				if (resource instanceof IFile) {
+//					final IFile file = (IFile) resource;
+//					languageTooling.getCompilerService().addFile(file);
+//				}
+//				break;
+//			case IResourceDelta.MOVED_FROM:
+//			case IResourceDelta.REMOVED:
+//				if (resource instanceof IFile) {
+//					final IFile file = (IFile) resource;
+//					languageTooling.getCompilerService().removeFile(file);
+//				}
+//				break;
+//			default:
+//				return true;
+//			}
+//			return true;
+//		});
+//		languageTooling.getCompilerService().asyncCompile();
+//	}
 
 	@Override
 	public synchronized void close() {

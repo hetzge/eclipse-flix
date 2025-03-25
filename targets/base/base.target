@@ -12,6 +12,7 @@
 			<unit id="org.eclipse.lsp4j.jsonrpc" version="0.0.0"/>
 			<unit id="com.google.gson" version="0.0.0"/>
 			<unit id="org.eclipse.tm4e.feature.feature.group" version="0.0.0"/>
+			<unit id="org.eclipse.egit.feature.group" version="7.1.0.202411261347-r"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 			<repository location="https://download.eclipse.org/tools/cdt/releases/11.6/cdt-11.6.1/"/>

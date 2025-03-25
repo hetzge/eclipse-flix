@@ -13,6 +13,9 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
+import de.hetzge.eclipse.flix.FlixActivator;
+import de.hetzge.eclipse.flix.FlixImageKey;
+
 public final class EclipseConsoleUtils {
 
 	private static final ILog LOG = Platform.getLog(EclipseUtils.class);
@@ -46,18 +49,17 @@ public final class EclipseConsoleUtils {
 	}
 
 	public static MessageConsole findConsole(String name) {
-		final ConsolePlugin plugin = ConsolePlugin.getDefault();
-		final IConsoleManager conMan = plugin.getConsoleManager();
-		final IConsole[] existing = conMan.getConsoles();
+		final IConsoleManager consoleManager = ConsolePlugin.getDefault().getConsoleManager();
+		final IConsole[] existing = consoleManager.getConsoles();
 		for (int i = 0; i < existing.length; i++) {
 			if (name.equals(existing[i].getName())) {
 				return (MessageConsole) existing[i];
 			}
 		}
 		// no console found, so create a new one
-		final MessageConsole myConsole = new MessageConsole(name, null);
-		conMan.addConsoles(new IConsole[] { myConsole });
-		return myConsole;
+		final MessageConsole console = new MessageConsole(name, FlixActivator.getImageDescriptor(FlixImageKey.FLIX_ICON));
+		consoleManager.addConsoles(new IConsole[] { console });
+		return console;
 	}
 
 }
